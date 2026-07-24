@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using QuestPDF.Infrastructure;
+using Velopack;
 
 namespace AccountingApp;
 
@@ -8,6 +9,8 @@ public partial class App : Application
 {
     protected override void OnStartup(StartupEventArgs e)
     {
+        VelopackApp.Build().Run();
+
         QuestPDF.Settings.License = LicenseType.Community;
 
         DispatcherUnhandledException += (s, ex) =>

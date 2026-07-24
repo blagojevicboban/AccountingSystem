@@ -8,6 +8,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc4.5" />
     <PackageReference Include="QuestPDF" Version="2024.12.3" />
+    <PackageReference Include="Velopack" Version="1.2.0" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -17,12 +18,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     
-    <!-- Czytamo verziju iz version.txt -->
+    <!-- Citamo verziju direktno iz version.txt kako bi bila ispravna i pri buildu iz Visual Studio-a -->
     <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\..\version.txt').Trim())</Version>
 
-    <Authors>AccountingSystem</Authors>
-    <Company>AccountingSystem</Company>
+    <Authors>Blagojević Boban</Authors>
+    <Company>Blagojević Boban</Company>
     <Product>AccountingApp</Product>
+    <Copyright>Copyright © Blagojević Boban 2026</Copyright>
   </PropertyGroup>
 
 </Project>

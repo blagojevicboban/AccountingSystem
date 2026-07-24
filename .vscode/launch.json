@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "AccountingApp (Debug)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build AccountingApp",
+            "program": "${workspaceFolder}/AccountingApp/bin/Debug/net8.0-windows/AccountingApp.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/AccountingApp",
+            "stopAtEntry": false
+        }
+    ]
+}
