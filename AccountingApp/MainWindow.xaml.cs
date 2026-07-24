@@ -26,6 +26,32 @@ public partial class MainWindow : Window
         UpdateKorisnikInfo();
 
         NavigateToDashboard();
+
+        // Provera ažuriranja u pozadini
+        _ = CheckForUpdatesAsync();
+    }
+
+    private async System.Threading.Tasks.Task CheckForUpdatesAsync()
+    {
+        try
+        {
+            var source = new Velopack.Sources.GithubSource(
+                "https://github.com/blagojevicboban/AccountingSystem",
+                null,
+                false);
+            var mgr = new Velopack.UpdateManager(source);
+            var newVersion = await mgr.CheckForUpdatesAsync();
+            if (newVersion != null)
+            {
+                var dialog = new UpdateDialog(newVersion, mgr);
+                dialog.Owner = this;
+                dialog.ShowDialog();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Greška pri proveri ažuriranja: {ex.Message}");
+        }
     }
 
     private void UpdateFirmaInfo()
@@ -89,6 +115,7 @@ public partial class MainWindow : Window
     private void NavFirme_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "🏢 Upravljanje firmama";
+        MainContentHost.Content = new Views.Firme.FirmeView(_db);
     }
 
     private void NavPomoc_Click(object sender, RoutedEventArgs e)
