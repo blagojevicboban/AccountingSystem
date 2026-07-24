@@ -11,13 +11,31 @@ This skill documents the database schema management patterns, SQLite database ma
 
 ## 1. Safe SQLite Schema & Model Definition (`AccountingDbContext.cs`)
 
-`AccountingSystem` uses SQLite with EF Core 8.
+`AccountingSystem` uses SQLite with EF Core 8 **migrations** (not `EnsureCreated`).
 
 ### Rule: Model Entity Integrity
 When adding new properties to model entities (e.g. `Nalog.cs`, `Konto.cs`, `Partner.cs`, `Artikal.cs`):
 1. **Model**: Add the property with appropriate C# type in `AccountingData/Models`.
 2. **DbContext**: Update `AccountingDbContext.cs` sets and indexing.
-3. **Database Auto-Creation**: `await db.Database.EnsureCreatedAsync()` is used for SQLite instances.
+3. **Migration**: Generate a new migration —
+   ```powershell
+   dotnet ef migrations add <DescriptiveName> --project AccountingData/AccountingData.csproj --startup-project AccountingData/AccountingData.csproj -o Migrations
+   ```
+4. **Apply**: Any code path that opens a database goes through `AccountingDbContext.Create(dbPath)`,
+   which calls `Database.Migrate()` — never call `EnsureCreatedAsync()`, it does not
+   understand migrations and will leave the `__EFMigrationsHistory` table missing/out of sync.
+
+### Rule: Seeded Data (`HasData`)
+The default `admin` user (password `admin123`) is seeded via `modelBuilder.Entity<Korisnik>().HasData(...)`
+in `OnModelCreating`. `HasData` requires a **compile-time deterministic** value — the `LozinkaHash`
+is a hardcoded PBKDF2 string (fixed salt), not a call to `HashPassword()`. If you need to change the
+seeded password, generate a new hash offline (fixed salt + `Rfc2898DeriveBytes.Pbkdf2`) and hardcode it,
+then add a migration for the data change.
+
+### Password Hashing
+`AccountingDbContext.HashPassword(password)` / `VerifyPassword(password, hash)` implement salted
+PBKDF2-SHA256 (100k iterations), format `PBKDF2$<iterations>$<saltB64>$<hashB64>`. Never store
+plaintext passwords.
 
 ---
 

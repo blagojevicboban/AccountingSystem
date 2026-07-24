@@ -16,30 +16,34 @@
         <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Grid>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="🔍 Search:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                    <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
                     <TextBox x:Name="TxtPretraga" Width="250" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged"/>
-                    <CheckBox x:Name="ChkSamoProknjizeni" Content="Posted entries only" IsChecked="True" VerticalAlignment="Center" Margin="16,0,0,0" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
+                    <CheckBox x:Name="ChkSamoProknjizeni" Content="Samo proknjiženi nalozi" VerticalAlignment="Center" Margin="16,0,0,0" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
                 </StackPanel>
 
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                    <Button Content="➕ New Entry" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,0" Click="BtnNoviNalog_Click"/>
-                    <Button Content="✅ Post Entry" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Click="BtnProknjizi_Click"/>
+                    <Button x:Name="BtnNoviNalog" Content="➕ Novi nalog" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,0" Click="BtnNoviNalog_Click"/>
+                    <Button x:Name="BtnIzmeniNalog" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,0,10,0" Click="BtnIzmeniNalog_Click"/>
+                    <Button x:Name="BtnProknjizi" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,0,10,0" Click="BtnProknjizi_Click"/>
+                    <Button x:Name="BtnRasknjizi" Content="🔓 Rasknjiži" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Margin="0,0,10,0" Click="BtnRasknjizi_Click"/>
+                    <Separator Width="1" Background="{StaticResource BorderBrush}" Margin="0,4,10,4"/>
+                    <Button x:Name="BtnNovaGodina" Content="📅 Nova godina" Style="{StaticResource ActionButtonStyle}" Background="#0F172A" Click="BtnNovaGodina_Click"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
-                <TextBlock Text="📖 General Ledger Journal Entries" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
+                <TextBlock Text="📖 Nalozi za knjiženje (Glavna knjiga)" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
                 <DataGrid x:Name="DgNalozi" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgNalozi_SelectionChanged">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Entry #" Binding="{Binding BrojNaloga}" Width="120"/>
-                        <DataGridTextColumn Header="Date" Binding="{Binding DatumNaloga, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
-                        <DataGridTextColumn Header="Type" Binding="{Binding VrstaNaloga}" Width="120"/>
-                        <DataGridTextColumn Header="Description" Binding="{Binding Opis}" Width="*"/>
-                        <DataGridTextColumn Header="Debit (RSD)" Binding="{Binding UkupnoDuguje, StringFormat=\{0:N2\}}" Width="140"/>
-                        <DataGridTextColumn Header="Credit (RSD)" Binding="{Binding UkupnoPotrazuje, StringFormat=\{0:N2\}}" Width="140"/>
-                        <DataGridTextColumn Header="Status" Binding="{Binding IsKnjizen}" Width="100"/>
+                        <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="120"/>
+                        <DataGridTextColumn Header="Datum" Binding="{Binding DatumNaloga, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
+                        <DataGridTextColumn Header="Vrsta" Binding="{Binding VrstaNaloga}" Width="120"/>
+                        <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
+                        <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding UkupnoDuguje, StringFormat=\{0:N2\}}" Width="140"/>
+                        <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding UkupnoPotrazuje, StringFormat=\{0:N2\}}" Width="140"/>
+                        <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
@@ -49,14 +53,14 @@
 
         <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" Margin="0,16,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
-                <TextBlock x:Name="TxtDetailHeader" Text="📋 Journal Line Items" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
+                <TextBlock x:Name="TxtDetailHeader" Text="📋 Stavke naloga" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
                 <DataGrid x:Name="DgStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Line #" Binding="{Binding RedniBroj}" Width="60"/>
-                        <DataGridTextColumn Header="Account" Binding="{Binding BrojKonta}" Width="110"/>
-                        <DataGridTextColumn Header="Document / Description" Binding="{Binding Opis}" Width="*"/>
-                        <DataGridTextColumn Header="Debit (RSD)" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="140"/>
-                        <DataGridTextColumn Header="Credit (RSD)" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="140"/>
+                        <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="60"/>
+                        <DataGridTextColumn Header="Konto" Binding="{Binding BrojKonta}" Width="110"/>
+                        <DataGridTextColumn Header="Dokument / Opis" Binding="{Binding Opis}" Width="*"/>
+                        <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="140"/>
+                        <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="140"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

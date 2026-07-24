@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using AccountingData;
 using QuestPDF.Infrastructure;
 using Velopack;
 
@@ -36,6 +37,10 @@ public partial class App : Application
             Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
             File.AppendAllText(logPath, $"[{DateTime.Now}] FATAL: {ex.ExceptionObject}\n\n");
         };
+
+        var db = AccountingDbContext.Create(AppConfig.DbPath);
+        var loginWindow = new Views.Korisnici.LoginWindow(db);
+        loginWindow.Show();
 
         base.OnStartup(e);
     }

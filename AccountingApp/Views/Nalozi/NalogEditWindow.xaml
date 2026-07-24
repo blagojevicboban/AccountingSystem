@@ -1,0 +1,76 @@
+<Window x:Class="AccountingApp.Views.Nalozi.NalogEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Novi nalog za knjiženje" Height="640" Width="1080"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundBrush}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="0,0,20,0">
+                    <TextBlock Text="Broj naloga" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                    <TextBox x:Name="TxtBrojNaloga" Width="110" Height="32" VerticalContentAlignment="Center" Padding="6,0"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,20,0">
+                    <TextBlock Text="Datum naloga" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                    <DatePicker x:Name="DpDatum" Width="140" Height="32"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Opis naloga" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                    <TextBox x:Name="TxtOpisNaloga" Width="420" Height="32" VerticalContentAlignment="Center" Padding="6,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+                    <TextBlock Text="📋 Stavke naloga" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <Button x:Name="BtnDodajStavku" Content="➕ Dodaj stavku" Style="{StaticResource ActionButtonStyle}" Click="BtnDodajStavku_Click" Margin="0,0,8,0"/>
+                    <Button x:Name="BtnObrisiStavku" Content="🗑 Obriši stavku" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Click="BtnObrisiStavku_Click"/>
+                </StackPanel>
+
+                <DataGrid x:Name="DgStavke" AutoGenerateColumns="False" CanUserAddRows="False" GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                          CellEditEnding="DgStavke_CellEditEnding">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Konto" Binding="{Binding BrojKonta, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        <DataGridTextColumn Header="Dokument" Binding="{Binding BrojDokumenta, UpdateSourceTrigger=PropertyChanged}" Width="130"/>
+                        <DataGridTextColumn Header="Opis" Binding="{Binding Opis, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                        <DataGridTextColumn Header="Duguje" Binding="{Binding Duguje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110"/>
+                        <DataGridTextColumn Header="Potražuje" Binding="{Binding Potrazuje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110"/>
+                        <DataGridComboBoxColumn x:Name="ColPartner" Header="Partner"
+                                                 SelectedValueBinding="{Binding PartnerId}"
+                                                 SelectedValuePath="PartnerId"
+                                                 DisplayMemberPath="Naziv"
+                                                 Width="160"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+
+        <Border x:Name="BorderBalans" Grid.Row="2" Margin="0,16,0,0" Padding="16,10" CornerRadius="8" Background="#ECFDF5">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="Duguje: " FontWeight="SemiBold"/>
+                <TextBlock x:Name="TxtZbirDuguje" Text="0,00" Margin="0,0,24,0"/>
+                <TextBlock Text="Potražuje: " FontWeight="SemiBold"/>
+                <TextBlock x:Name="TxtZbirPotrazuje" Text="0,00" Margin="0,0,24,0"/>
+                <TextBlock x:Name="TxtBalansStatus" Text="⚠️ Nema stavki" FontWeight="Bold"/>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="BtnOtkazi" Content="Otkaži" Style="{StaticResource ActionButtonStyle}" Background="#64748B" Click="BtnOtkazi_Click" Margin="0,0,10,0"/>
+            <Button x:Name="BtnSnimi" Content="💾 Snimi nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Click="BtnSnimi_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

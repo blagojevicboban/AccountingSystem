@@ -1,63 +1,116 @@
-# 💼 AccountingSystem — Financial & General Ledger ERP
+# 💼 AccountingSystem — Finansijsko knjigovodstvo i glavna knjiga
 
-> Modern desktop ERP application for Financial Accounting (General Ledger, Journal Entries, Chart of Accounts), Subledger Partners (Open Items & Statements), Warehouse Inventory Management, Trade & Invoicing — developed in **C# / .NET 8 / WPF**.
-
----
-
-## ✨ Features
-
-- 🏢 **Multi-Company Architecture** — Manage unlimited companies with independent SQLite database instances per company.
-- 📊 **Dashboard & Metrics** — Overview of active accounts, posted entries, warehouse stock levels, and subledger balances.
-- 📖 **General Ledger & Journal Entries** — Entry processing with strict balance verification (Debit == Credit), journal logs, and account cards with running balance.
-- 📋 **Chart of Accounts** — Synthetic and analytical accounts (Classes 0–9) with real-time search.
-- 👥 **Subledger (Customers & Vendors)** — Open items tracking, customer/vendor statements, and PDF **IOS forms**.
-- 📦 **Inventory & Stock Management** — Material receipts, requisitions, internal transfers, and warehouse cards using weighted average cost.
-- 🛒 **Trade & Invoices** — Wholesale & retail cost calculations, price adjustments, and Trade Book logging (KEO form).
-- 🔄 **Legacy DBF Migration (`AccountingMigration`)** — Automated import tool for dBase III / Clipper files (`C:\KNJIGE\Radni\KORxx`).
-- 📄 **PDF Reporting (`QuestPDF`)** — High-performance PDF generation for Journal Entries, Trial Balance, Open Items, and Stock Reports.
+> Desktop ERP aplikacija za finansijsko knjigovodstvo (glavna knjiga, nalozi za knjiženje, kontni plan, kartice konta), analitiku partnera (otvorene stavke, IOS, kamate), magacinsko poslovanje po prosečnoj ceni i trgovinu — razvijena u **C# / .NET 8 / WPF**, po uzoru na [SredstvaSystem](https://github.com/blagojevicboban/AssetManager) i modelovana kao zamena za legacy DOS/Clipper sistem.
 
 ---
 
-## 🛠️ Technology Stack
+## ✨ Funkcionalnosti
 
-| Domain | Technology |
+### Glavna knjiga (FIN)
+- 📊 **Radna tabla** — pregled ključnih brojki (nalozi, konta, artikli, partneri) i poslednjih naloga.
+- 📖 **Nalozi za knjiženje** — unos/izmena naloga sa **živom proverom ravnoteže** (Duguje == Potražuje), knjiženje i **rasknjižavanje** (samo Administrator, uz potvrdu — vraća nalog u nacrt radi ispravke).
+- 📋 **Kontni plan i kartice konta** — sintetička/analitička konta, hronološka kartica sa kumulativnim saldom, PDF izvoz.
+- 📅 **Nova godina** — prenos zaključnog salda svih konta u nalog za početno stanje naredne godine; **odbija prenos ako knjige nisu u ravnoteži** (bezbednosna provera pre nego što se nešto pogrešno prenese).
+
+### Partneri i analitika (ANAL)
+- 👥 **Partneri — otvorene stavke i IOS** — praćenje dugovnih stavki po partneru (kupci/dobavljači), PDF **IOS obrazac**.
+- 💰 **Kamate** — obračun zatezne kamate po danu kašnjenja, sa podrškom za više kamatnih stopa kroz vreme; unos novih stopa iz aplikacije.
+- 📊 **Bruto bilans analitike** — promet i saldo po partneru (paralelno finansijskom bruto bilansu po kontu).
+
+### Magacin i zalihe (MAT)
+- 📦 **Materijalne kartice po prosečnoj (ponderisanoj) ceni** — prijem se vrednuje po unetoj ceni, izdavanje po trenutnoj prosečnoj ceni; sistem odbija izdavanje koje bi izazvalo negativno stanje.
+- 📥📤 **Ulazi i trebovanja** — unos, pregled i knjiženje dokumenata po magacinu.
+
+### Trgovina (ROB)
+- 🛒 **Kalkulacija veleprodaje** — nabavna vrednost + zavisni troškovi → trgovačka marža → PDV → prodajna vrednost, sa **live obračunom** tokom unosa.
+
+### Zajedničko
+- 🔐 **Prijava i uloge** — lozinke osoljene (PBKDF2), uloga Administrator za osetljive operacije (rasknjižavanje, nova godina).
+- 🏢 **Rad sa više firmi** — svaka firma ima sopstvenu SQLite bazu podataka.
+- 🔄 **Uvoz iz DOS sistema (`AccountingMigration`)** — uvozi kontni plan, naloge, partnere, materijale, magacine, ulaze, trebovanja, kartice i kamatne stope iz legacy dBase III / Clipper fajlova (`C:\KNJIGE\Radni\KORxx`).
+- 📄 **PDF izveštaji (`QuestPDF`)** — dnevnik glavne knjige, bruto bilans (finansijski i analitike), kartica konta, IOS, kamata, izveštaj o zalihama.
+- ❓ **Pomoć** — uputstvo za korišćenje ugrađeno u samu aplikaciju (tab „Pomoć" u sidebar-u).
+
+---
+
+## 🛠️ Tehnologije
+
+| Oblast | Tehnologija |
 | --- | --- |
-| **Language** | C# 12 / .NET 8.0 |
-| **UI Framework** | WPF (Windows Presentation Foundation) |
-| **Charts** | LiveCharts2 (SkiaSharp) |
-| **Database** | SQLite (one instance per company) |
-| **ORM** | Entity Framework Core 8 |
-| **Reporting / PDF** | QuestPDF |
-| **Legacy DBF Parser** | Custom binary dBase III parser (Latin1 / YUSCII / CP852) |
+| **Jezik** | C# 12 / .NET 8.0 |
+| **UI okvir** | WPF (Windows Presentation Foundation), code-behind (bez MVVM-a) |
+| **Baza podataka** | SQLite (po jedna instanca po firmi) |
+| **ORM** | Entity Framework Core 8 (isključivo EF Core migracije, ne `EnsureCreated`) |
+| **Izveštaji / PDF** | QuestPDF |
+| **Legacy DBF parser** | Sopstveni binarni dBase III parser (Latin1 / YUSCII / CP852) |
+| **Pakovanje / Update** | Velopack |
+| **Testiranje** | xUnit (kalkulatori/servisi bez zavisnosti od baze — in-memory EF provider za servise koji zavise od baze) |
 
 ---
 
-## 📁 Project Structure
+## 📁 Struktura projekta
 
 ```text
 AccountingSystem/
-├── AccountingApp/            # Primary WPF Desktop App (Views, ViewModels, PDF Reports)
-│   ├── Views/                # WPF Controls (Dashboard, Journal Entries, Accounts, Subledger, Inventory)
-│   ├── Services/             # PdfReportService, NaloziService
-│   └── AppConfig.cs          # Database path manager & environment setup
-├── AccountingData/           # Data Access Layer (EF Core Models & DbContext)
-│   └── Models/               # Firma, Korisnik, Konto, Nalog, StavkaNaloga, Partner, Artikal, Magacin
-├── AccountingData.Tests/     # xUnit Test Suite with In-Memory SQLite provider
-├── AccountingMigration/      # Legacy DBF Clipper import console utility
-└── .vscode/                  # VS Code launch.json & tasks.json for F5 debugging
+├── AccountingApp/                  # Glavni WPF desktop projekat
+│   ├── Views/
+│   │   ├── Korisnici/              # Prijava (Login)
+│   │   ├── Dashboard/              # Radna tabla
+│   │   ├── Nalozi/                 # Glavna knjiga — nalozi, unos/izmena, rasknjižavanje, nova godina
+│   │   ├── Kartice/                # Kartice konta
+│   │   ├── Partneri/               # Otvorene stavke, IOS, Kamate
+│   │   ├── Magacin/                 # Materijalne kartice, Ulazi, Trebovanja
+│   │   ├── Trgovina/                # Kalkulacija veleprodaje
+│   │   ├── Izvestaji/               # Izveštaji i PDF
+│   │   └── Pomoc/                   # Uputstvo ugrađeno u aplikaciju
+│   ├── Services/                    # PdfReportService
+│   ├── AppSession.cs                # Trenutno ulogovan korisnik i aktivna firma
+│   └── AppConfig.cs                 # Putanja do baze i podešavanje okruženja
+├── AccountingData/                  # Sloj za pristup podacima (EF Core modeli i DbContext)
+│   ├── Models/                      # Firma, Korisnik, Konto, Nalog, StavkaNaloga, Partner, Artikal, Magacin, KamatnaStopa, Kalkulacija...
+│   ├── Migrations/                  # EF Core migracije šeme baze
+│   └── Services/                    # NaloziService, KarticaService, OtvoreneStavkeService, KamataService, NovaGodinaService, BrutoBilansService, MaterijalnaKarticaService, UlazService, TrebovanjeService, KalkulacijaService
+├── AccountingData.Tests/            # xUnit testovi (formule/kalkulatori + servisi sa in-memory EF)
+├── AccountingMigration/             # Konzolni alat za uvoz legacy DOS/Clipper DBF podataka
+├── ANALIZA_I_PLAN.md                # Analiza legacy Clipper sistema i fazni plan razvoja (istorijat odluka)
+└── .vscode/                         # VS Code launch.json i tasks.json za F5 debagovanje
 ```
 
 ---
 
-## 🚀 Quickstart
+## 🚀 Brzi početak
 
 ```bash
-# 1. Build project
-dotnet build
+# 1. Prevesti projekat
+dotnet build AccountingSystem.slnx
 
-# 2. Run application
+# 2. Pokrenuti aplikaciju
 dotnet run --project AccountingApp/AccountingApp.csproj
 
-# 3. Execute unit tests
+# 3. Pokrenuti unit testove
 dotnet test AccountingData.Tests/AccountingData.Tests.csproj
 ```
+
+> **Napomena:** Podrazumevana prijava je **admin / admin123** (zasejano preko EF Core migracije). Baza se automatski kreira i migrira pri prvom pokretanju (`AccountingDbContext.Create`). Za uvoz podataka iz legacy DOS sistema pokrenite `AccountingMigration` projekat — **napomena:** taj alat briše i ponovo kreira bazu podataka firme pri svakom pokretanju (namenjen je uvozu/reimportu test podataka, ne za rad sa produkcionim podacima).
+
+### Vožnja i testiranje UI-ja (za agente)
+
+Za automatizovano pokretanje, prijavljivanje i snimanje ekrana aplikacije pogledajte
+[`AccountingApp/.claude/skills/run-accounting-app/SKILL.md`](AccountingApp/.claude/skills/run-accounting-app/SKILL.md).
+
+---
+
+## 🔒 Napomene o bazi podataka
+
+- Lokalni `*.db` fajlovi sa podacima firme nisu deo Git repozitorijuma.
+- Svaka firma ima sopstvenu SQLite bazu (test firma je **KOR01** — ARHIBEL 2026).
+- Šema baze se upravlja isključivo kroz **EF Core migracije** (`dotnet ef migrations add ...`), ne kroz `EnsureCreated`.
+
+## ⚠️ Poznata ograničenja
+
+- **Kamatne stope** uvezene iz legacy sistema su istorijske (poslednja je iz 2006. godine) — pre obračuna kamate na tekućim dugovanjima unesite aktuelnu zvaničnu stopu kroz ekran „Kamate".
+- **Partneri (Analitika)** rade preko `StavkaNaloga.PartnerId`, koji se dodeljuje ručno pri unosu naloga — istorijski uvezeni nalozi iz DOS sistema nemaju dodeljene partnere (legacy ANAL modul za test firmu nije korišćen).
+- **Trgovina (ROB)** trenutno pokriva samo kalkulaciju veleprodaje — kalkulacija maloprodaje, nivelacija cena, računi-otpremnice i robne kartice nisu implementirani (test firma nema stvarnih podataka za te module). Detalji u [ANALIZA_I_PLAN.md](ANALIZA_I_PLAN.md).
+
+---
+*Aplikacija služi za zamenu nasleđenog Clipper MS-DOS sistema (moduli FIN, ANAL, ROB, MAT) i razvija se po uzoru na [SredstvaSystem](https://github.com/blagojevicboban/AssetManager). Detaljan istorijat analize i faznog razvoja je u [ANALIZA_I_PLAN.md](ANALIZA_I_PLAN.md).*

@@ -72,4 +72,24 @@ public class NaloziService
         await _db.SaveChangesAsync();
         return true;
     }
+
+    /// <summary>
+    /// Vraća proknjižen nalog u status nacrta (analogno legacy rasknjizi proceduri
+    /// iz FIN3.PRG) da bi mogao ponovo da se izmeni pre eventualnog ponovnog knjiženja.
+    /// </summary>
+    public async Task<bool> RasknjiziNalogAsync(int nalogId)
+    {
+        var nalog = await GetNalogByIdAsync(nalogId);
+        if (nalog == null) return false;
+
+        if (!nalog.IsKnjizen)
+        {
+            throw new InvalidOperationException($"Nalog {nalog.BrojNaloga} nije proknjižen.");
+        }
+
+        nalog.IsKnjizen = false;
+        nalog.DatumKnjiženja = null;
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

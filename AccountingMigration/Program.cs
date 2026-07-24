@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Text;
 using AccountingData;
 using AccountingData.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace AccountingMigration;
 
@@ -31,15 +30,10 @@ class Program
             Console.WriteLine($"🗑️ Stara SQLite baza obrisana: {dbPath}");
         }
 
-        var options = new DbContextOptionsBuilder<AccountingDbContext>()
-            .UseSqlite($"Data Source={dbPath}")
-            .Options;
+        using var db = AccountingDbContext.Create(dbPath);
+        Console.WriteLine("✅ Inicijalizovana nova SQLite baza u KOR01 (EF Core migracije)!");
 
-        using var db = new AccountingDbContext(options);
-        await db.Database.EnsureCreatedAsync();
-        Console.WriteLine("✅ Inicijalizovana nova SQLite baza u KOR01!");
-
-        // 1. Firma metadata
+        // 1. Firma metadata (admin korisnik je već zaseden EF migracijom — admin/admin123)
         var firma = new Firma
         {
             Sifra = "KOR01",
@@ -51,18 +45,8 @@ class Program
             IsActive = true
         };
         db.Firme.Add(firma);
-
-        // 2. Admin Korisnik
-        var admin = new Korisnik
-        {
-            KorisnickoIme = "admin",
-            LozinkaHash = "admin123",
-            ImeIPrezime = "Administrator",
-            Uloga = "Administrator"
-        };
-        db.Korisnici.Add(admin);
         await db.SaveChangesAsync();
-        Console.WriteLine("🏢 Firma i korisnik kreirani!");
+        Console.WriteLine("🏢 Firma kreirana!");
 
         // 3. Import Kontnog plana (KONTPLAN.DBF)
         string kontplanFile = Path.Combine(kor01Path, "KONTPLAN.DBF");
@@ -258,6 +242,327 @@ class Program
 
             await db.SaveChangesAsync();
             Console.WriteLine($"   --> Uvezeno {nalogCount} naloga i {stavkeCount} stavki knjiženja!");
+        }
+
+        // 8. Import Materijalnih kartica (M_KART.DBF) — prosečna cena po magacinu/artiklu
+        string mKartFile = Path.Combine(kor01Path, "M_KART.DBF");
+        if (File.Exists(mKartFile))
+        {
+            Console.WriteLine("🗂️ Uvoz Materijalnih kartica (M_KART.DBF)...");
+            var rows = ReadDbfRows(mKartFile);
+            int count = 0;
+
+            foreach (var r in rows)
+            {
+                string mag = GetVal(r, 0).Trim();
+                string art = GetVal(r, 1).Trim();
+                if (string.IsNullOrWhiteSpace(mag) || string.IsNullOrWhiteSpace(art)) continue;
+
+                db.MaterijalneKartice.Add(new MaterijalnaKartica
+                {
+                    SifraMagacina = mag,
+                    SifraArtikla = art,
+                    RedniBroj = (int)ParseDecimal(GetVal(r, 2)),
+                    DatumPromene = ParseDate(GetVal(r, 3)),
+                    OpisPromene = GetVal(r, 4).Trim(),
+                    Ulaz = ParseDecimal(GetVal(r, 5)),
+                    Izlaz = ParseDecimal(GetVal(r, 6)),
+                    Stanje = ParseDecimal(GetVal(r, 7)),
+                    Cena = ParseDecimal(GetVal(r, 8)),
+                    CenaIzlaz = ParseDecimal(GetVal(r, 9)),
+                    Duguje = ParseDecimal(GetVal(r, 10)),
+                    Potrazuje = ParseDecimal(GetVal(r, 11)),
+                    Saldo = ParseDecimal(GetVal(r, 12))
+                });
+                count++;
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {count} stavki materijalnih kartica!");
+        }
+
+        // 9. Import Ulaza materijala (ULAZ.DBF)
+        string ulazFile = Path.Combine(kor01Path, "ULAZ.DBF");
+        if (File.Exists(ulazFile))
+        {
+            Console.WriteLine("📥 Uvoz Ulaza materijala (ULAZ.DBF)...");
+            var rows = ReadDbfRows(ulazFile);
+            var groups = rows.Where(r => !string.IsNullOrWhiteSpace(GetVal(r, 0))).GroupBy(r => GetVal(r, 0).Trim());
+            int nalogCount = 0, stavkeCount = 0;
+
+            foreach (var group in groups)
+            {
+                var first = group.First();
+                var nalog = new UlazNalog
+                {
+                    BrojNaloga = group.Key,
+                    Datum = ParseDate(GetVal(first, 1)),
+                    SifraMagacina = GetVal(first, 2).Trim(),
+                    BrojRacuna = GetVal(first, 8).Trim(),
+                    DatumRacuna = ParseDate(GetVal(first, 9)),
+                    IsKnjizen = GetVal(first, 10).Trim() == "1"
+                };
+
+                int rBr = 1;
+                foreach (var row in group)
+                {
+                    string art = GetVal(row, 4).Trim();
+                    if (string.IsNullOrWhiteSpace(art)) continue;
+
+                    nalog.Stavke.Add(new UlazStavka
+                    {
+                        RedniBroj = rBr++,
+                        SifraArtikla = art,
+                        Kolicina = ParseDecimal(GetVal(row, 5)),
+                        Cena = ParseDecimal(GetVal(row, 6)),
+                        Iznos = ParseDecimal(GetVal(row, 7))
+                    });
+                    stavkeCount++;
+                }
+
+                db.UlazNalozi.Add(nalog);
+                nalogCount++;
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {nalogCount} ulaznih naloga i {stavkeCount} stavki!");
+        }
+
+        // 10. Import Trebovanja (TREBOV.DBF)
+        string trebovFile = Path.Combine(kor01Path, "TREBOV.DBF");
+        if (File.Exists(trebovFile))
+        {
+            Console.WriteLine("📤 Uvoz Trebovanja (TREBOV.DBF)...");
+            var rows = ReadDbfRows(trebovFile);
+            var groups = rows.Where(r => !string.IsNullOrWhiteSpace(GetVal(r, 0))).GroupBy(r => GetVal(r, 0).Trim());
+            int nalogCount = 0, stavkeCount = 0;
+
+            foreach (var group in groups)
+            {
+                var first = group.First();
+                var nalog = new TrebovanjeNalog
+                {
+                    BrojNaloga = group.Key,
+                    Datum = ParseDate(GetVal(first, 1)),
+                    SifraMagacina = GetVal(first, 2).Trim(),
+                    IsKnjizen = GetVal(first, 8).Trim() == "1"
+                };
+
+                int rBr = 1;
+                foreach (var row in group)
+                {
+                    string art = GetVal(row, 4).Trim();
+                    if (string.IsNullOrWhiteSpace(art)) continue;
+
+                    nalog.Stavke.Add(new TrebovanjeStavka
+                    {
+                        RedniBroj = rBr++,
+                        SifraArtikla = art,
+                        Kolicina = ParseDecimal(GetVal(row, 5)),
+                        Cena = ParseDecimal(GetVal(row, 6)),
+                        Iznos = ParseDecimal(GetVal(row, 7)),
+                        KontoTroska = GetVal(row, 9).Trim()
+                    });
+                    stavkeCount++;
+                }
+
+                db.TrebovanjeNalozi.Add(nalog);
+                nalogCount++;
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {nalogCount} naloga trebovanja i {stavkeCount} stavki!");
+        }
+
+        // 11. Import Primopredaja (M_PRIMO.DBF)
+        string mPrimoFile = Path.Combine(kor01Path, "M_PRIMO.DBF");
+        if (File.Exists(mPrimoFile))
+        {
+            Console.WriteLine("🔄 Uvoz Primopredaja (M_PRIMO.DBF)...");
+            var rows = ReadDbfRows(mPrimoFile);
+            var groups = rows.Where(r => !string.IsNullOrWhiteSpace(GetVal(r, 0))).GroupBy(r => GetVal(r, 0).Trim());
+            int nalogCount = 0, stavkeCount = 0;
+
+            foreach (var group in groups)
+            {
+                var first = group.First();
+                var nalog = new PrimopredajaNalog
+                {
+                    BrojNaloga = group.Key,
+                    Datum = ParseDate(GetVal(first, 1)),
+                    SifraMagacinaDaje = GetVal(first, 2).Trim(),
+                    SifraMagacinaPrima = GetVal(first, 3).Trim(),
+                    IsKnjizen = GetVal(first, 9).Trim() == "1"
+                };
+
+                int rBr = 1;
+                foreach (var row in group)
+                {
+                    string art = GetVal(row, 5).Trim();
+                    if (string.IsNullOrWhiteSpace(art)) continue;
+
+                    nalog.Stavke.Add(new PrimopredajaStavka
+                    {
+                        RedniBroj = rBr++,
+                        SifraArtikla = art,
+                        Kolicina = ParseDecimal(GetVal(row, 6)),
+                        Cena = ParseDecimal(GetVal(row, 7)),
+                        Iznos = ParseDecimal(GetVal(row, 8))
+                    });
+                    stavkeCount++;
+                }
+
+                db.PrimopredajaNalozi.Add(nalog);
+                nalogCount++;
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {nalogCount} naloga primopredaje i {stavkeCount} stavki!");
+        }
+
+        // 12. Import Kalkulacija veleprodaje (KALKULAC.DBF)
+        string kalkulacFile = Path.Combine(kor01Path, "KALKULAC.DBF");
+        if (File.Exists(kalkulacFile))
+        {
+            Console.WriteLine("🧮 Uvoz Kalkulacija veleprodaje (KALKULAC.DBF)...");
+            var rows = ReadDbfRows(kalkulacFile);
+            int count = 0;
+
+            foreach (var r in rows)
+            {
+                string brKalkul = GetVal(r, 0).Trim();
+                if (string.IsNullOrWhiteSpace(brKalkul)) continue;
+
+                db.Kalkulacije.Add(new Kalkulacija
+                {
+                    BrojKalkulacije = brKalkul,
+                    Datum = ParseDate(GetVal(r, 1)),
+                    SifraDobavljaca = GetVal(r, 2).Trim(),
+                    BrojOtpremnice = GetVal(r, 3).Trim(),
+                    DatumOtpremnice = ParseDate(GetVal(r, 4)),
+                    BrojRacuna = GetVal(r, 5).Trim(),
+                    DatumRacuna = ParseDate(GetVal(r, 6)),
+                    NabavnaVrednost = ParseDecimal(GetVal(r, 7)),
+                    TransportniTroskovi = ParseDecimal(GetVal(r, 8)),
+                    TroskoviUskladistenja = ParseDecimal(GetVal(r, 9)),
+                    UtovarIstovar = ParseDecimal(GetVal(r, 10)),
+                    TransportnoOsiguranje = ParseDecimal(GetVal(r, 11)),
+                    OstaliTroskovi = ParseDecimal(GetVal(r, 12)),
+                    SvegaTroskovi = ParseDecimal(GetVal(r, 13)),
+                    SvegaNabavno = ParseDecimal(GetVal(r, 14)),
+                    Razlika = ParseDecimal(GetVal(r, 15)),
+                    Porez = ParseDecimal(GetVal(r, 16)),
+                    ProdajnaVrednost = ParseDecimal(GetVal(r, 17)),
+                    SifraMagacina = GetVal(r, 18).Trim(),
+                    IsKnjizen = GetVal(r, 19).Trim() == "1"
+                });
+                count++;
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {count} kalkulacija veleprodaje!");
+        }
+
+        // 13. Import Kalkulacija maloprodaje (MALKULAC.DBF)
+        string malkulacFile = Path.Combine(kor01Path, "MALKULAC.DBF");
+        if (File.Exists(malkulacFile))
+        {
+            Console.WriteLine("🧮 Uvoz Kalkulacija maloprodaje (MALKULAC.DBF)...");
+            var rows = ReadDbfRows(malkulacFile);
+            int count = 0;
+
+            foreach (var r in rows)
+            {
+                string brKalkul = GetVal(r, 1).Trim();
+                if (string.IsNullOrWhiteSpace(brKalkul)) continue;
+
+                db.MaloprodajneKalkulacije.Add(new MaloprodajnaKalkulacija
+                {
+                    SifraProdavnice = (int)ParseDecimal(GetVal(r, 0)),
+                    BrojKalkulacije = brKalkul,
+                    Datum = ParseDate(GetVal(r, 2)),
+                    SifraMagacinaPrima = GetVal(r, 3).Trim(),
+                    SifraMagacinaDaje = GetVal(r, 4).Trim(),
+                    SifraDobavljaca = GetVal(r, 5).Trim(),
+                    BrojOtpremnice = GetVal(r, 6).Trim(),
+                    DatumOtpremnice = ParseDate(GetVal(r, 7)),
+                    BrojRacuna = GetVal(r, 8).Trim(),
+                    DatumRacuna = ParseDate(GetVal(r, 9)),
+                    TransportniTroskovi = ParseDecimal(GetVal(r, 10)),
+                    TroskoviUskladistenja = ParseDecimal(GetVal(r, 11)),
+                    UtovarIstovar = ParseDecimal(GetVal(r, 12)),
+                    TransportnoOsiguranje = ParseDecimal(GetVal(r, 13)),
+                    OstaliTroskovi = ParseDecimal(GetVal(r, 14)),
+                    IsKnjizen = GetVal(r, 15).Trim() == "1",
+                    IsTrgovinskiKnjizen = GetVal(r, 16).Trim() == "1",
+                    SvegaTroskovi = ParseDecimal(GetVal(r, 17)),
+                    RabatPri = ParseDecimal(GetVal(r, 18)),
+                    NabavnaVrednost = ParseDecimal(GetVal(r, 19)),
+                    SvegaNabavno = ParseDecimal(GetVal(r, 20)),
+                    Razlika = ParseDecimal(GetVal(r, 21)),
+                    Porez = ParseDecimal(GetVal(r, 22)),
+                    ProdajnaVrednost = ParseDecimal(GetVal(r, 23)),
+                    RabatIznos = ParseDecimal(GetVal(r, 24))
+                });
+                count++;
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {count} kalkulacija maloprodaje!");
+        }
+
+        // 14. Import Kartica konta (KARTICA.DBF) — legacy snapshot za poređenje
+        string karticaFile = Path.Combine(kor01Path, "KARTICA.DBF");
+        if (File.Exists(karticaFile))
+        {
+            Console.WriteLine("📇 Uvoz Kartica konta (KARTICA.DBF)...");
+            var rows = ReadDbfRows(karticaFile);
+            int count = 0;
+
+            foreach (var r in rows)
+            {
+                string konto = GetVal(r, 1).Trim();
+                if (string.IsNullOrWhiteSpace(konto)) continue;
+
+                db.KarticeKonta.Add(new KarticaKonta
+                {
+                    RedniBroj = (int)ParseDecimal(GetVal(r, 0)),
+                    BrojKonta = konto,
+                    DatumNaloga = ParseDate(GetVal(r, 2)),
+                    BrojNaloga = GetVal(r, 3).Trim(),
+                    OpisPromeneKod = GetVal(r, 4).Trim(),
+                    BrojDokumenta = GetVal(r, 5).Trim(),
+                    TekuceDuguje = ParseDecimal(GetVal(r, 6)),
+                    TekucePotrazuje = ParseDecimal(GetVal(r, 7)),
+                    UkupnoDuguje = ParseDecimal(GetVal(r, 8)),
+                    UkupnoPotrazuje = ParseDecimal(GetVal(r, 9)),
+                    Saldo = ParseDecimal(GetVal(r, 10))
+                });
+                count++;
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {count} stavki kartica konta!");
+        }
+
+        // 15. Import Kamatnih stopa (KAM_STOP.DBF) — istorijske stope, NAPOMENA: zastarele
+        // (poslednja iz legacy baze je iz 2006. godine) — treba dopuniti aktuelnim stopama
+        // pre stvarnog obračuna kamate.
+        string kamStopFile = Path.Combine(kor01Path, "KAM_STOP.DBF");
+        if (File.Exists(kamStopFile))
+        {
+            Console.WriteLine("💰 Uvoz Kamatnih stopa (KAM_STOP.DBF)...");
+            var rows = ReadDbfRows(kamStopFile);
+            int count = 0;
+
+            foreach (var r in rows)
+            {
+                string datum = GetVal(r, 0).Trim();
+                if (string.IsNullOrWhiteSpace(datum)) continue;
+
+                db.KamatneStope.Add(new KamatnaStopa
+                {
+                    DatumOd = ParseDate(datum),
+                    GodisnjaStopaProcenat = ParseDecimal(GetVal(r, 1)),
+                    Napomena = "Uvezeno iz legacy KAM_STOP.DBF"
+                });
+                count++;
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {count} kamatnih stopa (napomena: istorijske, proverite aktuelnost)!");
         }
 
         Console.WriteLine("\n=================================================");

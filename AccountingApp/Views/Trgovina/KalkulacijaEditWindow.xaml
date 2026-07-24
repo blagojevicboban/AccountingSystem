@@ -1,0 +1,141 @@
+<Window x:Class="AccountingApp.Views.Trgovina.KalkulacijaEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Nova kalkulacija (veleprodaja)" Height="680" Width="820"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundBrush}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Background="White" CornerRadius="8" Padding="16" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="📋 Osnovni podaci" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,12"/>
+                        <UniformGrid Columns="3">
+                            <StackPanel Margin="0,0,12,12">
+                                <TextBlock Text="Broj kalkulacije" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtBrojKalkulacije" Height="32" VerticalContentAlignment="Center" Padding="6,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,12">
+                                <TextBlock Text="Datum" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <DatePicker x:Name="DpDatum" Height="32"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Magacin" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <ComboBox x:Name="CmbMagacin" Height="32" DisplayMemberPath="NazivMagacina"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Šifra dobavljača" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtSifraDobavljaca" Height="32" VerticalContentAlignment="Center" Padding="6,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Broj računa" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtBrojRacuna" Height="32" VerticalContentAlignment="Center" Padding="6,0"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Broj otpremnice" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtBrojOtpremnice" Height="32" VerticalContentAlignment="Center" Padding="6,0"/>
+                            </StackPanel>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="8" Padding="16" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="💰 Nabavka i zavisni troškovi" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,12"/>
+                        <UniformGrid Columns="3">
+                            <StackPanel Margin="0,0,12,12">
+                                <TextBlock Text="Nabavna vrednost" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtNabavnaVrednost" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="Input_Changed"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,12">
+                                <TextBlock Text="Transportni troškovi" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtTransportniTroskovi" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="Input_Changed"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Troškovi uskladištenja" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtTroskoviUskladistenja" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="Input_Changed"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Utovar / istovar" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtUtovarIstovar" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="Input_Changed"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Transportno osiguranje" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtTransportnoOsiguranje" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="Input_Changed"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Ostali troškovi" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtOstaliTroskovi" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="Input_Changed"/>
+                            </StackPanel>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="8" Padding="16" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="📈 Marža i porez" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,12"/>
+                        <UniformGrid Columns="2">
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Trgovačka marža (%)" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtMarzaProcenat" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="Input_Changed"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Poreska stopa — PDV (%)" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtPoreskaStopaProcenat" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="Input_Changed"/>
+                            </StackPanel>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#F1F5F9" CornerRadius="8" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="🧮 Obračun" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,12"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="Svega troškovi: " FontWeight="SemiBold"/>
+                                <TextBlock x:Name="TxtSvegaTroskovi" Text="0,00"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="Svega nabavno: " FontWeight="SemiBold"/>
+                                <TextBlock x:Name="TxtSvegaNabavno" Text="0,00"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="Razlika (marža): " FontWeight="SemiBold"/>
+                                <TextBlock x:Name="TxtRazlika" Text="0,00"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="Porez (PDV): " FontWeight="SemiBold"/>
+                                <TextBlock x:Name="TxtPorez" Text="0,00"/>
+                            </StackPanel>
+                        </Grid>
+                        <Border Background="#DBEAFE" CornerRadius="6" Padding="12,10" Margin="0,8,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="PRODAJNA VREDNOST: " FontWeight="Bold" FontSize="15"/>
+                                <TextBlock x:Name="TxtProdajnaVrednost" Text="0,00" FontWeight="Bold" FontSize="15" Foreground="#1D4ED8"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="BtnOtkazi" Content="Otkaži" Style="{StaticResource ActionButtonStyle}" Background="#64748B" Click="BtnOtkazi_Click" Margin="0,0,10,0"/>
+            <Button x:Name="BtnSnimi" Content="💾 Snimi kalkulaciju" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Click="BtnSnimi_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

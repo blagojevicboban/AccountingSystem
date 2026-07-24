@@ -7,39 +7,47 @@
              d:DesignHeight="600" d:DesignWidth="900">
     <Grid>
         <StackPanel Margin="24">
-            <TextBlock Text="📄 Financial Reports &amp; PDF Export" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,8"/>
-            <TextBlock Text="Select a report to generate crisp PDF documents:" FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,24"/>
+            <TextBlock Text="📄 Finansijski izveštaji i PDF" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="Izaberite izveštaj za generisanje PDF dokumenta:" FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,24"/>
 
             <UniformGrid Columns="2">
                 <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="📖 General Ledger Journal" FontSize="16" FontWeight="Bold" Foreground="#2563EB"/>
-                        <TextBlock Text="Chronological overview of all posted journal entries with totals." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
-                        <Button Content="📥 Export Journal PDF" Style="{StaticResource ActionButtonStyle}" Click="BtnGenerisiDnevnik_Click"/>
+                        <TextBlock Text="📖 Dnevnik glavne knjige" FontSize="16" FontWeight="Bold" Foreground="#2563EB"/>
+                        <TextBlock Text="Hronološki pregled svih proknjiženih naloga sa ukupnim iznosima." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <Button Content="📥 Izvezi dnevnik (PDF)" Style="{StaticResource ActionButtonStyle}" Click="BtnGenerisiDnevnik_Click"/>
                     </StackPanel>
                 </Border>
 
                 <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="📊 Trial Balance" FontSize="16" FontWeight="Bold" Foreground="#059669"/>
-                        <TextBlock Text="Synthetic trial balance by accounts with opening balances and turnover." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
-                        <Button Content="📥 Export Trial Balance PDF" Style="{StaticResource ActionButtonStyle}" Background="#059669" Click="BtnGenerisiBrutoBilans_Click"/>
+                        <TextBlock Text="📊 Bruto bilans" FontSize="16" FontWeight="Bold" Foreground="#059669"/>
+                        <TextBlock Text="Sintetički bruto bilans po kontima sa početnim stanjem i prometom." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <Button Content="📥 Izvezi bruto bilans (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#059669" Click="BtnGenerisiBrutoBilans_Click"/>
                     </StackPanel>
                 </Border>
 
                 <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="👥 Open Items Statement (IOS)" FontSize="16" FontWeight="Bold" Foreground="#7C3AED"/>
-                        <TextBlock Text="Subledger open items statement for customer and vendor balance confirmation." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
-                        <Button Content="📥 Export IOS Statement PDF" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Click="BtnGenerisiIOS_Click"/>
+                        <TextBlock Text="👥 IOS – Izvod otvorenih stavki" FontSize="16" FontWeight="Bold" Foreground="#7C3AED"/>
+                        <TextBlock Text="Izvod otvorenih stavki za usaglašavanje salda sa kupcima i dobavljačima." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <Button Content="📥 Izvezi IOS obrazac (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Click="BtnGenerisiIOS_Click"/>
                     </StackPanel>
                 </Border>
 
                 <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="📦 Warehouse Inventory Valuation" FontSize="16" FontWeight="Bold" Foreground="#D97706"/>
-                        <TextBlock Text="Current inventory levels by warehouse with unit costs and total valuation." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
-                        <Button Content="📥 Export Stock PDF" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Click="BtnGenerisiZalihe_Click"/>
+                        <TextBlock Text="📦 Vrednovanje zaliha" FontSize="16" FontWeight="Bold" Foreground="#D97706"/>
+                        <TextBlock Text="Trenutno stanje zaliha po magacinima sa jediničnim cenama i ukupnom vrednošću." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <Button Content="📥 Izvezi izveštaj o zalihama (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Click="BtnGenerisiZalihe_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="0,16,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="👥 Bruto bilans analitike" FontSize="16" FontWeight="Bold" Foreground="#DB2777"/>
+                        <TextBlock Text="Sintetički pregled prometa i salda po partneru (analitika kupaca i dobavljača)." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <Button Content="📥 Izvezi bruto bilans analitike (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#DB2777" Click="BtnGenerisiBrutoBilansAnalitike_Click"/>
                     </StackPanel>
                 </Border>
             </UniformGrid>

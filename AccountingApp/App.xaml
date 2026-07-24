@@ -1,7 +1,6 @@
 <Application x:Class="AccountingApp.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
         <Color x:Key="PrimaryColor">#2563EB</Color>
         <Color x:Key="PrimaryDarkColor">#1E40AF</Color>

@@ -1,0 +1,45 @@
+<UserControl x:Class="AccountingApp.Views.Trgovina.TrgovinaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="650" d:DesignWidth="1100">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                    <TextBox x:Name="TxtPretraga" Width="250" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged"/>
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <Button x:Name="BtnNovaKalkulacija" Content="➕ Nova kalkulacija" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,0" Click="BtnNovaKalkulacija_Click"/>
+                    <Button x:Name="BtnKnjiziKalkulaciju" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Click="BtnKnjiziKalkulaciju_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel>
+                <TextBlock Text="🛒 Kalkulacije veleprodaje" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
+                <DataGrid x:Name="DgKalkulacije" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Br. kalkulacije" Binding="{Binding BrojKalkulacije}" Width="120"/>
+                        <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                        <DataGridTextColumn Header="Dobavljač" Binding="{Binding SifraDobavljaca}" Width="110"/>
+                        <DataGridTextColumn Header="Svega nabavno" Binding="{Binding SvegaNabavno, StringFormat=\{0:N2\}}" Width="130"/>
+                        <DataGridTextColumn Header="Razlika" Binding="{Binding Razlika, StringFormat=\{0:N2\}}" Width="110"/>
+                        <DataGridTextColumn Header="Porez" Binding="{Binding Porez, StringFormat=\{0:N2\}}" Width="110"/>
+                        <DataGridTextColumn Header="Prodajna vrednost" Binding="{Binding ProdajnaVrednost, StringFormat=\{0:N2\}}" Width="140"/>
+                        <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>
