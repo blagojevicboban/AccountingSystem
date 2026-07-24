@@ -1,0 +1,38 @@
+name: Release AccountingSystem
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout kod
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Čitanje verzije iz fajla
+        id: get_version
+        run: |
+          $ver = Get-Content version.txt
+          $ver = $ver.Trim()
+          echo "VERSION=$ver" >> $env:GITHUB_ENV
+
+      - name: Prevođenje koda (dotnet publish)
+        run: |
+          dotnet publish AccountingApp\AccountingApp.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=$env:VERSION -o publish_output
