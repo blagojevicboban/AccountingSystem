@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace AccountingApp;
@@ -19,15 +20,24 @@ public static class AppConfig
         {
             if (_dbPath == null)
             {
-                if (File.Exists(DefaultDbPath))
+                var savedPath = UserSettings.Instance.ActiveDbPath;
+                if (!string.IsNullOrWhiteSpace(savedPath) && File.Exists(savedPath))
+                {
+                    _dbPath = savedPath;
+                }
+                else if (File.Exists(DefaultDbPath))
                 {
                     _dbPath = DefaultDbPath;
+                    UserSettings.Instance.ActiveDbPath = _dbPath;
+                    UserSettings.Instance.Save();
                 }
                 else
                 {
                     Directory.CreateDirectory(BazeDir);
                     var baze = Directory.GetFiles(BazeDir, "*.db");
                     _dbPath = baze.Length > 0 ? baze[0] : Path.Combine(BazeDir, "accounting.db");
+                    UserSettings.Instance.ActiveDbPath = _dbPath;
+                    UserSettings.Instance.Save();
                 }
             }
             return _dbPath;
@@ -35,6 +45,8 @@ public static class AppConfig
         set
         {
             _dbPath = value;
+            UserSettings.Instance.ActiveDbPath = value;
+            UserSettings.Instance.Save();
         }
     }
 }

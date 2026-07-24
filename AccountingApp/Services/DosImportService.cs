@@ -121,31 +121,36 @@ public class DosImportService
     }
 
     /// <summary>
-    /// Izvršava masovni uvoz izabranih firmi u bazu podataka.
+    /// Izvršava uvoz tako što za svaku firmu kreira njenu zasebnu SQLite bazu (kao u SredstvaApp).
     /// </summary>
-    public async Task UveziFirmeAsync(List<DbfFirmaDto> izabraneFirme, AccountingDbContext db, IProgress<DosImportProgress> progress)
+    public async Task UveziFirmeAsync(List<DbfFirmaDto> izabraneFirme, AccountingDbContext mainDb, IProgress<DosImportProgress> progress)
     {
         await Task.Run(async () =>
         {
             int totalFirme = izabraneFirme.Count;
             int currentFirmaIdx = 0;
 
-            // In-memory setovi za brzu proveru duplikata i sprečavanje jedinstvenih indeksa grešaka
-            var existingKonta = db.Konta.Select(k => k.BrojKonta).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var existingPartneri = db.Partneri.Select(p => p.SifraPartnera).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var existingMagacini = db.Magacini.Select(m => m.SifraMagacina).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var existingArtikli = db.Artikli.Select(a => a.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var existingNalogi = db.Nalozi.Select(n => n.BrojNaloga).ToHashSet(StringComparer.OrdinalIgnoreCase);
-
             foreach (var firmaDto in izabraneFirme)
             {
                 currentFirmaIdx++;
                 int basePercent = (int)(((double)(currentFirmaIdx - 1) / totalFirme) * 100);
 
-                Report(progress, firmaDto.Naziv, "Inicijalizacija", basePercent, $"🚀 Započet uvoz za firmu: {firmaDto.Naziv} ({firmaDto.Sifra})...");
+                Report(progress, firmaDto.Naziv, "Inicijalizacija baze", basePercent, $"🚀 Kreiranje zasebne baze za firmu: {firmaDto.Naziv} ({firmaDto.Sifra})...");
 
-                // 1. Unos ili osvežavanje Firme
-                var dbFirma = db.Firme.FirstOrDefault(f => f.Sifra == firmaDto.Sifra || f.Naziv == firmaDto.Naziv);
+                // Putanja do zasebne baze u folderu firme (npr. C:\KNJIGE\Radni\KOR01\accounting_kor01.db)
+                string dbFileName = $"accounting_{firmaDto.Sifra.ToLower()}.db";
+                string firmaDbPath = Path.Combine(firmaDto.FolderPath, dbFileName);
+
+                // Ako baza već postoji u folderu firme, brišemo je radi čistog uvoza
+                if (File.Exists(firmaDbPath))
+                {
+                    try { File.Delete(firmaDbPath); } catch { }
+                }
+
+                using var firmDb = AccountingDbContext.Create(firmaDbPath);
+
+                // 1. Unos Firme u zasebnu bazu
+                var dbFirma = firmDb.Firme.FirstOrDefault(f => f.Sifra == firmaDto.Sifra || f.Naziv == firmaDto.Naziv);
                 if (dbFirma == null)
                 {
                     dbFirma = new Firma
@@ -160,14 +165,41 @@ public class DosImportService
                         ZiroRacun = firmaDto.ZiroRacun,
                         IsActive = true
                     };
-                    db.Firme.Add(dbFirma);
-                    await db.SaveChangesAsync();
+                    firmDb.Firme.Add(dbFirma);
+                    await firmDb.SaveChangesAsync();
+                }
+
+                // Registracija i u glavnoj bazi radi prikaza u listi firmi
+                var mainFirma = mainDb.Firme.FirstOrDefault(f => f.Sifra == firmaDto.Sifra || f.Naziv == firmaDto.Naziv);
+                if (mainFirma == null)
+                {
+                    mainFirma = new Firma
+                    {
+                        Sifra = firmaDto.Sifra,
+                        Naziv = firmaDto.Naziv,
+                        Pib = firmaDto.Pib,
+                        MaticniBroj = firmaDto.MaticniBroj,
+                        Adresa = firmaDto.Adresa,
+                        PttIMesto = firmaDto.PttIMesto,
+                        Telefon = firmaDto.Telefon,
+                        ZiroRacun = firmaDto.ZiroRacun,
+                        IsActive = true
+                    };
+                    mainDb.Firme.Add(mainFirma);
+                    await mainDb.SaveChangesAsync();
                 }
 
                 if (AppSession.TrenutnaFirma == null)
                 {
                     AppSession.TrenutnaFirma = dbFirma;
                 }
+
+                // In-memory setovi za pojedinačnu bazu firme
+                var existingKonta = firmDb.Konta.Select(k => k.BrojKonta).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var existingPartneri = firmDb.Partneri.Select(p => p.SifraPartnera).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var existingMagacini = firmDb.Magacini.Select(m => m.SifraMagacina).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var existingArtikli = firmDb.Artikli.Select(a => a.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var existingNalogi = firmDb.Nalozi.Select(n => n.BrojNaloga).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
                 // 2. Kontni plan (KONTPLAN.DBF)
                 var kontplanFile = Path.Combine(firmaDto.FolderPath, "KONTPLAN.DBF");
@@ -186,7 +218,7 @@ public class DosImportService
                             int klasa = 0;
                             if (kBroj.Length > 0 && char.IsDigit(kBroj[0])) klasa = kBroj[0] - '0';
 
-                            db.Konta.Add(new Konto
+                            firmDb.Konta.Add(new Konto
                             {
                                 BrojKonta = kBroj,
                                 NazivKonta = string.IsNullOrWhiteSpace(kNaziv) ? $"Konto {kBroj}" : kNaziv,
@@ -196,7 +228,7 @@ public class DosImportService
                             count++;
                         }
                     }
-                    await db.SaveChangesAsync();
+                    await firmDb.SaveChangesAsync();
                     Report(progress, firmaDto.Naziv, "Kontni plan", basePercent + 10, $"   --> Uvezeno {count} novih konta!");
                 }
 
@@ -223,7 +255,7 @@ public class DosImportService
 
                             if (existingPartneri.Add(pSifra))
                             {
-                                db.Partneri.Add(new Partner
+                                firmDb.Partneri.Add(new Partner
                                 {
                                     SifraPartnera = pSifra,
                                     Naziv = pNaziv,
@@ -237,7 +269,7 @@ public class DosImportService
                             }
                         }
                     }
-                    await db.SaveChangesAsync();
+                    await firmDb.SaveChangesAsync();
                     Report(progress, firmaDto.Naziv, "Partneri", basePercent + 25, $"   --> Uvezeno {count} novih partnera!");
                 }
 
@@ -255,7 +287,7 @@ public class DosImportService
 
                         if (!string.IsNullOrWhiteSpace(mSifra) && existingMagacini.Add(mSifra))
                         {
-                            db.Magacini.Add(new Magacin
+                            firmDb.Magacini.Add(new Magacin
                             {
                                 SifraMagacina = mSifra,
                                 NazivMagacina = string.IsNullOrWhiteSpace(mNaziv) ? $"Magacin {mSifra}" : mNaziv,
@@ -264,7 +296,7 @@ public class DosImportService
                             count++;
                         }
                     }
-                    await db.SaveChangesAsync();
+                    await firmDb.SaveChangesAsync();
                     Report(progress, firmaDto.Naziv, "Magacini", basePercent + 35, $"   --> Uvezeno {count} magacina!");
                 }
 
@@ -285,7 +317,7 @@ public class DosImportService
 
                         if (!string.IsNullOrWhiteSpace(aSifra) && existingArtikli.Add(aSifra))
                         {
-                            db.Artikli.Add(new Artikal
+                            firmDb.Artikli.Add(new Artikal
                             {
                                 SifraArtikla = aSifra,
                                 Naziv = string.IsNullOrWhiteSpace(aNaziv) ? $"Artikal {aSifra}" : aNaziv,
@@ -295,7 +327,7 @@ public class DosImportService
                             count++;
                         }
                     }
-                    await db.SaveChangesAsync();
+                    await firmDb.SaveChangesAsync();
                     Report(progress, firmaDto.Naziv, "Artikli", basePercent + 55, $"   --> Uvezeno {count} novih artikala!");
                 }
 
@@ -374,16 +406,16 @@ public class DosImportService
                             nalog.UkupnoDuguje = ukupnoDuguje;
                             nalog.UkupnoPotrazuje = ukupnoPotražuje;
 
-                            db.Nalozi.Add(nalog);
+                            firmDb.Nalozi.Add(nalog);
                             nalogiCount++;
                         }
                     }
 
-                    await db.SaveChangesAsync();
-                    Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 90, $"   --> Uvezeno {nalogiCount} naloga i {stavkeCount} stavki knjiženja!");
+                    await firmDb.SaveChangesAsync();
+                    Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 90, $"   --> Uvezeno {nalogiCount} naloga i {stavkeCount} stavki knjiženja u zasebnu bazu!");
                 }
 
-                Report(progress, firmaDto.Naziv, "Završeno", basePercent + 100, $"✅ Uvoz za firmu {firmaDto.Naziv} uspešno završen!\n");
+                Report(progress, firmaDto.Naziv, "Završeno", basePercent + 100, $"✅ Uspešno kreirana i uvežena baza za firmu: {firmaDto.Naziv} ({dbFileName})!\n");
             }
         });
     }
