@@ -36,3 +36,25 @@ jobs:
       - name: Prevođenje koda (dotnet publish)
         run: |
           dotnet publish AccountingApp\AccountingApp.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=$env:VERSION -o publish_output
+
+      - name: Instalacija Velopack CLI
+        run: dotnet tool install -g vpk
+
+      - name: Pakovanje (vpk pack)
+        run: |
+          $vpkArgs = @(
+              "pack",
+              "--packId", "AccountingSystem",
+              "--packVersion", $env:VERSION,
+              "--packDir", "publish_output",
+              "--mainExe", "AccountingApp.exe",
+              "--outputDir", "ReleasePackage",
+              "--packTitle", "AccountingSystem",
+              "--packAuthors", "Blagojevic Boban"
+          )
+
+          & vpk $vpkArgs
+
+      - name: Objavljivanje na GitHub Releases
+        run: |
+          vpk upload github --repoUrl "https://github.com/${{ github.repository }}" --publish --releaseName "$env:VERSION" --token "${{ secrets.GITHUB_TOKEN }}" --outputDir "ReleasePackage"
