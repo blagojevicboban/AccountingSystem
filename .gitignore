@@ -10,7 +10,7 @@ x86/
 [Ll]og/
 [Ll]ogs/
 .vs/
-.vscode/
+publish_output/
 
 # SQLite databases
 *.db
