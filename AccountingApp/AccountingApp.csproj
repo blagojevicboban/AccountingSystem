@@ -14,9 +14,6 @@
 
   <ItemGroup>
     <Resource Include="app.ico" />
-    <Content Include="app.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>

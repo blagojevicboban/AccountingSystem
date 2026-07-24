@@ -4,6 +4,14 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.5] - 2026-07-25
+
+### 🐛 Ispravke i vraćanje ikone
+- **Vraćanje plave aktovke (`app.ico`)**: Vraćena originalna plava ikona sa slikom aktovke specifična za **AccountingSystem**.
+- **Ispravka XAML greške pri pokretanju (`XamlParseException`)**: Uklonjen `<Content Include="app.ico">` iz `.csproj` koji je izazivao pad WPF loader-a pri čitanju resursa u `LoginWindow` i `MainWindow`.
+
+---
+
 ## [1.0.4] - 2026-07-25
 
 ### 🎨 Poboljšanja ikone i prečica
