@@ -11,6 +11,11 @@ x86/
 [Ll]ogs/
 .vs/
 publish_output/
+ReleasePackage/
+
+# NuGet packages
+*.nupkg
+*.snupkg
 
 # SQLite databases
 *.db
