@@ -97,6 +97,12 @@ public partial class MainWindow : Window
         MainContentHost.Content = new PomocView();
     }
 
+    private void BtnChangelog_Click(object sender, RoutedEventArgs e)
+    {
+        var dijalog = new ChangelogWindow { Owner = this };
+        dijalog.ShowDialog();
+    }
+
     private void BtnUvozDOS_Click(object sender, RoutedEventArgs e)
     {
         MessageBox.Show("Migracija DOS podataka izvršena za ARHIBEL - 2026 (KOR01)!\n\nUvezeno:\n• 339 naloga za knjiženje\n• 5.606 stavki knjiženja\n• 2.466 artikala na zalihama\n• 42 konta\n• 105 magacina", "DOS migracija", MessageBoxButton.OK, MessageBoxImage.Information);

@@ -50,6 +50,9 @@
                         <RadioButton x:Name="BtnFirme" Content="🏢 Firme" Style="{StaticResource NavButtonStyle}" Click="NavFirme_Click"/>
                         <Separator Background="#334155" Margin="16,8"/>
                         <RadioButton x:Name="BtnPomoc" Content="❓ Pomoć" Style="{StaticResource NavButtonStyle}" Click="NavPomoc_Click"/>
+                        <Button x:Name="BtnChangelog" Content="📋 Istorija izmena" Click="BtnChangelog_Click"
+                                Height="42" Margin="10,2" Padding="16,0" HorizontalContentAlignment="Left"
+                                Background="Transparent" BorderThickness="0" Foreground="#94A3B8" FontSize="14" Cursor="Hand"/>
                     </StackPanel>
                 </ScrollViewer>
             </DockPanel>

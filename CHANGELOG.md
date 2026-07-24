@@ -1,0 +1,56 @@
+# 📋 Istorija izmena (Changelog) — AccountingSystem
+
+Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane su u ovom fajlu.
+
+Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
+
+---
+
+## [1.0.0] - 2026-07-24
+
+### ✨ Nove funkcionalnosti
+
+- **Temelji (prijava, sesija, baza)**:
+  - EF Core migracije umesto `EnsureCreated` — šema baze se od sada isključivo upravlja preko migracija.
+  - Prijava u sistem sa PBKDF2 (osoljenim) heš lozinkama, sesija sa trenutnim korisnikom i aktivnom firmom.
+  - Podrazumevani administratorski nalog zasejan preko migracije (`admin` / `admin123`).
+
+- **Glavna knjiga (Nalozi za knjiženje)**:
+  - Unos i izmena naloga sa **živom proverom ravnoteže** (Duguje == Potražuje).
+  - Knjiženje i **rasknjižavanje** naloga (samo Administrator, uz potvrdu) — omogućava ispravku već proknjiženih naloga.
+  - **Prenos u novu godinu** — automatski obračun i knjiženje početnog stanja svih konta za narednu godinu, sa bezbednosnom proverom da knjige moraju biti u ravnoteži pre prenosa.
+
+- **Kartice konta** — hronološki pregled prometa i kumulativnog salda po kontu, sa PDF izvozom.
+
+- **Partneri (Analitika)**:
+  - Otvorene stavke po partneru i PDF **IOS obrazac** (Izvod Otvorenih Stavki).
+  - **Obračun zatezne kamate** po danu kašnjenja, sa podrškom za više kamatnih stopa kroz vreme.
+  - **Bruto bilans analitike** — promet i saldo po partneru.
+
+- **Magacin i zalihe**:
+  - **Materijalne kartice po ponderisanoj (prosečnoj) ceni** — algoritam validiran replay-em stvarnih istorijskih podataka protiv legacy snapshota.
+  - Ulazi i trebovanja materijala, sa knjiženjem i zaštitom od negativnog stanja na zalihama.
+
+- **Trgovina i fakture**:
+  - **Kalkulacija veleprodaje** (nabavna vrednost + zavisni troškovi → trgovačka marža → PDV → prodajna vrednost), sa live obračunom tokom unosa.
+
+- **Izveštaji i PDF** — dnevnik glavne knjige, bruto bilans (finansijski i analitike), kartica konta, IOS, kamata, izveštaj o zalihama.
+
+- **Uvoz iz DOS sistema** (`AccountingMigration`) — automatski uvoz kontnog plana, naloga, partnera, materijala, magacina, ulaza, trebovanja, kartica i kamatnih stopa iz legacy dBase III / Clipper fajlova.
+
+- **Lokalizacija** — kompletan korisnički interfejs preveden na srpski jezik.
+
+- **Pomoć ugrađena u aplikaciju** — uputstvo za korišćenje po modulima, dostupno direktno iz sidebar-a (bez potrebe za eksternom dokumentacijom).
+
+### 🏗️ Arhitektura
+
+- Analitika partnera (otvorene stavke) vezana je preko `StavkaNaloga.PartnerId`, umesto paralelne ANAL strukture iz legacy DOS sistema — glavna knjiga i analitika su objedinjene u istim tabelama.
+- Materijalne kartice koriste jedinstven servis nezavisan od vrste artikla (roba/materijal), pa je spreman za dalje širenje i na robni promet.
+
+### 📚 Dokumentacija
+
+- `README.md` — pregled funkcionalnosti, tehnologija i strukture projekta.
+- `ANALIZA_I_PLAN.md` — analiza legacy Clipper sistema (moduli FIN/ANAL/ROB/MAT) i detaljan istorijat faznog razvoja sa obrazloženjima odluka.
+- `run-accounting-app` skill — UI-automation vodič za pokretanje i testiranje aplikacije.
+
+---
