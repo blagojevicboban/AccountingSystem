@@ -1,0 +1,162 @@
+<UserControl x:Class="AccountingApp.Views.Korisnici.KorisniciView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Administracija korisnika i uloga (RBAC)" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+                <TextBlock Text="Upravljanje korisničkim nalozima, ulogama i pravima pristupa knjigovodstvenom sistemu." FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="BtnNoviKorisnik" Content="➕ Novi korisnik" Style="{StaticResource ActionButtonStyle}" Height="38" Padding="18,0" Click="BtnNoviKorisnik_Click" Margin="0,0,8,0"/>
+                <Button Content="🔄 Osveži" Height="38" Padding="14,0" Background="#F1F5F9" Foreground="#475569" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Click="BtnOsvezi_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Filter / Search Bar -->
+        <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="12,10" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="TxtPretraga" Height="34" VerticalContentAlignment="Center" Padding="8,0"
+                         Text="" TextChanged="TxtPretraga_TextChanged"/>
+                <TextBlock Text="🔍 Pretraži po korisničkom imenu ili imenu i prezimenu..." Foreground="{StaticResource TextMutedBrush}"
+                           IsHitTestVisible="False" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=TxtPretraga}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtUkupno" Text="Ukupno: 0 korisnika" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- DataGrid list of Korisnici -->
+        <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" CornerRadius="8" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DataGrid x:Name="DgKorisnici" AutoGenerateColumns="False" IsReadOnly="True"
+                      SelectionMode="Single" GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="#E2E8F0" HeadersVisibility="Column"
+                      BorderThickness="0" Background="Transparent"
+                      RowHeight="42" ColumnHeaderHeight="38">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding KorisnikId}" Width="60"/>
+                    <DataGridTextColumn Header="Korisničko ime" Binding="{Binding KorisnickoIme}" Width="150"/>
+                    <DataGridTextColumn Header="Ime i prezime" Binding="{Binding ImeIPrezime}" Width="2*"/>
+
+                    <DataGridTemplateColumn Header="Uloga" Width="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="4" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#DBEAFE"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Uloga}" Value="Administrator">
+                                                    <Setter Property="Background" Value="#FCE7F3"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Uloga}" Value="Gledalac">
+                                                    <Setter Property="Background" Value="#F3F4F6"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding Uloga}" FontSize="12" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#1E40AF"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Uloga}" Value="Administrator">
+                                                        <Setter Property="Foreground" Value="#9D174D"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Uloga}" Value="Gledalac">
+                                                        <Setter Property="Foreground" Value="#4B5563"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Status" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#DCFCE7"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                    <Setter Property="Background" Value="#FEE2E2"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock FontSize="11" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Aktivan"/>
+                                                <Setter Property="Foreground" Value="#15803D"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                        <Setter Property="Text" Value="Deaktiviran"/>
+                                                        <Setter Property="Foreground" Value="#B91C1C"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Poslednja prijava" Binding="{Binding PoslednjaPrijava, StringFormat=dd.MM.yyyy HH:mm}" Width="160"/>
+
+                    <DataGridTemplateColumn Header="Akcije" Width="180">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Button Content="✏️ Izmeni" Height="28" Padding="10,0" Margin="0,0,4,0"
+                                            Background="#F1F5F9" Foreground="#334155" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Cursor="Hand"
+                                            Click="BtnIzmeni_Click"/>
+                                    <Button Content="🗑️ Izbriši" Height="28" Padding="10,0"
+                                            Background="#FEF2F2" Foreground="#991B1B" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Cursor="Hand"
+                                            Click="BtnBrisi_Click"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

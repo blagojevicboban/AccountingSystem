@@ -44,4 +44,32 @@ public partial class App : Application
 
         base.OnStartup(e);
     }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        try
+        {
+            var freq = UserSettings.Instance.AutoBackupFrequency;
+            if (freq == 1) // Pri svakom izlasku
+            {
+                Services.BackupService.Instance.NapraviAutomatskiBackup();
+            }
+            else if (freq == 2) // Jednom dnevno
+            {
+                var last = UserSettings.Instance.LastAutoBackupDate;
+                if (last == null || last.Value.Date < DateTime.Now.Date)
+                {
+                    Services.BackupService.Instance.NapraviAutomatskiBackup();
+                    UserSettings.Instance.LastAutoBackupDate = DateTime.Now;
+                    UserSettings.Instance.Save();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Greška pri automatskom pravljenju kopije prilikom izlaska: {ex.Message}");
+        }
+
+        base.OnExit(e);
+    }
 }

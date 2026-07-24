@@ -62,7 +62,18 @@ public partial class MainWindow : Window
 
     private void UpdateKorisnikInfo()
     {
-        TxtKorisnik.Text = $"👤 {AppSession.TrenutniKorisnik?.ImeIPrezime ?? "—"}";
+        var uloga = AppSession.TrenutniKorisnik?.Uloga ?? "Knjigovođa";
+        TxtKorisnik.Text = $"👤 {AppSession.TrenutniKorisnik?.ImeIPrezime ?? "—"} ({uloga})";
+        ApplyRolePermissions();
+    }
+
+    private void ApplyRolePermissions()
+    {
+        if (AppSession.TrenutniKorisnik?.Uloga == "Gledalac")
+        {
+            BtnPodesavanja.IsEnabled = false;
+            BtnBackup.IsEnabled = false;
+        }
     }
 
     private void NavigateToDashboard()
@@ -118,6 +129,24 @@ public partial class MainWindow : Window
         MainContentHost.Content = new Views.Firme.FirmeView(_db);
     }
 
+    private void NavBackup_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "💾 Rezervne kopije baze podataka";
+        MainContentHost.Content = new Views.Backup.BackupView();
+    }
+
+    private void NavPodesavanja_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "⚙️ Podešavanja aplikacije";
+        MainContentHost.Content = new Views.Podesavanja.PodesavanjaView();
+    }
+
+    private void NavKorisnici_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "👤 Administracija korisnika i uloga (RBAC)";
+        MainContentHost.Content = new Views.Korisnici.KorisniciView(_db);
+    }
+
     private void NavPomoc_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "❓ Pomoć";
@@ -132,6 +161,10 @@ public partial class MainWindow : Window
 
     private void BtnUvozDOS_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Migracija DOS podataka izvršena za ARHIBEL - 2026 (KOR01)!\n\nUvezeno:\n• 339 naloga za knjiženje\n• 5.606 stavki knjiženja\n• 2.466 artikala na zalihama\n• 42 konta\n• 105 magacina", "DOS migracija", MessageBoxButton.OK, MessageBoxImage.Information);
+        var window = new Views.Pomoc.DosImportWindow(_db)
+        {
+            Owner = this
+        };
+        window.ShowDialog();
     }
 }

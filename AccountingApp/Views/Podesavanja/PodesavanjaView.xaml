@@ -1,0 +1,102 @@
+<UserControl x:Class="AccountingApp.Views.Podesavanja.PodesavanjaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="⚙️ Podešavanja aplikacije" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+                <TextBlock Text="Konfiguracija parametara rada sa bazom, štampanja i ponašanja korisničkog interfejsa." FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <Button Grid.Column="1" Content="💾 Sačuvaj podešavanja" Style="{StaticResource ActionButtonStyle}" Height="38" Padding="20,0" Click="BtnSacuvaj_Click"/>
+        </Grid>
+
+        <!-- Body with Cards / ScrollViewer -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0,0,10,0">
+
+                <!-- CARD 1: Generalna podešavanja i baza -->
+                <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="🖥️ Generalna podešavanja i Baza podataka" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Lokacija aktivne baze i ponašanje pri pokretanju aplikacije." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                        <!-- Putanja baze -->
+                        <TextBlock Text="Aktivna putanja SQLite baze podataka" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                        <Grid Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TxtDbPath" Height="36" VerticalContentAlignment="Center" Padding="8,0" IsReadOnly="True" Background="#F8FAFC"/>
+                            <Button Grid.Column="1" Content="📁 Promeni..." Height="36" Padding="14,0" Margin="8,0,0,0" Background="#F1F5F9" Foreground="#334155" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Click="BtnPromeniBazu_Click"/>
+                        </Grid>
+
+                        <CheckBox x:Name="ChkStartMaximized" Content="Pokreni aplikaciju preko celog ekrana (Maximized)" Margin="0,0,0,10" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- CARD 2: Štampa i izveštaji -->
+                <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="📄 Podaci za štampu i PDF izveštaje" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Podaci koji se prikazuju u zaglavlju i podnožju odštampanih dokumenata." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Naziv računovodstvenog servisa" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtNazivServisa" Height="36" VerticalContentAlignment="Center" Padding="8,0" MaxLength="100"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Ovlašćeno lice / Potpisnik" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtOvlascenoLice" Height="36" VerticalContentAlignment="Center" Padding="8,0" MaxLength="100"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- CARD 3: Bezbednost i Dijalozi -->
+                <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="🛡️ Bezbednosne provere i potvrdni dijalozi" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Uključivanje ili isključivanje bezbednosnih dijaloga pre osetljivih operacija." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                        <CheckBox x:Name="ChkPotvrdaZaRasknjizavanje" Content="Traži potvrdu pre rasknjižavanja proknjiženih naloga" Margin="0,0,0,10" FontWeight="SemiBold"/>
+                        <CheckBox x:Name="ChkPotvrdaZaBrisanje" Content="Traži potvrdu pre brisanja stavki i dokumenata" Margin="0,0,0,10" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- CARD 4: Informacije o sistemu -->
+                <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="ℹ️ Informacije o aplikaciji i sistemu" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                        <TextBlock x:Name="TxtAppVersion" Text="Aplikacija: AccountingSystem v1.0.2 (.NET 8.0 WPF)" FontSize="13" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                        <TextBlock Text="ORM: Entity Framework Core 9.0 (SQLite)" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Pakovanje &amp; Update: Velopack 1.2.0" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

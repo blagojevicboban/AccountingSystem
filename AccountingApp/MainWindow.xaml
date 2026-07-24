@@ -49,6 +49,9 @@
                         <RadioButton x:Name="BtnKalkulacije" Content="🛒 Trgovina i fakture" Style="{StaticResource NavButtonStyle}" Click="NavKalkulacije_Click"/>
                         <RadioButton x:Name="BtnIzvestaji" Content="📄 Izveštaji i PDF" Style="{StaticResource NavButtonStyle}" Click="NavIzvestaji_Click"/>
                         <RadioButton x:Name="BtnFirme" Content="🏢 Firme" Style="{StaticResource NavButtonStyle}" Click="NavFirme_Click"/>
+                        <RadioButton x:Name="BtnBackup" Content="💾 Rezervne kopije" Style="{StaticResource NavButtonStyle}" Click="NavBackup_Click"/>
+                        <RadioButton x:Name="BtnPodesavanja" Content="⚙️ Podešavanja" Style="{StaticResource NavButtonStyle}" Click="NavPodesavanja_Click"/>
+                        <RadioButton x:Name="BtnKorisnici" Content="👤 Korisnici i Uloge" Style="{StaticResource NavButtonStyle}" Click="NavKorisnici_Click"/>
                         <Separator Background="#334155" Margin="16,8"/>
                         <RadioButton x:Name="BtnPomoc" Content="❓ Pomoć" Style="{StaticResource NavButtonStyle}" Click="NavPomoc_Click"/>
                         <Button x:Name="BtnChangelog" Content="📋 Istorija izmena" Click="BtnChangelog_Click"
