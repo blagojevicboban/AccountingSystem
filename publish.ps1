@@ -16,7 +16,7 @@ if (Test-Path "ReleasePackage") {
     Remove-Item -Recurse -Force "ReleasePackage"
 }
 
-vpk pack --packId "AccountingSystem" --packVersion "$version" --packDir "publish_output" --mainExe "AccountingApp.exe" --outputDir "ReleasePackage" --packTitle "AccountingSystem" --packAuthors "Blagojevic Boban"
+vpk pack --packId "AccountingSystem" --packVersion "$version" --packDir "publish_output" --mainExe "AccountingApp.exe" --outputDir "ReleasePackage" --packTitle "AccountingSystem" --packAuthors "Blagojevic Boban" --icon "AccountingApp\app.ico"
 
 Write-Host "================================================="
 Write-Host "SUCCESS! Installation package created in ReleasePackage\"

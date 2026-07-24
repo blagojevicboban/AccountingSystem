@@ -50,7 +50,8 @@ jobs:
               "--mainExe", "AccountingApp.exe",
               "--outputDir", "ReleasePackage",
               "--packTitle", "AccountingSystem",
-              "--packAuthors", "Blagojevic Boban"
+              "--packAuthors", "Blagojevic Boban",
+              "--icon", "AccountingApp\app.ico"
           )
 
           & vpk $vpkArgs

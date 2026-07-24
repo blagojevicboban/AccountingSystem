@@ -6,6 +6,15 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 
 ---
 
+## [1.0.1] - 2026-07-24
+
+### 🔧 Poboljšanja i ispravke
+- **Konfiguracija ikone aplikacije**: Povezana ikona `app.ico` u svim slojevima aplikacije (`.csproj`, WPF prozori, Velopack instalacioni paket).
+- **Podešavanje okruženja za prevođenje i publikovanje**: Usaglašeni VS Code zadaci i `launch.json` za brzo pokretanje i debagovanje preko `F5`.
+- **Integracija AI veština**: Iskopirane i prilagođene sve AI veštine iz `SredstvaSystem` radnog okruženja.
+
+---
+
 ## [1.0.0] - 2026-07-24
 
 ### ✨ Nove funkcionalnosti
@@ -52,5 +61,3 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 - `README.md` — pregled funkcionalnosti, tehnologija i strukture projekta.
 - `ANALIZA_I_PLAN.md` — analiza legacy Clipper sistema (moduli FIN/ANAL/ROB/MAT) i detaljan istorijat faznog razvoja sa obrazloženjima odluka.
 - `run-accounting-app` skill — UI-automation vodič za pokretanje i testiranje aplikacije.
-
----
