@@ -4,6 +4,13 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.4] - 2026-07-25
+
+### 🎨 Poboljšanja ikone i prečica
+- **High-Resolution ikona aplikacije (`app.ico`)**: Zamenjena ikona visoke rezolucije (sa svim dimenzijama od 16x16 do 256x256 piksela) i omoguceno njeno kopiranje u izlazni paket za pravilan prikaz prečica u Windows Start meniju i na traci zadataka.
+
+---
+
 ## [1.0.3] - 2026-07-25
 
 ### ✨ Nove funkcionalnosti i poboljšanja
