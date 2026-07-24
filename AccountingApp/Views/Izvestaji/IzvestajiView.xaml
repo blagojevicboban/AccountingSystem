@@ -1,0 +1,48 @@
+<UserControl x:Class="AccountingApp.Views.Izvestaji.IzvestajiView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="900">
+    <Grid>
+        <StackPanel Margin="24">
+            <TextBlock Text="📄 Financial Reports &amp; PDF Export" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="Select a report to generate crisp PDF documents:" FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,24"/>
+
+            <UniformGrid Columns="2">
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="📖 General Ledger Journal" FontSize="16" FontWeight="Bold" Foreground="#2563EB"/>
+                        <TextBlock Text="Chronological overview of all posted journal entries with totals." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <Button Content="📥 Export Journal PDF" Style="{StaticResource ActionButtonStyle}" Click="BtnGenerisiDnevnik_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="📊 Trial Balance" FontSize="16" FontWeight="Bold" Foreground="#059669"/>
+                        <TextBlock Text="Synthetic trial balance by accounts with opening balances and turnover." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <Button Content="📥 Export Trial Balance PDF" Style="{StaticResource ActionButtonStyle}" Background="#059669" Click="BtnGenerisiBrutoBilans_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="👥 Open Items Statement (IOS)" FontSize="16" FontWeight="Bold" Foreground="#7C3AED"/>
+                        <TextBlock Text="Subledger open items statement for customer and vendor balance confirmation." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <Button Content="📥 Export IOS Statement PDF" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Click="BtnGenerisiIOS_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="📦 Warehouse Inventory Valuation" FontSize="16" FontWeight="Bold" Foreground="#D97706"/>
+                        <TextBlock Text="Current inventory levels by warehouse with unit costs and total valuation." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <Button Content="📥 Export Stock PDF" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Click="BtnGenerisiZalihe_Click"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </StackPanel>
+    </Grid>
+</UserControl>
