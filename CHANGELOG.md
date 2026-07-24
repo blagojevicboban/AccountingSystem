@@ -4,6 +4,14 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.6] - 2026-07-25
+
+### 🐛 Ispravke uvoza DOS/DBF podataka
+- **Sprečavanje dupliranja šifara i UNIQUE constraint grešaka**: Ugrađena brza in-memory `HashSet` provera za sprečavanje dupliranja konta, partnera, magacina, artikala i naloga tokom uvoza više firmi.
+- **Detaljniji prikaz izuzetaka**: Omogućen detaljan prikaz `InnerException` poruka u dijaloškom prozoru i dnevniku uvoza.
+
+---
+
 ## [1.0.5] - 2026-07-25
 
 ### 🐛 Ispravke i vraćanje ikone

@@ -130,6 +130,13 @@ public class DosImportService
             int totalFirme = izabraneFirme.Count;
             int currentFirmaIdx = 0;
 
+            // In-memory setovi za brzu proveru duplikata i sprečavanje jedinstvenih indeksa grešaka
+            var existingKonta = db.Konta.Select(k => k.BrojKonta).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var existingPartneri = db.Partneri.Select(p => p.SifraPartnera).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var existingMagacini = db.Magacini.Select(m => m.SifraMagacina).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var existingArtikli = db.Artikli.Select(a => a.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var existingNalogi = db.Nalozi.Select(n => n.BrojNaloga).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
             foreach (var firmaDto in izabraneFirme)
             {
                 currentFirmaIdx++;
@@ -174,7 +181,7 @@ public class DosImportService
                         string kBroj = GetVal(r, "BROJ", "KONTO", "SIFRA").Trim();
                         string kNaziv = GetVal(r, "NAZIV", "IME").Trim();
 
-                        if (!string.IsNullOrWhiteSpace(kBroj) && !db.Konta.Any(k => k.BrojKonta == kBroj))
+                        if (!string.IsNullOrWhiteSpace(kBroj) && existingKonta.Add(kBroj))
                         {
                             int klasa = 0;
                             if (kBroj.Length > 0 && char.IsDigit(kBroj[0])) klasa = kBroj[0] - '0';
@@ -214,7 +221,7 @@ public class DosImportService
                         {
                             if (string.IsNullOrWhiteSpace(pSifra)) pSifra = (count + 1).ToString("D4");
 
-                            if (!db.Partneri.Any(p => p.SifraPartnera == pSifra))
+                            if (existingPartneri.Add(pSifra))
                             {
                                 db.Partneri.Add(new Partner
                                 {
@@ -246,7 +253,7 @@ public class DosImportService
                         string mSifra = GetVal(r, "SIFRA", "MAG", "KOD").Trim();
                         string mNaziv = GetVal(r, "NAZIV", "IME").Trim();
 
-                        if (!string.IsNullOrWhiteSpace(mSifra) && !db.Magacini.Any(m => m.SifraMagacina == mSifra))
+                        if (!string.IsNullOrWhiteSpace(mSifra) && existingMagacini.Add(mSifra))
                         {
                             db.Magacini.Add(new Magacin
                             {
@@ -276,7 +283,7 @@ public class DosImportService
 
                         decimal.TryParse(cenaStr.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal cena);
 
-                        if (!string.IsNullOrWhiteSpace(aSifra) && !db.Artikli.Any(a => a.SifraArtikla == aSifra))
+                        if (!string.IsNullOrWhiteSpace(aSifra) && existingArtikli.Add(aSifra))
                         {
                             db.Artikli.Add(new Artikal
                             {
@@ -321,7 +328,7 @@ public class DosImportService
                         DateTime datum = DateTime.Now;
                         if (DateTime.TryParse(datumStr, out var dParsed)) datum = dParsed;
 
-                        if (!db.Nalozi.Any(n => n.BrojNaloga == bNaloga))
+                        if (existingNalogi.Add(bNaloga))
                         {
                             var nalog = new Nalog
                             {
