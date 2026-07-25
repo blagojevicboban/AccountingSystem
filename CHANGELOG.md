@@ -4,6 +4,15 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.12] - 2026-07-26
+
+### 📊 Period filteri i zaključni list
+- **Bruto bilans** dobija filtere "Od"/"Do" datuma (podrazumevano 1.1. tekuće godine - danas, isti default kao legacy `brut_bil`, FIN2.PRG:1601).
+- **Novi izveštaj "Zaključni list"** — totali po sintetičkim (3-cifrenim) kontima, analogno legacy "T O T A L sintetičkog konta" sabircima.
+- **Kartica konta** (ekran Kartice) dobija iste "Od"/"Do" filtere za prikaz i PDF štampu — saldo se i dalje računa preko cele istorije (kao legacy poc_dug/poc_pot preneto stanje), filter samo sužava koji redovi se prikazuju.
+
+---
+
 ## [1.0.11] - 2026-07-25
 
 ### 🏢 Firme prerađene po uzoru na SredstvaApp (1 baza = 1 firma)
