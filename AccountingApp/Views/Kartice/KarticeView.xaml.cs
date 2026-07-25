@@ -84,6 +84,21 @@ public partial class KarticeView : UserControl
         TxtNaslovKonta.Text = $"{konto.BrojKonta} — {konto.NazivKonta}";
         TxtPodnaslovKonta.Text = konto.IsSintetika ? "Sintetički konto" : "Analitički konto";
 
+        await UcitajKarticu();
+    }
+
+    private async void Period_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        await UcitajKarticu();
+    }
+
+    private async Task UcitajKarticu()
+    {
+        if (LstKonta.SelectedItem is not Konto konto)
+        {
+            return;
+        }
+
         try
         {
             var options = new DbContextOptionsBuilder<AccountingDbContext>()
@@ -93,7 +108,7 @@ public partial class KarticeView : UserControl
             using var db = new AccountingDbContext(options);
             var service = new KarticaService(db);
 
-            var kartica = await service.GetKarticaKontaAsync(konto.BrojKonta);
+            var kartica = await service.GetKarticaKontaAsync(konto.BrojKonta, DpKarticaOd.SelectedDate, DpKarticaDo.SelectedDate);
             DgKartica.ItemsSource = kartica;
             TxtSaldoKonta.Text = (kartica.Count > 0 ? kartica[^1].Saldo : 0m).ToString("N2");
         }
@@ -119,10 +134,12 @@ public partial class KarticeView : UserControl
 
             using var db = new AccountingDbContext(options);
             var service = new KarticaService(db);
-            var kartica = await service.GetKarticaKontaAsync(konto.BrojKonta);
+            var odDatuma = DpKarticaOd.SelectedDate;
+            var doDatuma = DpKarticaDo.SelectedDate;
+            var kartica = await service.GetKarticaKontaAsync(konto.BrojKonta, odDatuma, doDatuma);
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "ARHIBEL - 2026" };
 
-            byte[] pdfBytes = PdfReportService.GenerisiKarticuPdf(firma, konto, kartica);
+            byte[] pdfBytes = PdfReportService.GenerisiKarticuPdf(firma, konto, kartica, odDatuma, doDatuma);
 
             string pdfPath = Path.Combine(Path.GetTempPath(), $"KarticaKonta_{konto.BrojKonta}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await File.WriteAllBytesAsync(pdfPath, pdfBytes);

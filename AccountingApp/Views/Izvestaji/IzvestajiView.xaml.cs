@@ -14,6 +14,14 @@ public partial class IzvestajiView : UserControl
     public IzvestajiView()
     {
         InitializeComponent();
+
+        // Podrazumevani period: 1.1. tekuće godine - danas (isti default kao legacy
+        // brut_bil, FIN2.PRG:1601 dat1:=ctod("01.01."+str(year(dat2),4)), dat2:=date()).
+        var pocetakGodine = new DateTime(DateTime.Now.Year, 1, 1);
+        DpBrutoBilansOd.SelectedDate = pocetakGodine;
+        DpBrutoBilansDo.SelectedDate = DateTime.Now;
+        DpZakljucniListOd.SelectedDate = pocetakGodine;
+        DpZakljucniListDo.SelectedDate = DateTime.Now;
     }
 
     private async void BtnGenerisiDnevnik_Click(object sender, RoutedEventArgs e)
@@ -57,13 +65,44 @@ public partial class IzvestajiView : UserControl
 
             using var db = new AccountingDbContext(options);
             var service = new BrutoBilansService(db);
-            var redovi = await service.GetBrutoBilansAsync();
+            var odDatuma = DpBrutoBilansOd.SelectedDate;
+            var doDatuma = DpBrutoBilansDo.SelectedDate;
+            var redovi = await service.GetBrutoBilansAsync(odDatuma, doDatuma);
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new AccountingData.Models.Firma { Naziv = "ARHIBEL - 2026" };
 
-            byte[] pdfBytes = PdfReportService.GenerisiBrutoBilansPdf(firma, redovi);
+            byte[] pdfBytes = PdfReportService.GenerisiBrutoBilansPdf(firma, redovi, "BRUTO BILANS", odDatuma, doDatuma);
 
             string pdfPath = Path.Combine(Path.GetTempPath(), $"BrutoBilans_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            await File.WriteAllBytesAsync(pdfPath, pdfBytes);
+
+            Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri generisanju PDF-a: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnGenerisiZakljucniList_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new BrutoBilansService(db);
+            var odDatuma = DpZakljucniListOd.SelectedDate;
+            var doDatuma = DpZakljucniListDo.SelectedDate;
+            var redovi = await service.GetZakljucniListAsync(odDatuma, doDatuma);
+
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? new AccountingData.Models.Firma { Naziv = "ARHIBEL - 2026" };
+
+            byte[] pdfBytes = PdfReportService.GenerisiBrutoBilansPdf(firma, redovi, "ZAKLJUČNI LIST", odDatuma, doDatuma);
+
+            string pdfPath = Path.Combine(Path.GetTempPath(), $"ZakljucniList_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await File.WriteAllBytesAsync(pdfPath, pdfBytes);
 
             Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });

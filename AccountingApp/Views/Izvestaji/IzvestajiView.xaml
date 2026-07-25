@@ -22,8 +22,36 @@
                 <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="📊 Bruto bilans" FontSize="16" FontWeight="Bold" Foreground="#059669"/>
-                        <TextBlock Text="Sintetički bruto bilans po kontima sa početnim stanjem i prometom." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
+                        <TextBlock Text="Sintetički bruto bilans po kontima sa prometom za period." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,12"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <StackPanel Margin="0,0,10,0">
+                                <TextBlock Text="Od datuma" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                <DatePicker x:Name="DpBrutoBilansOd" Width="120" Height="30"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Do datuma" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                <DatePicker x:Name="DpBrutoBilansDo" Width="120" Height="30"/>
+                            </StackPanel>
+                        </StackPanel>
                         <Button Content="📥 Izvezi bruto bilans (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#059669" Click="BtnGenerisiBrutoBilans_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="📑 Zaključni list" FontSize="16" FontWeight="Bold" Foreground="#0891B2"/>
+                        <TextBlock Text="Totali prometa po sintetičkim (3-cifrenim) kontima za period." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,12"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <StackPanel Margin="0,0,10,0">
+                                <TextBlock Text="Od datuma" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                <DatePicker x:Name="DpZakljucniListOd" Width="120" Height="30"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Do datuma" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                <DatePicker x:Name="DpZakljucniListDo" Width="120" Height="30"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Button Content="📥 Izvezi zaključni list (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#0891B2" Click="BtnGenerisiZakljucniList_Click"/>
                     </StackPanel>
                 </Border>
 

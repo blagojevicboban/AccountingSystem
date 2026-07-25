@@ -73,9 +73,12 @@ public class KarticaService
 
     /// <summary>
     /// Hronološka kartica konta sa kumulativnim saldom (Saldo = Duguje - Potražuje),
-    /// računata iz proknjiženih naloga — analogno legacy KARTICA.DBF logici.
+    /// računata iz proknjiženih naloga — analogno legacy KARTICA.DBF logici. Saldo se
+    /// uvek računa preko CELE istorije (ne samo perioda) da bi ostao tačan tekući
+    /// saldo na svakom redu; odDatuma/doDatuma samo filtriraju koji redovi se
+    /// PRIKAZUJU — isti princip kao legacy poc_dug/poc_pot preneto stanje (FIN2.PRG:1638-1646).
     /// </summary>
-    public async Task<List<KarticaRed>> GetKarticaKontaAsync(string brojKonta)
+    public async Task<List<KarticaRed>> GetKarticaKontaAsync(string brojKonta, DateTime? odDatuma = null, DateTime? doDatuma = null)
     {
         var stavke = await _db.StavkeNaloga
             .Include(s => s.Nalog)
@@ -105,6 +108,9 @@ public class KarticaService
                 Saldo = saldo
             });
         }
+
+        if (odDatuma.HasValue) rezultat = rezultat.Where(r => r.Datum >= odDatuma.Value).ToList();
+        if (doDatuma.HasValue) rezultat = rezultat.Where(r => r.Datum <= doDatuma.Value).ToList();
 
         return rezultat;
     }

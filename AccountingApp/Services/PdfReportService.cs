@@ -93,7 +93,8 @@ public class PdfReportService
         }).GeneratePdf();
     }
 
-    public static byte[] GenerisiKarticuPdf(Firma firma, Konto konto, List<KarticaRed> stavke)
+    public static byte[] GenerisiKarticuPdf(Firma firma, Konto konto, List<KarticaRed> stavke,
+        DateTime? odDatuma = null, DateTime? doDatuma = null)
     {
         return Document.Create(container =>
         {
@@ -110,6 +111,8 @@ public class PdfReportService
                     col.Item().Text($"{firma.Adresa}, {firma.PttIMesto} | PIB: {firma.Pib ?? "---"} | Žiro: {firma.ZiroRacun ?? "---"}").FontSize(9).FontColor(Colors.Grey.Medium);
                     col.Item().PaddingTop(10).Text("KARTICA KONTA").Bold().FontSize(16).AlignCenter();
                     col.Item().Text($"{konto.BrojKonta} — {konto.NazivKonta}").FontSize(12).AlignCenter();
+                    if (odDatuma.HasValue || doDatuma.HasValue)
+                        col.Item().Text($"Period: {odDatuma?.ToString("dd.MM.yyyy") ?? "---"} - {doDatuma?.ToString("dd.MM.yyyy") ?? "---"}").FontSize(9).AlignCenter().FontColor(Colors.Grey.Medium);
                     col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
                 });
 
@@ -342,7 +345,8 @@ public class PdfReportService
         }).GeneratePdf();
     }
 
-    public static byte[] GenerisiBrutoBilansPdf(Firma firma, List<BrutoBilansRed> redovi)
+    public static byte[] GenerisiBrutoBilansPdf(Firma firma, List<BrutoBilansRed> redovi,
+        string naslov = "BRUTO BILANS", DateTime? odDatuma = null, DateTime? doDatuma = null)
     {
         return Document.Create(container =>
         {
@@ -357,7 +361,9 @@ public class PdfReportService
                 {
                     col.Item().Text(firma.Naziv).Bold().FontSize(14).FontColor(Colors.Blue.Medium);
                     col.Item().Text($"{firma.Adresa}, {firma.PttIMesto} | PIB: {firma.Pib ?? "---"} | Žiro: {firma.ZiroRacun ?? "---"}").FontSize(9).FontColor(Colors.Grey.Medium);
-                    col.Item().PaddingTop(10).Text("BRUTO BILANS").Bold().FontSize(16).AlignCenter();
+                    col.Item().PaddingTop(10).Text(naslov).Bold().FontSize(16).AlignCenter();
+                    if (odDatuma.HasValue || doDatuma.HasValue)
+                        col.Item().Text($"Period: {odDatuma?.ToString("dd.MM.yyyy") ?? "---"} - {doDatuma?.ToString("dd.MM.yyyy") ?? "---"}").FontSize(9).AlignCenter().FontColor(Colors.Grey.Medium);
                     col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
                 });
 
