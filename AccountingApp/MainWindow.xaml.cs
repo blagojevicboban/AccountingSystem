@@ -21,6 +21,8 @@ public partial class MainWindow : Window
         InitializeComponent();
         _db = db;
 
+        WindowState = UserSettings.Instance.StartMaximized ? WindowState.Maximized : WindowState.Normal;
+
         AppSession.TrenutnaFirmaChanged += () => Dispatcher.Invoke(UpdateFirmaInfo);
         UpdateFirmaInfo();
         UpdateKorisnikInfo();
