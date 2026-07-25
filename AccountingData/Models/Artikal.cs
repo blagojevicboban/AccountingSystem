@@ -36,4 +36,9 @@ public class Artikal
 
     [MaxLength(50)]
     public string Vrsta { get; set; } = "Roba";
+
+    [MaxLength(20)]
+    public string? KlasifikacionaSifra { get; set; }
+
+    public bool Selektovan { get; set; }
 }

@@ -2,7 +2,7 @@
 
 > Nastalo iz analize `.PRG` modula u `C:\KNJIGE\Radni` (FIN.CLP, ANAL.CLP, ROB.CLP, MAT.CLP)
 > i struktura `.DBF` baza u `C:\KNJIGE\Radni\KOR01`.
-> Verzija dokumenta: 2026-07-24.
+> Verzija dokumenta: 2026-07-25.
 
 ---
 
@@ -76,7 +76,7 @@ Trenutni skeleton (`AccountingData/Models`) već pokriva jezgro FIN modula. Puno
 
 | DBF | .NET model | Status |
 | --- | --- | --- |
-| KONTPLAN | `Konto` | ✅ postoji (dodati adresne kolone za partnere-u-planu) |
+| KONTPLAN | `Konto` | ✅ postoji, sve kolone uvezene (adresa/žiro/telefon/stari konto) |
 | KORISNIC/KOR | `Firma` + `FirmaSettings` | ⚠️ `Firma` postoji, fale config flegovi |
 | — | `Korisnik` | ✅ postoji (dodati hash) |
 | NALOG | `Nalog` + `StavkaNaloga` | ✅ postoji |
@@ -132,7 +132,7 @@ DBF migracija (KONTPLAN, ANKONT, M_SIFR, MAGACIN, NALOG), Velopack pakovanje.
 - [x] **Bruto bilans** — `BrutoBilansService.GetBrutoBilansAsync` (agregacija po kontu iz proknjiženih naloga), pravi PDF izvoz u Izveštajima
 - [x] `PdfReportService`: `GenerisiKarticuPdf`, `GenerisiBrutoBilansPdf` (uz postojeći `GenerisiDnevnikPdf`)
 
-**Napomena iz testiranja:** Bruto bilans obuhvata 418 različitih konta iz proknjiženih stavki, ali `Konta` tabela (uvezena iz KONTPLAN.DBF) ima samo 42 sintetička konta — 376 analitičkih kodova iz naloga nema odgovarajući naziv (fallback prikazuje šifru). Ovo je nedostatak legacy master podataka, ne bag u novom kodu; vredi rešiti u Fazi 2 (npr. auto-kreiranje "praznih" Konto zapisa pri uvozu ili poseban šifarnik analitike).
+**Napomena iz testiranja (ažurirano 2026-07-25):** Ranije zabeleženo da bruto bilans obuhvata 418 različitih konta iz proknjiženih stavki dok je `Konta` tabela imala samo 42 sintetička konta, protumačeno kao nedostatak legacy master podataka. **Ispravka:** to je zapravo bio bag u uvozu (`AccountingMigration/Program.cs` je čitao pogrešnu kolonu — `ST_KON` umesto `KONTO` — za broj konta; `ST_KON` je prazno za skoro sve redove). Nakon ispravke (objedinjen `DbfImportService`, vidi CHANGELOG 1.0.9) uvozi se svih ~3200 konta iz KONTPLAN.DBF.
 
 ### Faza 2 — FIN dopune
 - [x] **Otvorene stavke / IOS** (`gk91`, `otv_st_zag`) + PDF obrazac IOS — `OtvoreneStavkeService`, `PartneriView`, `PdfReportService.GenerisiIOSPdf`. Vezano preko `StavkaNaloga.PartnerId` (ne preko konta — legacy ANAL modul za KOR01 nije korišćen, pa nema podataka za uparivanje po kontu partnera). Dodat i izbor partnera (ComboBox) po stavci u `NalogEditWindow` da nove stavke mogu da se vezuju za partnera.

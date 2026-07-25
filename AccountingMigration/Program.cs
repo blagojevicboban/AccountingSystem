@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using AccountingData;
 using AccountingData.Models;
+using AccountingData.Services;
 
 namespace AccountingMigration;
 
@@ -53,27 +54,16 @@ class Program
         if (File.Exists(kontplanFile))
         {
             Console.WriteLine("📋 Uvoz Kontnog plana (KONTPLAN.DBF)...");
-            var kontaRows = ReadDbfRows(kontplanFile);
+            var kontaRows = DbfImportService.ReadRows(kontplanFile);
+            var existingKonta = db.Konta.Select(k => k.BrojKonta).ToHashSet(StringComparer.OrdinalIgnoreCase);
             int kontaCount = 0;
 
             foreach (var r in kontaRows)
             {
-                string kBroj = GetVal(r, 0).Trim();
-                string kNaziv = GetVal(r, 2).Trim();
-
-                if (!string.IsNullOrWhiteSpace(kBroj) && !db.Konta.Any(k => k.BrojKonta == kBroj))
+                var konto = DbfImportService.MapKonto(r);
+                if (konto != null && existingKonta.Add(konto.BrojKonta))
                 {
-                    int klasa = 0;
-                    if (kBroj.Length > 0 && char.IsDigit(kBroj[0]))
-                        klasa = kBroj[0] - '0';
-
-                    db.Konta.Add(new Konto
-                    {
-                        BrojKonta = kBroj,
-                        NazivKonta = string.IsNullOrWhiteSpace(kNaziv) ? $"Konto {kBroj}" : kNaziv,
-                        Klasa = klasa,
-                        IsSintetika = kBroj.Length <= 3
-                    });
+                    db.Konta.Add(konto);
                     kontaCount++;
                 }
             }
@@ -86,30 +76,16 @@ class Program
         if (File.Exists(ankontFile))
         {
             Console.WriteLine("👥 Uvoz Partnera (ANKONT.DBF)...");
-            var partnerRows = ReadDbfRows(ankontFile);
+            var partnerRows = DbfImportService.ReadRows(ankontFile);
+            var existingPartneri = db.Partneri.Select(p => p.SifraPartnera).ToHashSet(StringComparer.OrdinalIgnoreCase);
             int partneriCount = 0;
 
             foreach (var r in partnerRows)
             {
-                string kBroj = GetVal(r, 0).Trim();
-                string pNaziv = GetVal(r, 1).Trim();
-                string adresa = GetVal(r, 2).Trim();
-                string mesto = GetVal(r, 3).Trim();
-                string ziro = GetVal(r, 4).Trim();
-                string tel = GetVal(r, 5).Trim();
-
-                if (!string.IsNullOrWhiteSpace(kBroj))
+                var partner = DbfImportService.MapPartner(r, partneriCount + 1);
+                if (partner != null && existingPartneri.Add(partner.SifraPartnera))
                 {
-                    db.Partneri.Add(new Partner
-                    {
-                        SifraPartnera = kBroj,
-                        Naziv = string.IsNullOrWhiteSpace(pNaziv) ? $"Partner {kBroj}" : pNaziv,
-                        Adresa = adresa,
-                        PttIMesto = mesto,
-                        ZiroRacun = ziro,
-                        Telefon = tel,
-                        KontoPartnera = kBroj
-                    });
+                    db.Partneri.Add(partner);
                     partneriCount++;
                 }
             }
@@ -154,22 +130,17 @@ class Program
         if (File.Exists(magFile))
         {
             Console.WriteLine("🏬 Uvoz Magacina (MAGACIN.DBF)...");
-            var magRows = ReadDbfRows(magFile);
+            var magRows = DbfImportService.ReadRows(magFile);
+            var existingMagacini = db.Magacini.Select(m => m.SifraMagacina).ToHashSet(StringComparer.OrdinalIgnoreCase);
             int magCount = 0;
 
             foreach (var r in magRows)
             {
-                string sifra = GetVal(r, 0).Trim();
-                string naziv = GetVal(r, 1).Trim();
-
-                if (!string.IsNullOrWhiteSpace(sifra))
+                var magacin = DbfImportService.MapMagacin(r);
+                if (magacin != null && existingMagacini.Add(magacin.SifraMagacina))
                 {
-                    db.Magacini.Add(new Magacin
-                    {
-                        SifraMagacina = sifra,
-                        NazivMagacina = string.IsNullOrWhiteSpace(naziv) ? $"Magacin {sifra}" : naziv,
-                        VrstaMagacina = "Materijalno"
-                    });
+                    magacin.VrstaMagacina = "Materijalno";
+                    db.Magacini.Add(magacin);
                     magCount++;
                 }
             }
@@ -182,64 +153,20 @@ class Program
         if (File.Exists(nalogFile))
         {
             Console.WriteLine("📖 Uvoz Naloga Knjiženja i Stavki (NALOG.DBF)...");
-            var rows = ReadDbfRows(nalogFile);
-
-            var naloziGroups = rows
-                .Where(r => r.Count > 8 && !string.IsNullOrWhiteSpace(GetVal(r, 0)))
-                .Where(r => GetVal(r, 0).Trim().TrimStart('0') != "")
-                .GroupBy(r => GetVal(r, 0).Trim());
+            var rows = DbfImportService.ReadRows(nalogFile);
+            var naloziGroups = DbfImportService.GroupNalogRows(rows);
 
             int nalogCount = 0;
             int stavkeCount = 0;
 
-            foreach (var group in naloziGroups)
+            foreach (var (brNaloga, redovi) in naloziGroups)
             {
-                string brNaloga = group.Key;
-                if (string.IsNullOrWhiteSpace(brNaloga) || brNaloga.TrimStart('0') == "") continue;
-                var firstRow = group.First();
-
-                DateTime datNaloga = ParseDate(GetVal(firstRow, 8));
-                string prviOpis = GetVal(firstRow, 5).Trim();
-
-                var nalog = new Nalog
-                {
-                    BrojNaloga = brNaloga,
-                    DatumNaloga = datNaloga,
-                    VrstaNaloga = "Finansijski",
-                    Opis = string.IsNullOrWhiteSpace(prviOpis) ? $"Nalog {brNaloga}" : prviOpis,
-                    IsKnjizen = true,
-                    DatumKnjiženja = datNaloga
-                };
-
-                int rBr = 1;
-                foreach (var row in group)
-                {
-                    string kBroj = GetVal(row, 3).Trim();
-                    string opisDok = GetVal(row, 5).Trim();
-                    decimal dug = ParseDecimal(GetVal(row, 6));
-                    decimal pot = ParseDecimal(GetVal(row, 7));
-
-                    if (!string.IsNullOrWhiteSpace(kBroj) || dug > 0 || pot > 0)
-                    {
-                        var stavka = new StavkaNaloga
-                        {
-                            RedniBroj = rBr++,
-                            BrojKonta = kBroj,
-                            BrojDokumenta = opisDok,
-                            Opis = opisDok,
-                            Duguje = dug,
-                            Potrazuje = pot
-                        };
-                        nalog.Stavke.Add(stavka);
-                        stavkeCount++;
-                    }
-                }
-
-                nalog.UkupnoDuguje = nalog.Stavke.Sum(s => s.Duguje);
-                nalog.UkupnoPotrazuje = nalog.Stavke.Sum(s => s.Potrazuje);
+                var nalog = DbfImportService.MapNalogGrupa(brNaloga, redovi);
+                if (nalog == null) continue;
 
                 db.Nalozi.Add(nalog);
                 nalogCount++;
+                stavkeCount += nalog.Stavke.Count;
             }
 
             await db.SaveChangesAsync();

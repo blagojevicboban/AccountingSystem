@@ -36,4 +36,9 @@ public class StavkaNaloga
     public int? PartnerId { get; set; }
     [ForeignKey(nameof(PartnerId))]
     public Partner? Partner { get; set; }
+
+    [MaxLength(20)]
+    public string? StariKonto { get; set; }
+
+    public int? PromenaKod { get; set; }
 }

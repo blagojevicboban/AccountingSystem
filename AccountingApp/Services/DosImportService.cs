@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AccountingData;
 using AccountingData.Models;
-using DbfDataReader;
+using AccountingData.Services;
 
 namespace AccountingApp.Services;
 
@@ -55,7 +54,7 @@ public class DosImportService
         var korisnicFile = Path.Combine(radniDir, "KORISNIC.DBF");
         if (File.Exists(korisnicFile))
         {
-            var rows = ReadDbfRows(korisnicFile);
+            var rows = DbfImportService.ReadRows(korisnicFile);
             foreach (var r in rows)
             {
                 string sifra = GetVal(r, "KOR", "SIFRA", "KOD");
@@ -206,25 +205,14 @@ public class DosImportService
                 if (File.Exists(kontplanFile))
                 {
                     Report(progress, firmaDto.Naziv, "Kontni plan", basePercent + 5, "📋 Uvoz Kontnog plana (KONTPLAN.DBF)...");
-                    var rows = ReadDbfRows(kontplanFile);
+                    var rows = DbfImportService.ReadRows(kontplanFile);
                     int count = 0;
                     foreach (var r in rows)
                     {
-                        string kBroj = GetVal(r, "BROJ", "KONTO", "SIFRA").Trim();
-                        string kNaziv = GetVal(r, "NAZIV", "IME").Trim();
-
-                        if (!string.IsNullOrWhiteSpace(kBroj) && existingKonta.Add(kBroj))
+                        var konto = DbfImportService.MapKonto(r);
+                        if (konto != null && existingKonta.Add(konto.BrojKonta))
                         {
-                            int klasa = 0;
-                            if (kBroj.Length > 0 && char.IsDigit(kBroj[0])) klasa = kBroj[0] - '0';
-
-                            firmDb.Konta.Add(new Konto
-                            {
-                                BrojKonta = kBroj,
-                                NazivKonta = string.IsNullOrWhiteSpace(kNaziv) ? $"Konto {kBroj}" : kNaziv,
-                                Klasa = klasa,
-                                IsSintetika = kBroj.Length <= 3
-                            });
+                            firmDb.Konta.Add(konto);
                             count++;
                         }
                     }
@@ -237,36 +225,15 @@ public class DosImportService
                 if (File.Exists(ankontFile))
                 {
                     Report(progress, firmaDto.Naziv, "Partneri", basePercent + 15, "👥 Uvoz Partnera (ANKONT.DBF)...");
-                    var rows = ReadDbfRows(ankontFile);
+                    var rows = DbfImportService.ReadRows(ankontFile);
                     int count = 0;
                     foreach (var r in rows)
                     {
-                        string pSifra = GetVal(r, "SIFRA", "KOD", "BROJ").Trim();
-                        string pNaziv = GetVal(r, "NAZIV", "IME", "FIRMA").Trim();
-                        string adresa = GetVal(r, "ADRESA", "ULICA").Trim();
-                        string mesto = GetVal(r, "MESTO", "GRAD").Trim();
-                        string ziro = GetVal(r, "ZIRO", "RACUN").Trim();
-                        string tel = GetVal(r, "TEL", "TELEFON").Trim();
-                        string pib = GetVal(r, "PIB").Trim();
-
-                        if (!string.IsNullOrWhiteSpace(pNaziv))
+                        var partner = DbfImportService.MapPartner(r, count + 1);
+                        if (partner != null && existingPartneri.Add(partner.SifraPartnera))
                         {
-                            if (string.IsNullOrWhiteSpace(pSifra)) pSifra = (count + 1).ToString("D4");
-
-                            if (existingPartneri.Add(pSifra))
-                            {
-                                firmDb.Partneri.Add(new Partner
-                                {
-                                    SifraPartnera = pSifra,
-                                    Naziv = pNaziv,
-                                    Adresa = adresa,
-                                    PttIMesto = mesto,
-                                    ZiroRacun = ziro,
-                                    Telefon = tel,
-                                    Pib = pib
-                                });
-                                count++;
-                            }
+                            firmDb.Partneri.Add(partner);
+                            count++;
                         }
                     }
                     await firmDb.SaveChangesAsync();
@@ -278,21 +245,14 @@ public class DosImportService
                 if (File.Exists(magacinFile))
                 {
                     Report(progress, firmaDto.Naziv, "Magacini", basePercent + 30, "📦 Uvoz Magacina (MAGACIN.DBF)...");
-                    var rows = ReadDbfRows(magacinFile);
+                    var rows = DbfImportService.ReadRows(magacinFile);
                     int count = 0;
                     foreach (var r in rows)
                     {
-                        string mSifra = GetVal(r, "SIFRA", "MAG", "KOD").Trim();
-                        string mNaziv = GetVal(r, "NAZIV", "IME").Trim();
-
-                        if (!string.IsNullOrWhiteSpace(mSifra) && existingMagacini.Add(mSifra))
+                        var magacin = DbfImportService.MapMagacin(r);
+                        if (magacin != null && existingMagacini.Add(magacin.SifraMagacina))
                         {
-                            firmDb.Magacini.Add(new Magacin
-                            {
-                                SifraMagacina = mSifra,
-                                NazivMagacina = string.IsNullOrWhiteSpace(mNaziv) ? $"Magacin {mSifra}" : mNaziv,
-                                VrstaMagacina = "Veleprodaja"
-                            });
+                            firmDb.Magacini.Add(magacin);
                             count++;
                         }
                     }
@@ -304,26 +264,14 @@ public class DosImportService
                 if (File.Exists(artikliFile))
                 {
                     Report(progress, firmaDto.Naziv, "Artikli", basePercent + 40, "🛒 Uvoz Artikala (ARTIKLI.DBF)...");
-                    var rows = ReadDbfRows(artikliFile);
+                    var rows = DbfImportService.ReadRows(artikliFile);
                     int count = 0;
                     foreach (var r in rows)
                     {
-                        string aSifra = GetVal(r, "SIFRA", "KOD", "ARTIKAL").Trim();
-                        string aNaziv = GetVal(r, "NAZIV", "IME").Trim();
-                        string jm = GetVal(r, "JM", "JEDMERA").Trim();
-                        string cenaStr = GetVal(r, "CENA", "NCENA", "PCENA").Trim();
-
-                        decimal.TryParse(cenaStr.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal cena);
-
-                        if (!string.IsNullOrWhiteSpace(aSifra) && existingArtikli.Add(aSifra))
+                        var artikal = DbfImportService.MapArtikal(r);
+                        if (artikal != null && existingArtikli.Add(artikal.SifraArtikla))
                         {
-                            firmDb.Artikli.Add(new Artikal
-                            {
-                                SifraArtikla = aSifra,
-                                Naziv = string.IsNullOrWhiteSpace(aNaziv) ? $"Artikal {aSifra}" : aNaziv,
-                                JedinicaMere = string.IsNullOrWhiteSpace(jm) ? "kom" : jm,
-                                NabavnaCena = cena
-                            });
+                            firmDb.Artikli.Add(artikal);
                             count++;
                         }
                     }
@@ -337,74 +285,22 @@ public class DosImportService
                 if (File.Exists(nalogFile))
                 {
                     Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 60, "📖 Uvoz Naloga za knjiženje i stavki (NALOG.DBF)...");
-                    var rows = ReadDbfRows(nalogFile);
-                    var groups = rows
-                        .Select(r => new { Row = r, NalogNo = GetVal(r, "BROJ", "NALOG", "ID", "SIFRA").Trim() })
-                        .Where(x => !string.IsNullOrWhiteSpace(x.NalogNo) && x.NalogNo.TrimStart('0') != "")
-                        .GroupBy(x => x.NalogNo);
+                    var rows = DbfImportService.ReadRows(nalogFile);
+                    var groups = DbfImportService.GroupNalogRows(rows);
 
                     int nalogiCount = 0;
                     int stavkeCount = 0;
 
-                    foreach (var group in groups)
+                    foreach (var (bNaloga, redovi) in groups)
                     {
-                        string bNaloga = group.Key;
                         if (!existingNalogi.Add(bNaloga)) continue;
 
-                        var firstRow = group.First().Row;
-                        string datumStr = GetVal(firstRow, "DATUM", "DAT").Trim();
-                        string prviOpis = GetVal(firstRow, "OPIS", "TEKST", "DOK").Trim();
-
-                        DateTime datum = DateTime.Now;
-                        if (DateTime.TryParse(datumStr, out var dParsed)) datum = dParsed;
-
-                        var nalog = new Nalog
-                        {
-                            BrojNaloga = bNaloga,
-                            DatumNaloga = datum,
-                            Opis = string.IsNullOrWhiteSpace(prviOpis) ? $"Nalog {bNaloga}" : prviOpis,
-                            IsKnjizen = true,
-                            DatumKnjiženja = datum
-                        };
-
-                        int rBr = 1;
-                        decimal ukupnoDuguje = 0;
-                        decimal ukupnoPotražuje = 0;
-
-                        foreach (var item in group)
-                        {
-                            var sr = item.Row;
-                            string konto = GetVal(sr, "KONTO", "BROJ").Trim();
-                            string stOpis = GetVal(sr, "OPIS", "TEKST", "DOK").Trim();
-                            string dugStr = GetVal(sr, "DUGUJE", "DUG").Trim();
-                            string potStr = GetVal(sr, "POTRAZUJE", "POT").Trim();
-
-                            decimal.TryParse(dugStr.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal dug);
-                            decimal.TryParse(potStr.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal pot);
-
-                            if (!string.IsNullOrWhiteSpace(konto) || dug > 0 || pot > 0)
-                            {
-                                nalog.Stavke.Add(new StavkaNaloga
-                                {
-                                    RedniBroj = rBr++,
-                                    BrojKonta = konto,
-                                    BrojDokumenta = stOpis,
-                                    Opis = string.IsNullOrWhiteSpace(stOpis) ? nalog.Opis : stOpis,
-                                    Duguje = dug,
-                                    Potrazuje = pot
-                                });
-
-                                ukupnoDuguje += dug;
-                                ukupnoPotražuje += pot;
-                                stavkeCount++;
-                            }
-                        }
-
-                        nalog.UkupnoDuguje = ukupnoDuguje;
-                        nalog.UkupnoPotrazuje = ukupnoPotražuje;
+                        var nalog = DbfImportService.MapNalogGrupa(bNaloga, redovi);
+                        if (nalog == null) continue;
 
                         firmDb.Nalozi.Add(nalog);
                         nalogiCount++;
+                        stavkeCount += nalog.Stavke.Count;
                     }
 
                     await firmDb.SaveChangesAsync();
@@ -425,42 +321,6 @@ public class DosImportService
             Percentage = Math.Min(100, pct),
             LogMessage = logMsg
         });
-    }
-
-    private List<Dictionary<string, string>> ReadDbfRows(string filepath)
-    {
-        var list = new List<Dictionary<string, string>>();
-        if (!File.Exists(filepath)) return list;
-
-        try
-        {
-            var encoding = Encoding.GetEncoding(852);
-            var opts = new DbfDataReaderOptions { Encoding = encoding };
-
-            using var reader = new DbfDataReader.DbfDataReader(filepath, opts);
-            var colNames = new List<string>();
-            for (int i = 0; i < reader.FieldCount; i++)
-            {
-                colNames.Add(reader.GetName(i));
-            }
-
-            while (reader.Read())
-            {
-                var row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    var val = reader.GetValue(i)?.ToString()?.Trim() ?? "";
-                    row[colNames[i]] = val;
-                }
-                list.Add(row);
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Greška pri čitanju DBF fajla '{filepath}': {ex.Message}");
-        }
-
-        return list;
     }
 
     private string GetVal(Dictionary<string, string> row, params string[] possibleKeys)

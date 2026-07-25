@@ -4,6 +4,16 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.9] - 2026-07-25
+
+### 🐛 Ispravka mapiranja DBF kolona pri uvozu (KONTPLAN, ANKONT, MAGACIN, ARTIKLI, NALOG)
+- **Objedinjen uvoz u `DbfImportService`**: I uvoz iz aplikacije (`⚙️ Podešavanja`) i samostalni `AccountingMigration` alat sada koriste isti deljeni mapping kod, tako da se imena DBF kolona ne mogu razminuti između dva mesta.
+- **Ispravljeno pogrešno mapiranje imena kolona**: Uvoz naloga (`NALOG.DBF`) i partnera (`ANKONT.DBF`) je tražio kolone koje ne postoje u ovim DBF fajlovima i tiho uvozio 0 redova; uvoz kontnog plana je čitao pogrešnu kolonu za broj konta (uvezeno je bilo samo ~42 sintetička konta umesto svih ~3200).
+- **Dodate kolone koje su ranije bile odbačene**: Kontni plan sada čuva staru šifru konta, ulicu, mesto, žiro račun i telefon (iz KONTPLAN.DBF); artikli čuvaju klasifikacionu šifru i selektovan flag; stavke naloga čuvaju staru šifru konta i šifru promene.
+- **Ispravljena UNIQUE constraint greška** u `AccountingMigration` alatu pri uvozu kontnog plana (KONTPLAN.DBF sadrži par dupliranih šifara konta) — dodata ista in-memory `HashSet` provera koja se već koristila u uvozu iz aplikacije.
+
+---
+
 ## [1.0.8] - 2026-07-25
 
 ### 📋 Novi modul Kontni plan (`KontaView`) & Unos/Izmena/Štampa konta

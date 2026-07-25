@@ -20,4 +20,19 @@ public class Konto
 
     public bool IsSintetika { get; set; }
     public int Klasa { get; set; }
+
+    [MaxLength(20)]
+    public string? StariKonto { get; set; }
+
+    [MaxLength(50)]
+    public string? Ulica { get; set; }
+
+    [MaxLength(50)]
+    public string? Mesto { get; set; }
+
+    [MaxLength(50)]
+    public string? ZiroRacun { get; set; }
+
+    [MaxLength(50)]
+    public string? Telefon { get; set; }
 }
