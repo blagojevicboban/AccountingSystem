@@ -55,11 +55,11 @@
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Datum" Binding="{Binding DatumPromene, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
                                     <DataGridTextColumn Header="Opis" Binding="{Binding OpisPromene}" Width="*"/>
-                                    <DataGridTextColumn Header="Ulaz" Binding="{Binding Ulaz, StringFormat=\{0:N2\}}" Width="90"/>
-                                    <DataGridTextColumn Header="Izlaz" Binding="{Binding Izlaz, StringFormat=\{0:N2\}}" Width="90"/>
-                                    <DataGridTextColumn Header="Stanje" Binding="{Binding Stanje, StringFormat=\{0:N2\}}" Width="90"/>
-                                    <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="90"/>
-                                    <DataGridTextColumn Header="Vrednost (Saldo)" Binding="{Binding Saldo, StringFormat=\{0:N2\}}" Width="130"/>
+                                    <DataGridTextColumn Header="Ulaz" Binding="{Binding Ulaz, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Izlaz" Binding="{Binding Izlaz, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Stanje" Binding="{Binding Stanje, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Vrednost (Saldo)" Binding="{Binding Saldo, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>
@@ -109,9 +109,9 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="60"/>
                                 <DataGridTextColumn Header="Artikal" Binding="{Binding SifraArtikla}" Width="100"/>
-                                <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="110"/>
-                                <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="110"/>
-                                <DataGridTextColumn Header="Iznos" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="120"/>
+                                <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Iznos" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>
@@ -159,7 +159,7 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="60"/>
                                 <DataGridTextColumn Header="Artikal" Binding="{Binding SifraArtikla}" Width="100"/>
-                                <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="110"/>
+                                <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                                 <DataGridTextColumn Header="Konto troška" Binding="{Binding KontoTroska}" Width="110"/>
                             </DataGrid.Columns>
                         </DataGrid>

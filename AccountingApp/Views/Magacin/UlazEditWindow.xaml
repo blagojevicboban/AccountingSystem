@@ -45,8 +45,8 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50" IsReadOnly="True"/>
                         <DataGridTextColumn Header="Šifra artikla" Binding="{Binding SifraArtikla, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                        <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="120"/>
-                        <DataGridTextColumn Header="Cena" Binding="{Binding Cena, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="120"/>
+                        <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
+                        <DataGridTextColumn Header="Cena" Binding="{Binding Cena, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

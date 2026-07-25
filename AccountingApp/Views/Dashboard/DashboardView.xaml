@@ -113,8 +113,8 @@
                                 <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="110"/>
                                 <DataGridTextColumn Header="Datum" Binding="{Binding DatumNaloga, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
                                 <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
-                                <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding UkupnoDuguje, StringFormat=\{0:N2\}}" Width="130"/>
-                                <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding UkupnoPotrazuje, StringFormat=\{0:N2\}}" Width="130"/>
+                                <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding UkupnoDuguje, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding UkupnoPotrazuje, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </DockPanel>

@@ -60,9 +60,9 @@
                         <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="120"/>
                         <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
                         <DataGridTextColumn Header="Promena" Binding="{Binding OpisPromene}" Width="150"/>
-                        <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="140"/>
-                        <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="140"/>
-                        <DataGridTextColumn Header="Saldo (RSD)" Binding="{Binding Saldo, StringFormat=\{0:N2\}}" Width="140"/>
+                        <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Saldo (RSD)" Binding="{Binding Saldo, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Border>

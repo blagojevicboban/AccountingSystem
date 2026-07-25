@@ -46,8 +46,8 @@
                         <DataGridTextColumn Header="Konto" Binding="{Binding BrojKonta, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
                         <DataGridTextColumn Header="Dokument" Binding="{Binding BrojDokumenta, UpdateSourceTrigger=PropertyChanged}" Width="130"/>
                         <DataGridTextColumn Header="Opis" Binding="{Binding Opis, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
-                        <DataGridTextColumn Header="Duguje" Binding="{Binding Duguje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110"/>
-                        <DataGridTextColumn Header="Potražuje" Binding="{Binding Potrazuje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110"/>
+                        <DataGridTextColumn Header="Duguje" Binding="{Binding Duguje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
+                        <DataGridTextColumn Header="Potražuje" Binding="{Binding Potrazuje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
                         <DataGridComboBoxColumn x:Name="ColPartner" Header="Partner"
                                                  SelectedValueBinding="{Binding PartnerId}"
                                                  SelectedValuePath="PartnerId"

@@ -48,8 +48,8 @@
                         <DataGridTextColumn Header="Datum" Binding="{Binding DatumNaloga, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
                         <DataGridTextColumn Header="Vrsta" Binding="{Binding VrstaNaloga}" Width="120"/>
                         <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
-                        <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding UkupnoDuguje, StringFormat=\{0:N2\}}" Width="140"/>
-                        <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding UkupnoPotrazuje, StringFormat=\{0:N2\}}" Width="140"/>
+                        <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding UkupnoDuguje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding UkupnoPotrazuje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                         <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
@@ -67,8 +67,8 @@
                         <DataGridTextColumn Header="Konto" Binding="{Binding BrojKonta}" Width="110"/>
                         <DataGridTextColumn Header="Dokument / Opis" Binding="{Binding Opis}" Width="*"/>
                         <DataGridTextColumn Header="Promena" Binding="{Binding OpisPromene}" Width="150"/>
-                        <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="140"/>
-                        <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="140"/>
+                        <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

@@ -26,7 +26,7 @@
                 <DataGrid x:Name="DgStope" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" Margin="0,0,0,12">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Važi od" Binding="{Binding DatumOd, StringFormat=\{0:dd.MM.yyyy\}}" Width="90"/>
-                        <DataGridTextColumn Header="Stopa (%)" Binding="{Binding GodisnjaStopaProcenat, StringFormat=N2}" Width="*"/>
+                        <DataGridTextColumn Header="Stopa (%)" Binding="{Binding GodisnjaStopaProcenat, StringFormat=N2}" Width="*" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
@@ -66,9 +66,9 @@
                             <DataGridTextColumn Header="Datum duga" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
                             <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="100"/>
                             <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
-                            <DataGridTextColumn Header="Iznos (RSD)" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="120"/>
-                            <DataGridTextColumn Header="Dana kašnjenja" Binding="{Binding BrojDanaKasnjenja}" Width="110"/>
-                            <DataGridTextColumn Header="Kamata (RSD)" Binding="{Binding ObracunataKamata, StringFormat=\{0:N2\}}" Width="120"/>
+                            <DataGridTextColumn Header="Iznos (RSD)" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            <DataGridTextColumn Header="Dana kašnjenja" Binding="{Binding BrojDanaKasnjenja}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            <DataGridTextColumn Header="Kamata (RSD)" Binding="{Binding ObracunataKamata, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>

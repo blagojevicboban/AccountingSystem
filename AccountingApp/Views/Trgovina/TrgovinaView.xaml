@@ -32,10 +32,10 @@
                         <DataGridTextColumn Header="Br. kalkulacije" Binding="{Binding BrojKalkulacije}" Width="120"/>
                         <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
                         <DataGridTextColumn Header="Dobavljač" Binding="{Binding SifraDobavljaca}" Width="110"/>
-                        <DataGridTextColumn Header="Svega nabavno" Binding="{Binding SvegaNabavno, StringFormat=\{0:N2\}}" Width="130"/>
-                        <DataGridTextColumn Header="Razlika" Binding="{Binding Razlika, StringFormat=\{0:N2\}}" Width="110"/>
-                        <DataGridTextColumn Header="Porez" Binding="{Binding Porez, StringFormat=\{0:N2\}}" Width="110"/>
-                        <DataGridTextColumn Header="Prodajna vrednost" Binding="{Binding ProdajnaVrednost, StringFormat=\{0:N2\}}" Width="140"/>
+                        <DataGridTextColumn Header="Svega nabavno" Binding="{Binding SvegaNabavno, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Razlika" Binding="{Binding Razlika, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Porez" Binding="{Binding Porez, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Prodajna vrednost" Binding="{Binding ProdajnaVrednost, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                         <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
