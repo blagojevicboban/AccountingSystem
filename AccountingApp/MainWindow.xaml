@@ -42,6 +42,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel x:Name="PnlNavigation">
                         <RadioButton x:Name="BtnDashboard" Content="📊 Radna tabla" Style="{StaticResource NavButtonStyle}" IsChecked="True" Click="NavDashboard_Click"/>
+                        <RadioButton x:Name="BtnKonta" Content="📋 Kontni plan" Style="{StaticResource NavButtonStyle}" Click="NavKonta_Click"/>
                         <RadioButton x:Name="BtnNalozi" Content="📖 Glavna knjiga" Style="{StaticResource NavButtonStyle}" Click="NavNalozi_Click"/>
                         <RadioButton x:Name="BtnKartice" Content="📋 Kartice konta" Style="{StaticResource NavButtonStyle}" Click="NavKartice_Click"/>
                         <RadioButton x:Name="BtnPartneri" Content="👥 Partneri (Analitika)" Style="{StaticResource NavButtonStyle}" Click="NavPartneri_Click"/>
@@ -74,10 +75,9 @@
                     <TextBlock x:Name="TxtHeaderTitle" Text="📊 Radna tabla" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
 
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="#F1F5F9" CornerRadius="16" Padding="12,6" Margin="0,0,12,0">
+                        <Border Background="#F1F5F9" CornerRadius="16" Padding="12,6">
                             <TextBlock x:Name="TxtKorisnik" Text="👤 —" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
                         </Border>
-                        <Button x:Name="BtnUvozDOS" Content="Uvoz iz DOS sistema" Style="{StaticResource ActionButtonStyle}" Click="BtnUvozDOS_Click"/>
                     </StackPanel>
                 </Grid>
             </Border>

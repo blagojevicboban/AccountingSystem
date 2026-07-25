@@ -8,8 +8,8 @@
 
 ### Glavna knjiga (FIN)
 - 📊 **Radna tabla** — pregled ključnih brojki (nalozi, konta, artikli, partneri) i poslednjih naloga.
-- 📖 **Nalozi za knjiženje** — unos/izmena naloga sa **živom proverom ravnoteže** (Duguje == Potražuje), knjiženje i **rasknjižavanje** (samo Administrator, uz potvrdu — vraća nalog u nacrt radi ispravke).
-- 📋 **Kontni plan i kartice konta** — sintetička/analitička konta, hronološka kartica sa kumulativnim saldom, PDF izvoz.
+- 📖 **Nalozi za knjiženje** — unos/izmena naloga sa **živom proverom ravnoteže** (Duguje == Potražuje), knjiženje, **masovno knjiženje** (`⚡ Proknjiži sve`), **masovno preknjižavanje konta** (`🔄 Preknjižavanje`) i **rasknjižavanje** (samo Administrator, uz potvrdu — vraća nalog u nacrt radi ispravke).
+- 📋 **Kontni plan i kartice konta** — namensko upravljanje kontnim planom (`📋 Kontni plan` - unos novog konta, izmena, brisanje, PDF štampa), filter konta sa prometom (`[x] Samo konta sa knjiženjima`), hronološka kartica konta sa kumulativnim saldom.
 - 📅 **Nova godina** — prenos zaključnog salda svih konta u nalog za početno stanje naredne godine; **odbija prenos ako knjige nisu u ravnoteži** (bezbednosna provera pre nego što se nešto pogrešno prenese).
 
 ### Partneri i analitika (ANAL)

@@ -485,4 +485,177 @@ public class PdfReportService
             });
         }).GeneratePdf();
     }
+
+    public static byte[] GenerisiNalogePdf(Firma firma, List<Nalog> nalozi)
+    {
+        return Document.Create(container =>
+        {
+            foreach (var nalog in nalozi)
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(1.5f, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(10));
+
+                    page.Header().Column(col =>
+                    {
+                        col.Item().Text(firma.Naziv).Bold().FontSize(14).FontColor(Colors.Blue.Medium);
+                        col.Item().Text($"{firma.Adresa}, {firma.PttIMesto} | PIB: {firma.Pib ?? "---"} | Žiro: {firma.ZiroRacun ?? "---"}").FontSize(9).FontColor(Colors.Grey.Medium);
+                        col.Item().PaddingTop(10).Text($"NALOG ZA KNJIŽENJE br. {nalog.BrojNaloga}").Bold().FontSize(16).AlignCenter();
+                        
+                        string statusText = nalog.IsKnjizen ? "PROKNJIŽEN" : "NACRT";
+                        col.Item().PaddingTop(3).Text($"Datum: {nalog.DatumNaloga:dd.MM.yyyy}   |   Vrsta: {nalog.VrstaNaloga ?? "Finansijski"}   |   Status: {statusText}").FontSize(10).AlignCenter().FontColor(Colors.Grey.Darken2);
+                        
+                        if (!string.IsNullOrWhiteSpace(nalog.Opis))
+                        {
+                            col.Item().PaddingTop(3).Text($"Opis: {nalog.Opis}").FontSize(10).AlignCenter().Italic();
+                        }
+                        
+                        col.Item().PaddingTop(6).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                    });
+
+                    page.Content().PaddingVertical(10).Column(col =>
+                    {
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.ConstantColumn(40);  // R.br
+                                columns.ConstantColumn(80);  // Konto
+                                columns.RelativeColumn(3);   // Dokument / Opis
+                                columns.ConstantColumn(100); // Duguje
+                                columns.ConstantColumn(100); // Potražuje
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("R.br.").Bold();
+                                header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Konto").Bold();
+                                header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Dokument / Opis").Bold();
+                                header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Duguje (RSD)").Bold().AlignRight();
+                                header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Potražuje (RSD)").Bold().AlignRight();
+                            });
+
+                            decimal zbirDuguje = 0;
+                            decimal zbirPotrazuje = 0;
+                            int rbr = 1;
+
+                            foreach (var st in nalog.Stavke)
+                            {
+                                zbirDuguje += st.Duguje;
+                                zbirPotrazuje += st.Potrazuje;
+
+                                int displayRbr = st.RedniBroj > 0 ? st.RedniBroj : rbr++;
+
+                                table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(displayRbr.ToString());
+                                table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(st.BrojKonta ?? "");
+                                table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(st.Opis ?? st.BrojDokumenta ?? nalog.Opis ?? "");
+                                table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{st.Duguje:N2}").AlignRight();
+                                table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{st.Potrazuje:N2}").AlignRight();
+                            }
+
+                            table.Cell().ColumnSpan(3).Padding(6).Text("UKUPNO NALOG:").Bold().AlignRight();
+                            table.Cell().Padding(6).Text($"{zbirDuguje:N2}").Bold().AlignRight();
+                            table.Cell().Padding(6).Text($"{zbirPotrazuje:N2}").Bold().AlignRight();
+                        });
+
+                        col.Item().PaddingTop(40).Row(row =>
+                        {
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("Nalog izradio:").FontSize(9).FontColor(Colors.Grey.Darken1);
+                                c.Item().PaddingTop(25).LineHorizontal(0.5f).LineColor(Colors.Grey.Darken1);
+                            });
+                            row.ConstantItem(40);
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("Nalog proknjižio:").FontSize(9).FontColor(Colors.Grey.Darken1);
+                                c.Item().PaddingTop(25).LineHorizontal(0.5f).LineColor(Colors.Grey.Darken1);
+                            });
+                            row.ConstantItem(40);
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("Odobrio / Kontrolisao:").FontSize(9).FontColor(Colors.Grey.Darken1);
+                                c.Item().PaddingTop(25).LineHorizontal(0.5f).LineColor(Colors.Grey.Darken1);
+                            });
+                        });
+                    });
+
+                    page.Footer().AlignRight().Text(x =>
+                    {
+                        x.Span("Stranica ");
+                        x.CurrentPageNumber();
+                        x.Span(" od ");
+                        x.TotalPages();
+                    });
+                });
+            }
+        }).GeneratePdf();
+    }
+
+    public static byte[] GenerisiKontniPlanPdf(Firma firma, List<Konto> konta)
+    {
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(1.5f, Unit.Centimetre);
+                page.PageColor(Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(10));
+
+                page.Header().Column(col =>
+                {
+                    col.Item().Text(firma.Naziv).Bold().FontSize(14).FontColor(Colors.Blue.Medium);
+                    col.Item().Text($"{firma.Adresa}, {firma.PttIMesto} | PIB: {firma.Pib ?? "---"} | Žiro: {firma.ZiroRacun ?? "---"}").FontSize(9).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(10).Text("KONTNI PLAN").Bold().FontSize(16).AlignCenter();
+                    col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                });
+
+                page.Content().PaddingVertical(10).Column(col =>
+                {
+                    col.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(90);
+                            columns.RelativeColumn(3);
+                            columns.ConstantColumn(80);
+                            columns.ConstantColumn(100);
+                        });
+
+                        table.Header(header =>
+                        {
+                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Konto").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Naziv konta").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Klasa").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Tip").Bold();
+                        });
+
+                        foreach (var k in konta)
+                        {
+                            var textBroj = table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(k.BrojKonta);
+                            if (k.IsSintetika) textBroj.Bold();
+
+                            var textNaziv = table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(k.NazivKonta);
+                            if (k.IsSintetika) textNaziv.Bold();
+
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"Klasa {k.Klasa}");
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(k.IsSintetika ? "Sintetički" : "Analitički");
+                        }
+                    });
+                });
+
+                page.Footer().AlignRight().Text(x =>
+                {
+                    x.Span("Stranica ");
+                    x.CurrentPageNumber();
+                    x.Span(" od ");
+                    x.TotalPages();
+                });
+            });
+        }).GeneratePdf();
+    }
 }

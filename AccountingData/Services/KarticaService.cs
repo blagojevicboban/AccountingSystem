@@ -22,8 +22,46 @@ public class KarticaService
         _db = db;
     }
 
-    public async Task<List<Konto>> GetKontaAsync(string? search = null)
+    public async Task<List<Konto>> GetKontaAsync(bool samoSaPrometom = false, string? search = null)
     {
+        var existingKonta = await _db.Konta.ToListAsync();
+        var resultKontaDict = existingKonta.ToDictionary(k => k.BrojKonta, StringComparer.OrdinalIgnoreCase);
+
+        if (samoSaPrometom)
+        {
+            var activeCodes = await _db.StavkeNaloga
+                .Where(s => s.Nalog != null && s.Nalog.IsKnjizen && !string.IsNullOrEmpty(s.BrojKonta))
+                .Select(s => s.BrojKonta!)
+                .Distinct()
+                .ToListAsync();
+
+            var activeKontaList = new List<Konto>();
+            foreach (var code in activeCodes)
+            {
+                if (resultKontaDict.TryGetValue(code, out var existing))
+                {
+                    activeKontaList.Add(existing);
+                }
+                else
+                {
+                    activeKontaList.Add(new Konto
+                    {
+                        BrojKonta = code,
+                        NazivKonta = $"Konto {code}",
+                        IsSintetika = code.Length <= 3
+                    });
+                }
+            }
+
+            var queryable = activeKontaList.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                queryable = queryable.Where(k => k.BrojKonta.Contains(search, StringComparison.OrdinalIgnoreCase) || 
+                                                 k.NazivKonta.Contains(search, StringComparison.OrdinalIgnoreCase));
+            }
+            return queryable.OrderBy(k => k.BrojKonta).ToList();
+        }
+
         var query = _db.Konta.AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
         {

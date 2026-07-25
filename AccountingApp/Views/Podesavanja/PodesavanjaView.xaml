@@ -49,7 +49,22 @@
                     </StackPanel>
                 </Border>
 
-                <!-- CARD 2: Štampa i izveštaji -->
+                <!-- CARD 2: Uvoz podataka iz DOS sistema -->
+                <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="🔄 Uvoz podataka iz legacy DOS sistema (DBF)" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                            <TextBlock Text="Uvoz kontnog plana, naloga knjiženja, partnera, artikala i magacina iz dBase III / Clipper datoteka." FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="🔄 Pokreni uvoz iz DOS-a..." Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Height="36" Padding="16,0" VerticalAlignment="Center" Click="BtnUvozDOS_Click"/>
+                    </Grid>
+                </Border>
+
+                <!-- CARD 3: Štampa i izveštaji -->
                 <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="📄 Podaci za štampu i PDF izveštaje" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>

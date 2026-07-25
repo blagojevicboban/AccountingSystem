@@ -186,6 +186,7 @@ class Program
 
             var naloziGroups = rows
                 .Where(r => r.Count > 8 && !string.IsNullOrWhiteSpace(GetVal(r, 0)))
+                .Where(r => GetVal(r, 0).Trim().TrimStart('0') != "")
                 .GroupBy(r => GetVal(r, 0).Trim());
 
             int nalogCount = 0;
@@ -194,6 +195,7 @@ class Program
             foreach (var group in naloziGroups)
             {
                 string brNaloga = group.Key;
+                if (string.IsNullOrWhiteSpace(brNaloga) || brNaloga.TrimStart('0') == "") continue;
                 var firstRow = group.First();
 
                 DateTime datNaloga = ParseDate(GetVal(firstRow, 8));

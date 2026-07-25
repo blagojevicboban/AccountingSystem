@@ -92,4 +92,67 @@ public class NaloziService
         await _db.SaveChangesAsync();
         return true;
     }
+
+    /// <summary>
+    /// Knjiženje svih neproknjiženih naloga odjednom (analogno knjiz_f_naloga(0) iz DOS FIN1.PRG).
+    /// PROVERAVA ravnotežu svakog naloga; knjiži sve ravnotežne naloge i vraća broj proknjiženih.
+    /// </summary>
+    public async Task<(int ProknjizenoCount, List<string> NeuravnotezeniNalozi)> KnjiziSveNalogeAsync()
+    {
+        var unposted = await _db.Nalozi
+            .Include(n => n.Stavke)
+            .Where(n => !n.IsKnjizen)
+            .ToListAsync();
+
+        int proknjizenoCount = 0;
+        var neuravnotezeni = new List<string>();
+
+        foreach (var nalog in unposted)
+        {
+            nalog.UkupnoDuguje = nalog.Stavke.Sum(s => s.Duguje);
+            nalog.UkupnoPotrazuje = nalog.Stavke.Sum(s => s.Potrazuje);
+
+            if (nalog.IsUuravnotezen)
+            {
+                nalog.IsKnjizen = true;
+                nalog.DatumKnjiženja = DateTime.Now;
+                proknjizenoCount++;
+            }
+            else
+            {
+                neuravnotezeni.Add(nalog.BrojNaloga);
+            }
+        }
+
+        if (proknjizenoCount > 0)
+        {
+            await _db.SaveChangesAsync();
+        }
+
+        return (proknjizenoCount, neuravnotezeni);
+    }
+
+    /// <summary>
+    /// Masovno preknjižavanje konta na stavkama naloga (analogno preknjizi() iz DOS FIN1.PRG).
+    /// Zamenjuje staro konto novim kontom na svim stavkama naloga i ažurira bazu.
+    /// </summary>
+    public async Task<int> PreknjiziKontoAsync(string staroKonto, string novoKonto)
+    {
+        if (string.IsNullOrWhiteSpace(staroKonto) || string.IsNullOrWhiteSpace(novoKonto))
+        {
+            throw new ArgumentException("Brojevi starog i novog konta ne mogu biti prazni.");
+        }
+
+        var stavke = await _db.StavkeNaloga
+            .Where(s => s.BrojKonta == staroKonto)
+            .ToListAsync();
+
+        foreach (var s in stavke)
+        {
+            s.BrojKonta = novoKonto;
+        }
+
+        await _db.SaveChangesAsync();
+        return stavke.Count;
+    }
 }

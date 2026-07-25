@@ -87,6 +87,12 @@ public partial class MainWindow : Window
         NavigateToDashboard();
     }
 
+    private void NavKonta_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "📋 Kontni plan (Šifarnik konta)";
+        MainContentHost.Content = new Views.Konta.KontaView();
+    }
+
     private void NavNalozi_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📖 Glavna knjiga (Nalozi za knjiženje)";
@@ -157,14 +163,5 @@ public partial class MainWindow : Window
     {
         var dijalog = new ChangelogWindow { Owner = this };
         dijalog.ShowDialog();
-    }
-
-    private void BtnUvozDOS_Click(object sender, RoutedEventArgs e)
-    {
-        var window = new Views.Pomoc.DosImportWindow(_db)
-        {
-            Owner = this
-        };
-        window.ShowDialog();
     }
 }

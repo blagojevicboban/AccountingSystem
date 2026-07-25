@@ -4,6 +4,26 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.8] - 2026-07-25
+
+### 📋 Novi modul Kontni plan (`KontaView`) & Unos/Izmena/Štampa konta
+- **Šifarnik kontnog plana (`📋 Kontni plan`)**: Novi zasebni modul u glavnoj navigaciji za rad sa kontnim planom (analogno DOS `gk1()` proceduri). Prikazuje celokupan šifarnik konta sa pretragom i sortiranjem.
+- **Unos, izmena i brisanje konta (`KontoEditWindow`)**: Dodati dijalozi za unos novog konta (`➕ Novi konto`), izmenu naziva i vrste (`✏️ Izmeni`), kao i bezbedno brisanje konta (`🗑️ Obriši`) uz proveru postojeće proknjižene analitike.
+- **PDF Štampa kontnog plana**: Implementirano generisanje i pregled PDF dokumenta celokupnog kontnog plana.
+
+### 📖 Glavna knjiga & Nalozi knjiženja
+- **Masovno knjiženje naloga (`⚡ Proknjiži sve`)**: Implementirana mogućnost knjiženja svih neproknjiženih naloga odjednom (analogno DOS `knjiz_f_naloga(0)`).
+- **Preknjižavanje konta (`🔄 Preknjižavanje`)**: Implementiran alat za masovnu zamenu broja konta na stavkama naloga knjiženja u bazi (analogno DOS `prekm()` / `preknjizi()`).
+- **Štampa selektovanih naloga (`🖨️ Štampa`)**: Dodato generisanje PDF naloga za knjiženje za jedan ili više izabranih naloga.
+- **Filteri statusa naloga**: Zamenjen CheckBox RadioButton dugmadima (`Svi`, `Proknjiženi`, `Neproknjiženi`) uz prilagodljiv `WrapPanel` raspored bez preklapanja.
+
+### 📋 Kartice konta & Podešavanja
+- **Filter konta sa prometom (`[x] Samo konta sa knjiženjima`)**: Dodat filter na ekranu Kartice konta koji podrazumevano prikazuje samo konta koja imaju proknjiženi promet.
+- **Premeštanje uvoza u Podešavanja**: Uvoz DOS podataka iz sporednog zaglavlja premešten u namensku sekciju u ekranu `⚙️ Podešavanja`.
+- **Prečišćavanje uvoza naloga**: Filtriran interni brojač DOS Clipper sistema (Nalog `0`) i usmeren uvoz isključivo na `NALOG.DBF`.
+
+---
+
 ## [1.0.7] - 2026-07-25
 
 ### 🚀 Zasebne SQLite baze po firmama (Per-firm Isolated Databases)

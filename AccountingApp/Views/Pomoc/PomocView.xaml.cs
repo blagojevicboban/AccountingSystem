@@ -122,15 +122,20 @@ public partial class PomocView : UserControl
         },
         new PomocTema
         {
+            Naslov = "📋 Kontni plan (Šifarnik konta)",
+            Sadrzaj =
+                "Modul za pregled, unos, izmenu i štampu kontnog plana (analogno DOS proceduri gk1).\n\n" +
+                "• „Novi konto“ — otvara dijalog za unos novog konta (broj konta, naziv, vrsta konta). Klasa i sintetički/analitički status se automatski određuju.\n" +
+                "• „Izmeni“ — izmena naziva ili vrste postojećeg konta.\n" +
+                "• „Obriši“ — brisanje konta (dozvoljeno samo za konta bez proknjiženih stavki).\n" +
+                "• „Štampaj Kontni plan (PDF)“ — generisanje i pregled kompletne liste konta u PDF formatu."
+        },
+        new PomocTema
+        {
             Naslov = "🔄 Uvoz iz DOS sistema",
             Sadrzaj =
-                "Dugme „Uvoz iz DOS sistema“ u gornjem desnom uglu je samo demonstracioni prikaz poruke o " +
-                "poslednjem uvozu — ne pokreće stvarni uvoz.\n\n" +
-                "Stvarni uvoz legacy DBF podataka (dBase III / Clipper fajlovi iz C:\\KNJIGE\\Radni\\KORxx) se " +
-                "pokreće kao poseban konzolni alat:\n\n" +
-                "dotnet run --project AccountingMigration/AccountingMigration.csproj\n\n" +
-                "Ovaj alat BRIŠE i ponovo kreira bazu podataka za firmu, uvozeći kontni plan, naloge, partnere, " +
-                "materijale, magacine, ulaze, trebovanja, kartice i kamatne stope iz legacy fajlova."
+                "Dugme za pokretanje uvoza DOS podataka nalazi se u ekranu Podešavanja aplikacije (⚙️ Podešavanja -> 🔄 Uvoz podataka iz legacy DOS sistema).\n\n" +
+                "Alat uvozi kontni plan, naloge knjiženja, partnere, materijale, magacine, ulaze i kartice iz dBase III / Clipper datoteka (C:\\KNJIGE\\Radni\\KORxx) direktno u SQLite bazu aktivne firme."
         }
     };
 

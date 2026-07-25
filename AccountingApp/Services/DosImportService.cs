@@ -331,84 +331,80 @@ public class DosImportService
                     Report(progress, firmaDto.Naziv, "Artikli", basePercent + 55, $"   --> Uvezeno {count} novih artikala!");
                 }
 
-                // 5. Nalozi za knjiženje (NALOGI.DBF + NALSTAV.DBF)
-                var nalogiFile = Path.Combine(firmaDto.FolderPath, "NALOGI.DBF");
-                var nalstavFile = Path.Combine(firmaDto.FolderPath, "NALSTAV.DBF");
+                // 5. Nalozi za knjiženje (NALOG.DBF)
+                var nalogFile = Path.Combine(firmaDto.FolderPath, "NALOG.DBF");
 
-                if (File.Exists(nalogiFile) && File.Exists(nalstavFile))
+                if (File.Exists(nalogFile))
                 {
-                    Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 60, "📖 Uvoz Naloga za knjiženje i stavki...");
-                    var nalogRows = ReadDbfRows(nalogiFile);
-                    var stavkaRows = ReadDbfRows(nalstavFile);
-
-                    // Grupiši stavke po broju naloga
-                    var stavkeGrouped = stavkaRows
-                        .GroupBy(s => GetVal(s, "NALOG", "BROJ", "ID").Trim())
-                        .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+                    Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 60, "📖 Uvoz Naloga za knjiženje i stavki (NALOG.DBF)...");
+                    var rows = ReadDbfRows(nalogFile);
+                    var groups = rows
+                        .Select(r => new { Row = r, NalogNo = GetVal(r, "BROJ", "NALOG", "ID", "SIFRA").Trim() })
+                        .Where(x => !string.IsNullOrWhiteSpace(x.NalogNo) && x.NalogNo.TrimStart('0') != "")
+                        .GroupBy(x => x.NalogNo);
 
                     int nalogiCount = 0;
                     int stavkeCount = 0;
 
-                    foreach (var nr in nalogRows)
+                    foreach (var group in groups)
                     {
-                        string bNaloga = GetVal(nr, "BROJ", "NALOG", "ID").Trim();
-                        string datumStr = GetVal(nr, "DATUM", "DAT").Trim();
-                        string opis = GetVal(nr, "OPIS", "NAPOMENA").Trim();
+                        string bNaloga = group.Key;
+                        if (!existingNalogi.Add(bNaloga)) continue;
 
-                        if (string.IsNullOrWhiteSpace(bNaloga)) continue;
+                        var firstRow = group.First().Row;
+                        string datumStr = GetVal(firstRow, "DATUM", "DAT").Trim();
+                        string prviOpis = GetVal(firstRow, "OPIS", "TEKST", "DOK").Trim();
 
                         DateTime datum = DateTime.Now;
                         if (DateTime.TryParse(datumStr, out var dParsed)) datum = dParsed;
 
-                        if (existingNalogi.Add(bNaloga))
+                        var nalog = new Nalog
                         {
-                            var nalog = new Nalog
-                            {
-                                BrojNaloga = bNaloga,
-                                DatumNaloga = datum,
-                                Opis = string.IsNullOrWhiteSpace(opis) ? $"Nalog {bNaloga}" : opis,
-                                IsKnjizen = true,
-                                DatumKnjiženja = datum
-                            };
+                            BrojNaloga = bNaloga,
+                            DatumNaloga = datum,
+                            Opis = string.IsNullOrWhiteSpace(prviOpis) ? $"Nalog {bNaloga}" : prviOpis,
+                            IsKnjizen = true,
+                            DatumKnjiženja = datum
+                        };
 
-                            decimal ukupnoDuguje = 0;
-                            decimal ukupnoPotražuje = 0;
+                        int rBr = 1;
+                        decimal ukupnoDuguje = 0;
+                        decimal ukupnoPotražuje = 0;
 
-                            if (stavkeGrouped.TryGetValue(bNaloga, out var myStavke))
+                        foreach (var item in group)
+                        {
+                            var sr = item.Row;
+                            string konto = GetVal(sr, "KONTO", "BROJ").Trim();
+                            string stOpis = GetVal(sr, "OPIS", "TEKST", "DOK").Trim();
+                            string dugStr = GetVal(sr, "DUGUJE", "DUG").Trim();
+                            string potStr = GetVal(sr, "POTRAZUJE", "POT").Trim();
+
+                            decimal.TryParse(dugStr.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal dug);
+                            decimal.TryParse(potStr.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal pot);
+
+                            if (!string.IsNullOrWhiteSpace(konto) || dug > 0 || pot > 0)
                             {
-                                foreach (var sr in myStavke)
+                                nalog.Stavke.Add(new StavkaNaloga
                                 {
-                                    string konto = GetVal(sr, "KONTO", "BROJ").Trim();
-                                    string stOpis = GetVal(sr, "OPIS", "TEKST").Trim();
-                                    string dugStr = GetVal(sr, "DUGUJE", "DUG").Trim();
-                                    string potStr = GetVal(sr, "POTRAZUJE", "POT").Trim();
+                                    RedniBroj = rBr++,
+                                    BrojKonta = konto,
+                                    BrojDokumenta = stOpis,
+                                    Opis = string.IsNullOrWhiteSpace(stOpis) ? nalog.Opis : stOpis,
+                                    Duguje = dug,
+                                    Potrazuje = pot
+                                });
 
-                                    decimal.TryParse(dugStr.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal dug);
-                                    decimal.TryParse(potStr.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal pot);
-
-                                    if (!string.IsNullOrWhiteSpace(konto))
-                                    {
-                                        nalog.Stavke.Add(new StavkaNaloga
-                                        {
-                                            BrojKonta = konto,
-                                            Opis = string.IsNullOrWhiteSpace(stOpis) ? nalog.Opis : stOpis,
-                                            Duguje = dug,
-                                            Potrazuje = pot
-                                        });
-
-                                        ukupnoDuguje += dug;
-                                        ukupnoPotražuje += pot;
-                                        stavkeCount++;
-                                    }
-                                }
+                                ukupnoDuguje += dug;
+                                ukupnoPotražuje += pot;
+                                stavkeCount++;
                             }
-
-                            nalog.UkupnoDuguje = ukupnoDuguje;
-                            nalog.UkupnoPotrazuje = ukupnoPotražuje;
-
-                            firmDb.Nalozi.Add(nalog);
-                            nalogiCount++;
                         }
+
+                        nalog.UkupnoDuguje = ukupnoDuguje;
+                        nalog.UkupnoPotrazuje = ukupnoPotražuje;
+
+                        firmDb.Nalozi.Add(nalog);
+                        nalogiCount++;
                     }
 
                     await firmDb.SaveChangesAsync();

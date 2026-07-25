@@ -1,0 +1,83 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using AccountingData;
+using AccountingData.Models;
+using AccountingData.Services;
+using Microsoft.EntityFrameworkCore;
+
+namespace AccountingApp.Views.Konta;
+
+public partial class KontoEditWindow : Window
+{
+    private readonly Konto _konto;
+    private readonly bool _isEdit;
+
+    public KontoEditWindow(Konto? konto = null)
+    {
+        InitializeComponent();
+        _isEdit = konto != null;
+        _konto = konto ?? new Konto();
+
+        if (_isEdit)
+        {
+            TxtHeader.Text = $"✏️ Izmena konta {_konto.BrojKonta}";
+            TxtBrojKonta.Text = _konto.BrojKonta;
+            TxtBrojKonta.IsReadOnly = true;
+            TxtNazivKonta.Text = _konto.NazivKonta;
+
+            for (int i = 0; i < CmbVrstaKonta.Items.Count; i++)
+            {
+                if (((ComboBoxItem)CmbVrstaKonta.Items[i]).Content.ToString() == _konto.VrstaKonta)
+                {
+                    CmbVrstaKonta.SelectedIndex = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    private async void BtnSacuvaj_Click(object sender, RoutedEventArgs e)
+    {
+        string broj = TxtBrojKonta.Text.Trim();
+        string naziv = TxtNazivKonta.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(broj))
+        {
+            MessageBox.Show("Broj konta je obavezan.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(naziv))
+        {
+            MessageBox.Show("Naziv konta je obavezan.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        _konto.BrojKonta = broj;
+        _konto.NazivKonta = naziv;
+        _konto.VrstaKonta = ((ComboBoxItem)CmbVrstaKonta.SelectedItem)?.Content?.ToString() ?? "Aktivna";
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new KontaService(db);
+            await service.SaveKontoAsync(_konto);
+
+            DialogResult = true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri čuvanju konta: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnOdustani_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+    }
+}

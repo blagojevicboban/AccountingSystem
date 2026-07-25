@@ -31,8 +31,9 @@ public partial class KarticeView : UserControl
             using var db = new AccountingDbContext(options);
             var service = new KarticaService(db);
 
-            _svaKonta = await service.GetKontaAsync();
-            LstKonta.ItemsSource = _svaKonta;
+            bool samoSaPrometom = ChkSamoSaPrometom?.IsChecked ?? true;
+            _svaKonta = await service.GetKontaAsync(samoSaPrometom);
+            ApplyFilter();
         }
         catch (Exception ex)
         {
@@ -40,12 +41,37 @@ public partial class KarticeView : UserControl
         }
     }
 
-    private void TxtPretragaKonta_TextChanged(object sender, TextChangedEventArgs e)
+    private void Filter_Changed(object sender, RoutedEventArgs e)
     {
-        string search = TxtPretragaKonta.Text.Trim().ToLower();
-        LstKonta.ItemsSource = string.IsNullOrEmpty(search)
+        LoadKonta();
+    }
+
+    private void ApplyFilter()
+    {
+        if (LstKonta == null) return;
+
+        string search = TxtPretragaKonta?.Text.Trim().ToLower() ?? "";
+        var filtered = string.IsNullOrEmpty(search)
             ? _svaKonta
             : _svaKonta.Where(k => k.BrojKonta.ToLower().Contains(search) || k.NazivKonta.ToLower().Contains(search)).ToList();
+
+        LstKonta.ItemsSource = filtered;
+        if (filtered.Any())
+        {
+            LstKonta.SelectedIndex = 0;
+        }
+        else
+        {
+            DgKartica.ItemsSource = null;
+            TxtNaslovKonta.Text = "Nema konta za prikaz";
+            TxtPodnaslovKonta.Text = "";
+            TxtSaldoKonta.Text = "0,00";
+        }
+    }
+
+    private void TxtPretragaKonta_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        ApplyFilter();
     }
 
     private async void LstKonta_SelectionChanged(object sender, SelectionChangedEventArgs e)

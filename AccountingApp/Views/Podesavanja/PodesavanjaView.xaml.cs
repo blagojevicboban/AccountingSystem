@@ -2,6 +2,8 @@ using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using AccountingData;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 
 namespace AccountingApp.Views.Podesavanja;
@@ -72,6 +74,27 @@ public partial class PodesavanjaView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri čuvanju podešavanja:\n{ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnUvozDOS_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var window = new Views.Pomoc.DosImportWindow(db)
+            {
+                Owner = Window.GetWindow(this)
+            };
+            window.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri pokretanju uvoza iz DOS sistema:\n{ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }

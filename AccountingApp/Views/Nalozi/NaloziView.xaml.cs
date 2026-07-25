@@ -1,5 +1,10 @@
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using AccountingApp.Services;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -14,11 +19,7 @@ public partial class NaloziView : UserControl
     public NaloziView()
     {
         InitializeComponent();
-        // Set here (not as a XAML literal) so the Checked event this triggers runs
-        // after the whole tree — including DgNalozi, declared later in the XAML —
-        // is fully constructed. As a XAML attribute it fired mid-InitializeComponent(),
-        // before DgNalozi existed, crashing ApplyFilter() with a NullReferenceException.
-        ChkSamoProknjizeni.IsChecked = true;
+        RbProknjizeni.IsChecked = true;
         LoadNalozi();
     }
 
@@ -44,12 +45,17 @@ public partial class NaloziView : UserControl
 
     private void ApplyFilter()
     {
+        if (DgNalozi == null) return;
+
         string search = TxtPretraga.Text.Trim().ToLower();
-        bool samoKnjizeni = ChkSamoProknjizeni.IsChecked ?? false;
+
+        bool samoProknjizeni = RbProknjizeni?.IsChecked == true;
+        bool samoNeproknjizeni = RbNeproknjizeni?.IsChecked == true;
 
         var filtered = _allNalozi.Where(n =>
             (string.IsNullOrEmpty(search) || n.BrojNaloga.ToLower().Contains(search) || (n.Opis != null && n.Opis.ToLower().Contains(search))) &&
-            (!samoKnjizeni || n.IsKnjizen)
+            (!samoProknjizeni || n.IsKnjizen) &&
+            (!samoNeproknjizeni || !n.IsKnjizen)
         ).ToList();
 
         DgNalozi.ItemsSource = filtered;
@@ -234,6 +240,109 @@ public partial class NaloziView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri prenosu u novu godinu: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private async void BtnStampa_Click(object sender, RoutedEventArgs e)
+    {
+        var selektovaniNalozi = DgNalozi.SelectedItems.OfType<Nalog>().ToList();
+
+        if (!selektovaniNalozi.Any() && DgNalozi.SelectedItem is Nalog singleNalog)
+        {
+            selektovaniNalozi.Add(singleNalog);
+        }
+
+        if (!selektovaniNalozi.Any())
+        {
+            MessageBox.Show("Molimo izaberite jedan ili više naloga za štampu.", "Informacija", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? AppSession.TrenutnaFirma ?? new Firma { Naziv = "Firma" };
+
+            var nalogIds = selektovaniNalozi.Select(n => n.NalogId).ToList();
+            var naloziSaStavkama = await db.Nalozi
+                .Include(n => n.Stavke)
+                .Where(n => nalogIds.Contains(n.NalogId))
+                .ToListAsync();
+
+            var nalogeForPdf = selektovaniNalozi
+                .Select(s => naloziSaStavkama.FirstOrDefault(n => n.NalogId == s.NalogId) ?? s)
+                .ToList();
+
+            byte[] pdfBytes = PdfReportService.GenerisiNalogePdf(firma, nalogeForPdf);
+
+            string fileName = nalogeForPdf.Count == 1 
+                ? $"Nalog_{nalogeForPdf[0].BrojNaloga}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf"
+                : $"Nalozi_Vise_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+
+            string pdfPath = Path.Combine(Path.GetTempPath(), fileName);
+            await File.WriteAllBytesAsync(pdfPath, pdfBytes);
+
+            Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri generisanju PDF štampe: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnProknjiziSve_Click(object sender, RoutedEventArgs e)
+    {
+        var unpostedCount = _allNalozi.Count(n => !n.IsKnjizen);
+        if (unpostedCount == 0)
+        {
+            MessageBox.Show("Nema neproknjiženih naloga u bazi.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var potvrda = MessageBox.Show(
+            $"Da li želite da proknjižite sve neproknjižene naloge (ukupno {unpostedCount} naloga)?",
+            "Potvrda masovnog knjiženja", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (potvrda != MessageBoxResult.Yes) return;
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new NaloziService(db);
+
+            var (proknjizenoCount, neuravnotezeni) = await service.KnjiziSveNalogeAsync();
+
+            string poruka = $"Uspešno je proknjiženo {proknjizenoCount} naloga!";
+            if (neuravnotezeni.Count > 0)
+            {
+                poruka += $"\n\nSledeći nalozi nisu u ravnoteži i ostali su neproknjiženi: {string.Join(", ", neuravnotezeni)}";
+            }
+
+            MessageBox.Show(poruka, "Masovno knjiženje", MessageBoxButton.OK, 
+                neuravnotezeni.Count > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+
+            LoadNalozi();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri masovnom knjiženju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnPreknjizavanje_Click(object sender, RoutedEventArgs e)
+    {
+        var dijalog = new PreknjizavanjeWindow { Owner = Window.GetWindow(this) };
+        if (dijalog.ShowDialog() == true)
+        {
+            LoadNalozi();
         }
     }
 }
