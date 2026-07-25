@@ -36,7 +36,12 @@
                 <DataGrid x:Name="DgKonta" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Broj konta" Binding="{Binding BrojKonta}" Width="140"/>
-                        <DataGridTextColumn Header="Naziv konta" Binding="{Binding NazivKonta}" Width="*"/>
+                        <DataGridTextColumn Header="Naziv konta" Binding="{Binding NazivKonta}" Width="240"/>
+                        <DataGridTextColumn Header="Stari konto" Binding="{Binding StariKonto}" Width="90"/>
+                        <DataGridTextColumn Header="Ulica" Binding="{Binding Ulica}" Width="150"/>
+                        <DataGridTextColumn Header="Mesto" Binding="{Binding Mesto}" Width="120"/>
+                        <DataGridTextColumn Header="Žiro račun" Binding="{Binding ZiroRacun}" Width="140"/>
+                        <DataGridTextColumn Header="Telefon" Binding="{Binding Telefon}" Width="110"/>
                         <DataGridTextColumn Header="Klasa" Binding="{Binding Klasa, StringFormat='Klasa \{0\}'}" Width="120"/>
                         <DataGridCheckBoxColumn Header="Sintetika" Binding="{Binding IsSintetika}" Width="100"/>
                         <DataGridTextColumn Header="Vrsta" Binding="{Binding VrstaKonta}" Width="120"/>

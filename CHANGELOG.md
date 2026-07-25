@@ -4,6 +4,19 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.10] - 2026-07-25
+
+### 📋 Kolone kontnog plana i ispravke ekrana za uvoz DOS podataka
+- **Prikaz svih uvezenih kolona u Kontnom planu**: `KontaView` sada prikazuje i stari konto, ulicu, mesto, žiro račun i telefon (uvezene iz KONTPLAN.DBF u v1.0.9, ali dosad neprikazane u tabeli). Kolona "Naziv konta" vraćena na čitljivu širinu (bila se stisla na par piksela pošto su nove kolone pojele preostali prostor).
+- **Ispravljen "Izaberi sve" u dijalogu uvoza**: checkbox-ovi za izbor firmi se sada vizuelno ažuriraju odmah (`DbfFirmaDto` sada šalje `PropertyChanged` obaveštenje); ranije je osnovni podatak bio tačno postavljen ali se prikaz na ekranu nije osvežavao za već iscrtane redove.
+- **Ispravljena šifra firme u dijalogu uvoza**: prikazivala se npr. `KOR1` umesto `KOR01` (nepodudaranje sa stvarnim nazivom foldera).
+
+### 🗂️ Baze podataka premeštene u zaseban Baze folder (po uzoru na SredstvaApp)
+- **Uvoz firmi više ne piše bazu u DOS folder firme** (`C:\KNJIGE\Radni\KORxx\`) — taj folder je izvor za reimport koji samostalni `AccountingMigration` alat po potrebi briše i pravi iznova, pa je živa baza tamo bila izložena riziku od tihog gubitka podataka. Baze sada žive u `%LocalAppData%\AccountingApp\Baze\`, imenovane `firma_{Šifra}_{Naziv}.db`.
+- **Jednokratna migracija postojeće baze**: pri prvom pokretanju posle nadogradnje, ako živa baza i dalje sedi na staroj DOS lokaciji, automatski se premešta u Baze folder (analogno `SredstvaApp.AppConfig.PrilagodiNazivZajednickeBaze`) — bez gubitka podataka, testirano na KOR01 (3.207 konta, 338 naloga pre i posle migracije identično).
+
+---
+
 ## [1.0.9] - 2026-07-25
 
 ### 🐛 Ispravka mapiranja DBF kolona pri uvozu (KONTPLAN, ANKONT, MAGACIN, ARTIKLI, NALOG)

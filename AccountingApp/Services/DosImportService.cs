@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,7 @@ using AccountingData.Services;
 
 namespace AccountingApp.Services;
 
-public class DbfFirmaDto
+public class DbfFirmaDto : INotifyPropertyChanged
 {
     public string Sifra { get; set; } = "";
     public string Naziv { get; set; } = "";
@@ -21,7 +22,20 @@ public class DbfFirmaDto
     public string Telefon { get; set; } = "";
     public string ZiroRacun { get; set; } = "";
     public string FolderPath { get; set; } = "";
-    public bool IsSelected { get; set; } = true;
+
+    private bool _isSelected = true;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected == value) return;
+            _isSelected = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 }
 
 public class DosImportProgress
@@ -79,7 +93,7 @@ public class DosImportService
                     {
                         firme.Add(new DbfFirmaDto
                         {
-                            Sifra = "KOR" + sifra,
+                            Sifra = folderName,
                             Naziv = string.IsNullOrWhiteSpace(naziv) ? $"Firma {sifra}" : naziv,
                             Pib = pib,
                             MaticniBroj = mb,
@@ -136,9 +150,11 @@ public class DosImportService
 
                 Report(progress, firmaDto.Naziv, "Inicijalizacija baze", basePercent, $"🚀 Kreiranje zasebne baze za firmu: {firmaDto.Naziv} ({firmaDto.Sifra})...");
 
-                // Putanja do zasebne baze u folderu firme (npr. C:\KNJIGE\Radni\KOR01\accounting_kor01.db)
-                string dbFileName = $"accounting_{firmaDto.Sifra.ToLower()}.db";
-                string firmaDbPath = Path.Combine(firmaDto.FolderPath, dbFileName);
+                // Putanja do zasebne baze u Baze folderu (npr. %LocalAppData%\AccountingApp\Baze\firma_KOR01_ARHIBEL_-_2026.db),
+                // NE u DOS folderu firme — taj folder je izvor za reimport i AccountingMigration ga briše/pravi iznova.
+                Directory.CreateDirectory(AppConfig.BazeDir);
+                string dbFileName = $"firma_{AppConfig.SanitizujZaNazivFajla(firmaDto.Sifra)}_{AppConfig.SanitizujZaNazivFajla(firmaDto.Naziv)}.db";
+                string firmaDbPath = Path.Combine(AppConfig.BazeDir, dbFileName);
 
                 // Ako baza već postoji u folderu firme, brišemo je radi čistog uvoza
                 if (File.Exists(firmaDbPath))

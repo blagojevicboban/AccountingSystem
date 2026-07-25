@@ -63,13 +63,11 @@ public partial class DosImportWindow : Window
     private void BtnSelectAll_Click(object sender, RoutedEventArgs e)
     {
         foreach (var f in _pronadjeneFirme) f.IsSelected = true;
-        DgFirme.Items.Refresh();
     }
 
     private void BtnDeselectAll_Click(object sender, RoutedEventArgs e)
     {
         foreach (var f in _pronadjeneFirme) f.IsSelected = false;
-        DgFirme.Items.Refresh();
     }
 
     private async void BtnStartImport_Click(object sender, RoutedEventArgs e)
