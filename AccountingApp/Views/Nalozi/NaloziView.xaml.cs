@@ -67,6 +67,20 @@ public partial class NaloziView : UserControl
         {
             DgStavke.ItemsSource = null;
         }
+
+        AzurirajDugmad();
+    }
+
+    /// <summary>
+    /// Izmeni/Proknjiži/Rasknjiži/Štampa zahtevaju izabran nalog u gridu.
+    /// </summary>
+    private void AzurirajDugmad()
+    {
+        bool imaSelekciju = DgNalozi.SelectedItem is Nalog;
+        BtnIzmeniNalog.IsEnabled = imaSelekciju;
+        BtnProknjizi.IsEnabled = imaSelekciju;
+        BtnRasknjizi.IsEnabled = imaSelekciju;
+        BtnStampa.IsEnabled = imaSelekciju;
     }
 
     private void TxtPretraga_TextChanged(object sender, TextChangedEventArgs e)
@@ -86,6 +100,8 @@ public partial class NaloziView : UserControl
             TxtDetailHeader.Text = $"📋 Stavke naloga #{selectedNalog.BrojNaloga} ({selectedNalog.Opis})";
             DgStavke.ItemsSource = selectedNalog.Stavke;
         }
+
+        AzurirajDugmad();
     }
 
     private void BtnNoviNalog_Click(object sender, RoutedEventArgs e)

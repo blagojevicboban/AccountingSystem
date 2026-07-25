@@ -4,6 +4,24 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.11] - 2026-07-25
+
+### 🏢 Firme prerađene po uzoru na SredstvaApp (1 baza = 1 firma)
+- **Ekran "Firme" sada skenira Baze folder** umesto da čita/piše `Firma` red u trenutno otvorenoj bazi — svaki `.db` fajl je jedna firma, sa ugrađenim desnim panelom "Detalji firme" za unos/izmenu (posebni dijalog `FirmaEditWindow` uklonjen). "⭐ Aktiviraj" sada stvarno prebacuje aktivnu bazu i restartuje aplikaciju (kao Sredstva `BtnAktivna_Click`); "🗑️ Briši" fizički briše bazu te firme.
+- **Uklonjen suvišan status "Firma je aktivna"** — u novom modelu svaka firma je puna, samostalna baza; postojala je zabuna sa "U upotrebi" pločicom koja već pokazuje koja je trenutno otvorena.
+- **Lista firmi pojednostavljena** na Šifra / Naziv / U upotrebi / Akcije — detaljna polja (PIB, adresa, žiro račun...) žive samo u desnom panelu, ne duplirano u tabeli.
+- **Pristup premešten**: bočni "Aktivna firma" okvir u meniju je sada klikabilan i otvara upravljanje firmama (kao u Sredstvi); posebna stavka menija "🏢 Firme" uklonjena.
+- **Ispravljeno mapiranje KORISNIC.DBF** (izvor za listu DOS firmi pri uvozu): polje `UL` nosi celu vrednost "Ulica i broj" a `BR` (uprkos imenu) nosi "Mesto i post. br." — potvrđeno u `FIN2.PRG`. Adresa/Mesto se ranije nisu uvozili zbog pogrešnih imena kolona.
+
+### 📊 Radna tabla — grafikoni
+- Dodata 3 grafikona (LiveCharts, paket je već bio uključen ali nekorišćen): status naloga (proknjiženi/neproknjiženi), promet po kontu (Top 10), top 5 partnera po prometu. Postojeći sadržaj (poslednji nalozi, podaci o firmi) ostaje odmah ispod kartica sa brojevima, grafikoni ispod toga.
+- Ispravljen broj u kartici "PROKNJIŽENI NALOZI" — ranije je brojao sve naloge, ne samo proknjižene.
+
+### ✏️ Kontni plan
+- `KontoEditWindow` (unos/izmena konta) sada ima i polja Stari konto, Ulica, Mesto, Žiro račun, Telefon (ranije vidljiva samo u tabeli, ne i u formi za unos/izmenu).
+
+---
+
 ## [1.0.10] - 2026-07-25
 
 ### 📋 Kolone kontnog plana i ispravke ekrana za uvoz DOS podataka

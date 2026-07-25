@@ -2,8 +2,6 @@ using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using AccountingData;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 
 namespace AccountingApp.Views.Podesavanja;
@@ -81,12 +79,7 @@ public partial class PodesavanjaView : UserControl
     {
         try
         {
-            var options = new DbContextOptionsBuilder<AccountingDbContext>()
-                .UseSqlite($"Data Source={AppConfig.DbPath}")
-                .Options;
-
-            using var db = new AccountingDbContext(options);
-            var window = new Views.Pomoc.DosImportWindow(db)
+            var window = new Views.Pomoc.DosImportWindow
             {
                 Owner = Window.GetWindow(this)
             };

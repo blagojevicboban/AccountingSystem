@@ -25,6 +25,11 @@ public partial class KontoEditWindow : Window
             TxtBrojKonta.Text = _konto.BrojKonta;
             TxtBrojKonta.IsReadOnly = true;
             TxtNazivKonta.Text = _konto.NazivKonta;
+            TxtStariKonto.Text = _konto.StariKonto;
+            TxtUlica.Text = _konto.Ulica;
+            TxtMesto.Text = _konto.Mesto;
+            TxtZiroRacun.Text = _konto.ZiroRacun;
+            TxtTelefon.Text = _konto.Telefon;
 
             for (int i = 0; i < CmbVrstaKonta.Items.Count; i++)
             {
@@ -56,6 +61,11 @@ public partial class KontoEditWindow : Window
 
         _konto.BrojKonta = broj;
         _konto.NazivKonta = naziv;
+        _konto.StariKonto = string.IsNullOrWhiteSpace(TxtStariKonto.Text) ? null : TxtStariKonto.Text.Trim();
+        _konto.Ulica = string.IsNullOrWhiteSpace(TxtUlica.Text) ? null : TxtUlica.Text.Trim();
+        _konto.Mesto = string.IsNullOrWhiteSpace(TxtMesto.Text) ? null : TxtMesto.Text.Trim();
+        _konto.ZiroRacun = string.IsNullOrWhiteSpace(TxtZiroRacun.Text) ? null : TxtZiroRacun.Text.Trim();
+        _konto.Telefon = string.IsNullOrWhiteSpace(TxtTelefon.Text) ? null : TxtTelefon.Text.Trim();
         _konto.VrstaKonta = ((ComboBoxItem)CmbVrstaKonta.SelectedItem)?.Content?.ToString() ?? "Aktivna";
 
         try

@@ -1,90 +1,145 @@
 <UserControl x:Class="AccountingApp.Views.Dashboard.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1000">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,24">
-            <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="PROKNJIŽENI NALOZI" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
-                    <TextBlock x:Name="TxtUkupnoNaloga" Text="339" FontSize="28" FontWeight="Bold" Foreground="#2563EB" Margin="0,6,0,0"/>
-                    <TextBlock Text="5.606 stavki knjiženja" FontSize="12" Foreground="#10B981" Margin="0,4,0,0"/>
-                </StackPanel>
-            </Border>
+            <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,24">
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="PROKNJIŽENI NALOZI" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                        <TextBlock x:Name="TxtUkupnoNaloga" Text="339" FontSize="28" FontWeight="Bold" Foreground="#2563EB" Margin="0,6,0,0"/>
+                        <TextBlock x:Name="TxtStavkiKnjizenja" Text="5.606 stavki knjiženja" FontSize="12" Foreground="#10B981" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
 
-            <Border Background="White" CornerRadius="12" Padding="20" Margin="6,0,6,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="KONTNI PLAN" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
-                    <TextBlock x:Name="TxtUkupnoKonta" Text="42" FontSize="28" FontWeight="Bold" Foreground="#059669" Margin="0,6,0,0"/>
-                    <TextBlock Text="Aktivnih konta u bazi" FontSize="12" Foreground="#64748B" Margin="0,4,0,0"/>
-                </StackPanel>
-            </Border>
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="6,0,6,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="KONTNI PLAN" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                        <TextBlock x:Name="TxtUkupnoKonta" Text="42" FontSize="28" FontWeight="Bold" Foreground="#059669" Margin="0,6,0,0"/>
+                        <TextBlock Text="Aktivnih konta u bazi" FontSize="12" Foreground="#64748B" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
 
-            <Border Background="White" CornerRadius="12" Padding="20" Margin="6,0,6,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="ARTIKLI NA ZALIHAMA" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
-                    <TextBlock x:Name="TxtUkupnoMaterijala" Text="2.466" FontSize="28" FontWeight="Bold" Foreground="#D97706" Margin="0,6,0,0"/>
-                    <TextBlock Text="105 magacina" FontSize="12" Foreground="#64748B" Margin="0,4,0,0"/>
-                </StackPanel>
-            </Border>
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="6,0,6,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="ARTIKLI NA ZALIHAMA" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                        <TextBlock x:Name="TxtUkupnoMaterijala" Text="2.466" FontSize="28" FontWeight="Bold" Foreground="#D97706" Margin="0,6,0,0"/>
+                        <TextBlock Text="105 magacina" FontSize="12" Foreground="#64748B" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
 
-            <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="PARTNERI (ANALITIKA)" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
-                    <TextBlock x:Name="TxtUkupnoPartnera" Text="4" FontSize="28" FontWeight="Bold" Foreground="#7C3AED" Margin="0,6,0,0"/>
-                    <TextBlock Text="Kupci i dobavljači" FontSize="12" Foreground="#64748B" Margin="0,4,0,0"/>
-                </StackPanel>
-            </Border>
-        </UniformGrid>
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="PARTNERI (ANALITIKA)" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                        <TextBlock x:Name="TxtUkupnoPartnera" Text="4" FontSize="28" FontWeight="Bold" Foreground="#7C3AED" Margin="0,6,0,0"/>
+                        <TextBlock Text="Kupci i dobavljači" FontSize="12" Foreground="#64748B" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- Grafikoni -->
+            <Grid Grid.Row="2" Margin="0,0,0,24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="320"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="320"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <DockPanel>
-                    <TextBlock Text="Poslednji nalozi za knjiženje" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,16"/>
-                    <DataGrid x:Name="DgRecentNalozi" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="110"/>
-                            <DataGridTextColumn Header="Datum" Binding="{Binding DatumNaloga, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
-                            <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
-                            <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding UkupnoDuguje, StringFormat=\{0:N2\}}" Width="130"/>
-                            <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding UkupnoPotrazuje, StringFormat=\{0:N2\}}" Width="130"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </DockPanel>
-            </Border>
+                <!-- Status naloga (Donut) -->
+                <Border Grid.Row="0" Grid.Column="0" Background="White" CornerRadius="12" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Status naloga" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextBrush}" Margin="0,0,0,10"/>
+                        <lvc:PieChart x:Name="PieStatusNaloga" Grid.Row="1" LegendPosition="Right"/>
+                    </Grid>
+                </Border>
 
-            <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="Podaci o firmi" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,16"/>
+                <!-- Promet po kontu Top 10 (Pie) -->
+                <Border Grid.Row="0" Grid.Column="2" Background="White" CornerRadius="12" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Promet po kontu (Top 10)" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextBrush}" Margin="0,0,0,10"/>
+                        <lvc:PieChart x:Name="PiePrometKonta" Grid.Row="1" LegendPosition="Bottom"/>
+                    </Grid>
+                </Border>
 
-                    <TextBlock Text="Naziv firme:" FontWeight="Bold" Foreground="#64748B"/>
-                    <TextBlock Text="ARHIBEL - 2026" FontSize="14" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,2,0,12"/>
+                <!-- Top 5 partnera po prometu (Bar) -->
+                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="White" CornerRadius="12" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Top 5 partnera po prometu" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextBrush}" Margin="0,0,0,10"/>
+                        <lvc:CartesianChart x:Name="BarTopPartneri" Grid.Row="1"/>
+                        <TextBlock x:Name="TxtNemaPartnera" Grid.Row="1" Text="Nema stavki naloga povezanih sa partnerom." Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                    </Grid>
+                </Border>
+            </Grid>
 
-                    <TextBlock Text="Adresa:" FontWeight="Bold" Foreground="#64748B"/>
-                    <TextBlock Text="Srpskih vladara 106, 18300 Pirot" FontSize="13" Foreground="#0F172A" Margin="0,2,0,12"/>
+            <Grid Grid.Row="1" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Žiro račun:" FontWeight="Bold" Foreground="#64748B"/>
-                    <TextBlock Text="160-11508-84" FontSize="13" Foreground="#0F172A" Margin="0,2,0,12"/>
+                <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <DockPanel>
+                        <TextBlock Text="Poslednji nalozi za knjiženje" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,16"/>
+                        <DataGrid x:Name="DgRecentNalozi" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="110"/>
+                                <DataGridTextColumn Header="Datum" Binding="{Binding DatumNaloga, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
+                                <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding UkupnoDuguje, StringFormat=\{0:N2\}}" Width="130"/>
+                                <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding UkupnoPotrazuje, StringFormat=\{0:N2\}}" Width="130"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
 
-                    <TextBlock Text="Status migracije:" FontWeight="Bold" Foreground="#64748B"/>
-                    <Border Background="#ECFDF5" CornerRadius="6" Padding="10,6" Margin="0,6,0,0">
-                        <TextBlock Text="✅ Legacy DBF podaci uvezeni u SQLite!" FontSize="12" FontWeight="SemiBold" Foreground="#047857"/>
-                    </Border>
-                </StackPanel>
-            </Border>
+                <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Podaci o firmi" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Naziv firme:" FontWeight="Bold" Foreground="#64748B"/>
+                        <TextBlock Text="ARHIBEL - 2026" FontSize="14" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,2,0,12"/>
+
+                        <TextBlock Text="Adresa:" FontWeight="Bold" Foreground="#64748B"/>
+                        <TextBlock Text="Srpskih vladara 106, 18300 Pirot" FontSize="13" Foreground="#0F172A" Margin="0,2,0,12"/>
+
+                        <TextBlock Text="Žiro račun:" FontWeight="Bold" Foreground="#64748B"/>
+                        <TextBlock Text="160-11508-84" FontSize="13" Foreground="#0F172A" Margin="0,2,0,12"/>
+
+                        <TextBlock Text="Status migracije:" FontWeight="Bold" Foreground="#64748B"/>
+                        <Border Background="#ECFDF5" CornerRadius="6" Padding="10,6" Margin="0,6,0,0">
+                            <TextBlock Text="✅ Legacy DBF podaci uvezeni u SQLite!" FontSize="12" FontWeight="SemiBold" Foreground="#047857"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
-    </Grid>
+    </ScrollViewer>
 </UserControl>

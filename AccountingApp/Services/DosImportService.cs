@@ -75,9 +75,11 @@ public class DosImportService
                 string naziv = GetVal(r, "IME", "NAZIV", "FIRMA");
                 string pib = GetVal(r, "PIB");
                 string mb = GetVal(r, "MB", "MATICNI");
-                string mesto = GetVal(r, "GRAD", "MESTO");
-                string adresa = GetVal(r, "ADRESA", "ULICA");
-                string ziro = GetVal(r, "ZIRO", "RACUN");
+                // "UL" nosi celu vrednost "Ulica i broj", a "BR" (uprkos imenu) nosi
+                // "Mesto i post. br." — potvrđeno u FIN2.PRG novikorisnik()/izmenakorisnika().
+                string adresa = GetVal(r, "UL", "ADRESA", "ULICA");
+                string mesto = GetVal(r, "BR", "GRAD", "MESTO");
+                string ziro = GetVal(r, "Z", "ZIRO", "RACUN");
                 string tel = GetVal(r, "TEL", "TELEFON");
 
                 if (!string.IsNullOrWhiteSpace(sifra))
@@ -136,7 +138,7 @@ public class DosImportService
     /// <summary>
     /// Izvršava uvoz tako što za svaku firmu kreira njenu zasebnu SQLite bazu (kao u SredstvaApp).
     /// </summary>
-    public async Task UveziFirmeAsync(List<DbfFirmaDto> izabraneFirme, AccountingDbContext mainDb, IProgress<DosImportProgress> progress)
+    public async Task UveziFirmeAsync(List<DbfFirmaDto> izabraneFirme, IProgress<DosImportProgress> progress)
     {
         await Task.Run(async () =>
         {
@@ -182,26 +184,6 @@ public class DosImportService
                     };
                     firmDb.Firme.Add(dbFirma);
                     await firmDb.SaveChangesAsync();
-                }
-
-                // Registracija i u glavnoj bazi radi prikaza u listi firmi
-                var mainFirma = mainDb.Firme.FirstOrDefault(f => f.Sifra == firmaDto.Sifra || f.Naziv == firmaDto.Naziv);
-                if (mainFirma == null)
-                {
-                    mainFirma = new Firma
-                    {
-                        Sifra = firmaDto.Sifra,
-                        Naziv = firmaDto.Naziv,
-                        Pib = firmaDto.Pib,
-                        MaticniBroj = firmaDto.MaticniBroj,
-                        Adresa = firmaDto.Adresa,
-                        PttIMesto = firmaDto.PttIMesto,
-                        Telefon = firmaDto.Telefon,
-                        ZiroRacun = firmaDto.ZiroRacun,
-                        IsActive = true
-                    };
-                    mainDb.Firme.Add(mainFirma);
-                    await mainDb.SaveChangesAsync();
                 }
 
                 if (AppSession.TrenutnaFirma == null)

@@ -131,10 +131,15 @@ public partial class MainWindow : Window
         MainContentHost.Content = new IzvestajiView();
     }
 
-    private void NavFirme_Click(object sender, RoutedEventArgs e)
+    private void FirmaBorder_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
+        foreach (var child in PnlNavigation.Children)
+        {
+            if (child is RadioButton rb) rb.IsChecked = false;
+        }
+
         TxtHeaderTitle.Text = "🏢 Upravljanje firmama";
-        MainContentHost.Content = new Views.Firme.FirmeView(_db);
+        MainContentHost.Content = new Views.Firme.FirmeView();
     }
 
     private void NavBackup_Click(object sender, RoutedEventArgs e)

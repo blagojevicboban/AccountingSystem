@@ -5,19 +5,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using AccountingApp.Services;
-using AccountingData;
 
 namespace AccountingApp.Views.Pomoc;
 
 public partial class DosImportWindow : Window
 {
-    private readonly AccountingDbContext _db;
     private List<DbfFirmaDto> _pronadjeneFirme = new();
 
-    public DosImportWindow(AccountingDbContext db)
+    public DosImportWindow()
     {
         InitializeComponent();
-        _db = db;
 
         // Podrazumevana radna putanja
         string defaultPath = @"C:\KNJIGE\Radni";
@@ -96,7 +93,7 @@ public partial class DosImportWindow : Window
 
         try
         {
-            await DosImportService.Instance.UveziFirmeAsync(izabrane, _db, progressHandler);
+            await DosImportService.Instance.UveziFirmeAsync(izabrane, progressHandler);
             MessageBox.Show($"Uvoz je uspešno završen za {izabrane.Count} firmi!\n\nPodaci o kontima, partnerima, nalozima i artiklima su zavedeni u bazu.",
                 "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
         }
