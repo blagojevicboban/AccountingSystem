@@ -77,11 +77,34 @@ public partial class KontaView : UserControl
             return;
         }
 
-        var dijalog = new KontoEditWindow(selectedKonto) { Owner = Window.GetWindow(this) };
+        OtvoriIzmenuKonta(selectedKonto);
+    }
+
+    private void DgKonta_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (FindAncestor<DataGridRow>(e.OriginalSource as DependencyObject) == null) return;
+        if (DgKonta.SelectedItem is not Konto selectedKonto) return;
+
+        OtvoriIzmenuKonta(selectedKonto);
+    }
+
+    private void OtvoriIzmenuKonta(Konto konto)
+    {
+        var dijalog = new KontoEditWindow(konto) { Owner = Window.GetWindow(this) };
         if (dijalog.ShowDialog() == true)
         {
             LoadKonta();
         }
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
+    {
+        while (current != null)
+        {
+            if (current is T match) return match;
+            current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+        }
+        return null;
     }
 
     private async void BtnObrisiKonto_Click(object sender, RoutedEventArgs e)

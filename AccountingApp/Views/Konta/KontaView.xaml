@@ -33,7 +33,7 @@
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
                 <TextBlock Text="📋 Kontni plan (Šifarnik konta)" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
-                <DataGrid x:Name="DgKonta" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                <DataGrid x:Name="DgKonta" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" MouseDoubleClick="DgKonta_MouseDoubleClick">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Broj konta" Binding="{Binding BrojKonta}" Width="140"/>
                         <DataGridTextColumn Header="Naziv konta" Binding="{Binding NazivKonta}" Width="240"/>

@@ -20,6 +20,10 @@
         <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}"/>
         <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
 
+        <!-- Selekcija u listama/gridovima kad kontrola nije u fokusu — svetlija plava umesto podrazumevane sive -->
+        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#BFDBFE"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#0F172A"/>
+
         <Style x:Key="NavButtonStyle" TargetType="RadioButton">
             <Setter Property="Height" Value="42"/>
             <Setter Property="Margin" Value="10,2"/>

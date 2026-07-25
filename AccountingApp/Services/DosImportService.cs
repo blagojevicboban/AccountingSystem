@@ -197,6 +197,7 @@ public class DosImportService
                 var existingMagacini = firmDb.Magacini.Select(m => m.SifraMagacina).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var existingArtikli = firmDb.Artikli.Select(a => a.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var existingNalogi = firmDb.Nalozi.Select(n => n.BrojNaloga).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var existingPromene = firmDb.Promene.Select(p => p.Sifra).ToHashSet();
 
                 // 2. Kontni plan (KONTPLAN.DBF)
                 var kontplanFile = Path.Combine(firmaDto.FolderPath, "KONTPLAN.DBF");
@@ -303,6 +304,26 @@ public class DosImportService
 
                     await firmDb.SaveChangesAsync();
                     Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 90, $"   --> Uvezeno {nalogiCount} naloga i {stavkeCount} stavki knjiženja u zasebnu bazu!");
+                }
+
+                // 6. Šifarnik opisa promena (PROMENE.DBF) — razlikuje se po firmi, nije deljen rečnik
+                var promeneFile = Path.Combine(firmaDto.FolderPath, "PROMENE.DBF");
+                if (File.Exists(promeneFile))
+                {
+                    Report(progress, firmaDto.Naziv, "Šifarnik promena", basePercent + 92, "🏷️ Uvoz šifarnika opisa promena (PROMENE.DBF)...");
+                    var rows = DbfImportService.ReadRows(promeneFile);
+                    int count = 0;
+                    foreach (var r in rows)
+                    {
+                        var promena = DbfImportService.MapPromena(r);
+                        if (promena != null && existingPromene.Add(promena.Sifra))
+                        {
+                            firmDb.Promene.Add(promena);
+                            count++;
+                        }
+                    }
+                    await firmDb.SaveChangesAsync();
+                    Report(progress, firmaDto.Naziv, "Šifarnik promena", basePercent + 95, $"   --> Uvezeno {count} šifara promena!");
                 }
 
                 Report(progress, firmaDto.Naziv, "Završeno", basePercent + 100, $"✅ Uspešno kreirana i uvežena baza za firmu: {firmaDto.Naziv} ({dbFileName})!\n");

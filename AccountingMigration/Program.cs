@@ -494,6 +494,28 @@ class Program
             Console.WriteLine($"   --> Uvezeno {count} kamatnih stopa (napomena: istorijske, proverite aktuelnost)!");
         }
 
+        // 16. Import šifarnika opisa promena (PROMENE.DBF) — razlikuje se po firmi, nije deljen rečnik
+        string promeneFile = Path.Combine(kor01Path, "PROMENE.DBF");
+        if (File.Exists(promeneFile))
+        {
+            Console.WriteLine("🏷️ Uvoz šifarnika opisa promena (PROMENE.DBF)...");
+            var rows = DbfImportService.ReadRows(promeneFile);
+            var existingPromene = db.Promene.Select(p => p.Sifra).ToHashSet();
+            int count = 0;
+
+            foreach (var r in rows)
+            {
+                var promena = DbfImportService.MapPromena(r);
+                if (promena != null && existingPromene.Add(promena.Sifra))
+                {
+                    db.Promene.Add(promena);
+                    count++;
+                }
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {count} šifara promena!");
+        }
+
         Console.WriteLine("\n=================================================");
         Console.WriteLine("✨ USPEŠNO ZAVRŠENA MIGRACIJA PODATAKA ZA KOR01!");
         Console.WriteLine($"📁 SQLite Baza: {dbPath}");

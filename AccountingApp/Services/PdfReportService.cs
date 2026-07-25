@@ -8,8 +8,9 @@ namespace AccountingApp.Services;
 
 public class PdfReportService
 {
-    public static byte[] GenerisiDnevnikPdf(Firma firma, List<Nalog> nalozi)
+    public static byte[] GenerisiDnevnikPdf(Firma firma, List<Nalog> nalozi, Dictionary<int, string>? promene = null)
     {
+        promene ??= new Dictionary<int, string>();
         return Document.Create(container =>
         {
             container.Page(page =>
@@ -37,6 +38,7 @@ public class PdfReportService
                             columns.ConstantColumn(75);
                             columns.RelativeColumn(3);
                             columns.ConstantColumn(80);
+                            columns.ConstantColumn(100);
                             columns.ConstantColumn(90);
                             columns.ConstantColumn(90);
                         });
@@ -47,6 +49,7 @@ public class PdfReportService
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Datum").Bold();
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Dokument / Opis").Bold();
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Konto").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Promena").Bold();
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Duguje (RSD)").Bold().AlignRight();
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Potražuje (RSD)").Bold().AlignRight();
                         });
@@ -61,16 +64,19 @@ public class PdfReportService
                                 zbirDuguje += st.Duguje;
                                 zbirPotrazuje += st.Potrazuje;
 
+                                string opisPromene = st.PromenaKod.HasValue && promene.TryGetValue(st.PromenaKod.Value, out var op) ? op : "";
+
                                 table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(nalog.BrojNaloga);
                                 table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(nalog.DatumNaloga.ToString("dd.MM.yyyy"));
                                 table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(st.Opis ?? nalog.Opis ?? "");
                                 table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(st.BrojKonta);
+                                table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(opisPromene);
                                 table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{st.Duguje:N2}").AlignRight();
                                 table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{st.Potrazuje:N2}").AlignRight();
                             }
                         }
 
-                        table.Cell().ColumnSpan(4).Padding(6).Text("UKUPAN PROMET DNEVNIKA:").Bold().AlignRight();
+                        table.Cell().ColumnSpan(5).Padding(6).Text("UKUPAN PROMET DNEVNIKA:").Bold().AlignRight();
                         table.Cell().Padding(6).Text($"{zbirDuguje:N2}").Bold().AlignRight();
                         table.Cell().Padding(6).Text($"{zbirPotrazuje:N2}").Bold().AlignRight();
                     });
@@ -116,6 +122,7 @@ public class PdfReportService
                             columns.ConstantColumn(75);
                             columns.ConstantColumn(75);
                             columns.RelativeColumn(3);
+                            columns.ConstantColumn(110);
                             columns.ConstantColumn(90);
                             columns.ConstantColumn(90);
                             columns.ConstantColumn(90);
@@ -126,6 +133,7 @@ public class PdfReportService
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Datum").Bold();
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Nalog").Bold();
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Opis").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Promena").Bold();
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Duguje").Bold().AlignRight();
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Potražuje").Bold().AlignRight();
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Saldo").Bold().AlignRight();
@@ -141,12 +149,13 @@ public class PdfReportService
                             table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(s.Datum.ToString("dd.MM.yyyy"));
                             table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(s.BrojNaloga);
                             table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(s.Opis ?? "");
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(s.OpisPromene ?? "");
                             table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{s.Duguje:N2}").AlignRight();
                             table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{s.Potrazuje:N2}").AlignRight();
                             table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{s.Saldo:N2}").AlignRight();
                         }
 
-                        table.Cell().ColumnSpan(3).Padding(6).Text("UKUPNO:").Bold().AlignRight();
+                        table.Cell().ColumnSpan(4).Padding(6).Text("UKUPNO:").Bold().AlignRight();
                         table.Cell().Padding(6).Text($"{zbirDuguje:N2}").Bold().AlignRight();
                         table.Cell().Padding(6).Text($"{zbirPotrazuje:N2}").Bold().AlignRight();
                         table.Cell().Padding(6).Text($"{(stavke.Count > 0 ? stavke[^1].Saldo : 0m):N2}").Bold().AlignRight();

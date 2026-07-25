@@ -31,7 +31,7 @@
         </Border>
 
         <DockPanel Grid.Row="4" LastChildFill="False">
-            <TextBlock Text="AccountingSystem © 2026" Foreground="{StaticResource TextMutedBrush}"
+            <TextBlock Text="AccountingSystem © 2026 — Autor: Blagojević Boban" Foreground="{StaticResource TextMutedBrush}"
                        FontSize="11" VerticalAlignment="Center" DockPanel.Dock="Left"/>
             <Button Content="Zatvori" Style="{StaticResource ActionButtonStyle}"
                     Width="110" Height="36" Click="BtnZatvori_Click" DockPanel.Dock="Right"/>

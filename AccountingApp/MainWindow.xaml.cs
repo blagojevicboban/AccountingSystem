@@ -27,6 +27,10 @@ public partial class MainWindow : Window
         UpdateFirmaInfo();
         UpdateKorisnikInfo();
 
+        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        var versionStr = version != null ? $"{version.Major}.{version.Minor}.{version.Build}" : "1.0.0";
+        VersionText.Text = $"v{versionStr}  •  {System.DateTime.Now.Year}";
+
         NavigateToDashboard();
 
         // Provera ažuriranja u pozadini
@@ -66,6 +70,8 @@ public partial class MainWindow : Window
     {
         var uloga = AppSession.TrenutniKorisnik?.Uloga ?? "Knjigovođa";
         TxtKorisnik.Text = $"👤 {AppSession.TrenutniKorisnik?.ImeIPrezime ?? "—"} ({uloga})";
+        TxtImeKorisnika.Text = AppSession.TrenutniKorisnik?.ImeIPrezime ?? "—";
+        TxtUlogaKorisnika.Text = uloga;
         ApplyRolePermissions();
     }
 
@@ -74,7 +80,6 @@ public partial class MainWindow : Window
         if (AppSession.TrenutniKorisnik?.Uloga == "Gledalac")
         {
             BtnPodesavanja.IsEnabled = false;
-            BtnBackup.IsEnabled = false;
         }
     }
 
@@ -142,12 +147,6 @@ public partial class MainWindow : Window
         MainContentHost.Content = new Views.Firme.FirmeView();
     }
 
-    private void NavBackup_Click(object sender, RoutedEventArgs e)
-    {
-        TxtHeaderTitle.Text = "💾 Rezervne kopije baze podataka";
-        MainContentHost.Content = new Views.Backup.BackupView();
-    }
-
     private void NavPodesavanja_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "⚙️ Podešavanja aplikacije";
@@ -166,7 +165,21 @@ public partial class MainWindow : Window
         MainContentHost.Content = new PomocView();
     }
 
+    private void BtnOdjava_Click(object sender, RoutedEventArgs e)
+    {
+        AppSession.TrenutniKorisnik = null;
+        var loginWindow = new Views.Korisnici.LoginWindow(_db);
+        loginWindow.Show();
+        Close();
+    }
+
     private void BtnChangelog_Click(object sender, RoutedEventArgs e)
+    {
+        var dijalog = new ChangelogWindow { Owner = this };
+        dijalog.ShowDialog();
+    }
+
+    private void VersionText_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         var dijalog = new ChangelogWindow { Owner = this };
         dijalog.ShowDialog();

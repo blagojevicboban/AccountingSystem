@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace AccountingApp.Views.Nalozi;
 public partial class NaloziView : UserControl
 {
     private List<Nalog> _allNalozi = new();
+    private Dictionary<int, string> _promeneMap = new();
 
     public NaloziView()
     {
@@ -35,6 +37,7 @@ public partial class NaloziView : UserControl
             var service = new NaloziService(db);
 
             _allNalozi = await service.GetNaloziAsync();
+            _promeneMap = await new PromenaService(db).GetMapAsync();
             ApplyFilter();
         }
         catch (Exception ex)
@@ -93,12 +96,56 @@ public partial class NaloziView : UserControl
         ApplyFilter();
     }
 
+    /// <summary>BrojNaloga je string (legacy formati poput "PS-2026" postoje), pa podrazumevano
+    /// sortiranje DataGrid-a poredi leksikografski (npr. "213" ispred "53"). Ovde sortiramo
+    /// numerički kad je moguće, uz padanje na string poređenje za nenumeričke vrednosti.</summary>
+    private void DgNalozi_Sorting(object sender, DataGridSortingEventArgs e)
+    {
+        if (e.Column.Header as string != "Br. naloga") return;
+        e.Handled = true;
+
+        var direction = e.Column.SortDirection != ListSortDirection.Ascending
+            ? ListSortDirection.Ascending
+            : ListSortDirection.Descending;
+
+        if (DgNalozi.ItemsSource is not List<Nalog> current) return;
+
+        var sorted = direction == ListSortDirection.Ascending
+            ? current.OrderBy(n => n.BrojNaloga, BrojNalogaComparer.Instance).ToList()
+            : current.OrderByDescending(n => n.BrojNaloga, BrojNalogaComparer.Instance).ToList();
+
+        DgNalozi.ItemsSource = sorted;
+        e.Column.SortDirection = direction;
+    }
+
+    private class BrojNalogaComparer : IComparer<string?>
+    {
+        public static readonly BrojNalogaComparer Instance = new();
+
+        public int Compare(string? x, string? y)
+        {
+            bool xNum = int.TryParse(x, out int xi);
+            bool yNum = int.TryParse(y, out int yi);
+            return xNum && yNum ? xi.CompareTo(yi) : string.CompareOrdinal(x, y);
+        }
+    }
+
     private void DgNalozi_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DgNalozi.SelectedItem is Nalog selectedNalog)
         {
             TxtDetailHeader.Text = $"📋 Stavke naloga #{selectedNalog.BrojNaloga} ({selectedNalog.Opis})";
-            DgStavke.ItemsSource = selectedNalog.Stavke;
+            DgStavke.ItemsSource = selectedNalog.Stavke.Select(s => new
+            {
+                s.RedniBroj,
+                s.BrojKonta,
+                s.Opis,
+                OpisPromene = s.PromenaKod.HasValue
+                    ? (_promeneMap.TryGetValue(s.PromenaKod.Value, out var opis) ? opis : s.PromenaKod.Value.ToString())
+                    : "",
+                s.Duguje,
+                s.Potrazuje
+            }).ToList();
         }
 
         AzurirajDugmad();
@@ -202,8 +249,26 @@ public partial class NaloziView : UserControl
             var service = new NaloziService(db);
 
             await service.RasknjiziNalogAsync(selectedNalog.NalogId);
-            MessageBox.Show($"Nalog #{selectedNalog.BrojNaloga} je rasknjižen.", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            var otvoriIzmenu = MessageBox.Show(
+                $"Nalog #{selectedNalog.BrojNaloga} je rasknjižen.\n\nDa li želite odmah da ga izmenite?",
+                "Uspeh", MessageBoxButton.YesNo, MessageBoxImage.Information);
+
+            int nalogId = selectedNalog.NalogId;
             LoadNalozi();
+
+            if (otvoriIzmenu == MessageBoxResult.Yes)
+            {
+                var nalog = _allNalozi.FirstOrDefault(n => n.NalogId == nalogId);
+                if (nalog != null)
+                {
+                    var dijalog = new NalogEditWindow(nalog) { Owner = Window.GetWindow(this) };
+                    if (dijalog.ShowDialog() == true)
+                    {
+                        LoadNalozi();
+                    }
+                }
+            }
         }
         catch (Exception ex)
         {

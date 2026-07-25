@@ -42,7 +42,7 @@
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
                 <TextBlock Text="📖 Nalozi za knjiženje (Glavna knjiga)" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
-                <DataGrid x:Name="DgNalozi" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgNalozi_SelectionChanged">
+                <DataGrid x:Name="DgNalozi" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgNalozi_SelectionChanged" Sorting="DgNalozi_Sorting">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="120"/>
                         <DataGridTextColumn Header="Datum" Binding="{Binding DatumNaloga, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
@@ -66,6 +66,7 @@
                         <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="60"/>
                         <DataGridTextColumn Header="Konto" Binding="{Binding BrojKonta}" Width="110"/>
                         <DataGridTextColumn Header="Dokument / Opis" Binding="{Binding Opis}" Width="*"/>
+                        <DataGridTextColumn Header="Promena" Binding="{Binding OpisPromene}" Width="150"/>
                         <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="140"/>
                         <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="140"/>
                     </DataGrid.Columns>

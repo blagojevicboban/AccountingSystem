@@ -8,6 +8,7 @@ public class KarticaRed
     public DateTime Datum { get; set; }
     public string BrojNaloga { get; set; } = string.Empty;
     public string? Opis { get; set; }
+    public string? OpisPromene { get; set; }
     public decimal Duguje { get; set; }
     public decimal Potrazuje { get; set; }
     public decimal Saldo { get; set; }
@@ -84,6 +85,7 @@ public class KarticaService
             .ThenBy(s => s.RedniBroj)
             .ToListAsync();
 
+        var promene = await new PromenaService(_db).GetMapAsync();
         var rezultat = new List<KarticaRed>();
         decimal saldo = 0m;
 
@@ -95,6 +97,9 @@ public class KarticaService
                 Datum = s.Nalog!.DatumNaloga,
                 BrojNaloga = s.Nalog.BrojNaloga,
                 Opis = string.IsNullOrWhiteSpace(s.Opis) ? s.Nalog.Opis : s.Opis,
+                OpisPromene = s.PromenaKod.HasValue
+                    ? (promene.TryGetValue(s.PromenaKod.Value, out var opis) ? opis : s.PromenaKod.Value.ToString())
+                    : "",
                 Duguje = s.Duguje,
                 Potrazuje = s.Potrazuje,
                 Saldo = saldo

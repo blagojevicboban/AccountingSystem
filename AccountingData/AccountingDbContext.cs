@@ -25,6 +25,7 @@ public class AccountingDbContext : DbContext
     public DbSet<MaloprodajnaKalkulacija> MaloprodajneKalkulacije => Set<MaloprodajnaKalkulacija>();
     public DbSet<KarticaKonta> KarticeKonta => Set<KarticaKonta>();
     public DbSet<KamatnaStopa> KamatneStope => Set<KamatnaStopa>();
+    public DbSet<Promena> Promene => Set<Promena>();
 
     public AccountingDbContext(DbContextOptions<AccountingDbContext> options) : base(options)
     {
@@ -104,6 +105,9 @@ public class AccountingDbContext : DbContext
 
         modelBuilder.Entity<KamatnaStopa>()
             .HasIndex(k => k.DatumOd);
+
+        modelBuilder.Entity<Promena>()
+            .HasIndex(p => p.Sifra);
     }
 
     private const int PasswordSaltSize = 16;

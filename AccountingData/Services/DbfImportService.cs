@@ -138,6 +138,20 @@ public static class DbfImportService
         };
     }
 
+    /// <summary>PROMENE.DBF → Promena. Vraća null ako red nema šifru (SIFRA) ili opis (PROMENA).</summary>
+    public static Promena? MapPromena(Dictionary<string, string> row)
+    {
+        string sifraStr = Get(row, "SIFRA");
+        string opis = Get(row, "PROMENA");
+        if (!int.TryParse(sifraStr, out int sifra) || string.IsNullOrWhiteSpace(opis)) return null;
+
+        return new Promena
+        {
+            Sifra = sifra,
+            Opis = opis
+        };
+    }
+
     /// <summary>Grupiše NALOG.DBF redove po broju naloga (BR_NALOGA), izbacuje prazne/nulte brojeve.</summary>
     public static List<(string BrojNaloga, List<Dictionary<string, string>> Redovi)> GroupNalogRows(List<Dictionary<string, string>> rows)
     {
