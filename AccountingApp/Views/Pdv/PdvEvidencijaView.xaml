@@ -1,0 +1,217 @@
+<UserControl x:Class="AccountingApp.Views.Pdv.PdvEvidencijaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Naslov -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="🧾 PDV Evidencija (KIR i KPR)" FontSize="22" FontWeight="Bold" Foreground="#1E3A8A"/>
+            <TextBlock Text="Knjiga izdatih računa, Knjiga primljenih računa i zbirni obračun PDV obaveze za period" FontSize="13" Foreground="#64748B" Margin="0,2,0,0"/>
+        </StackPanel>
+
+        <!-- Filter bar -->
+        <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Period obračuna:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,12,0"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <DatePicker x:Name="DpOdDatuma" Width="130"/>
+                    <TextBlock Text=" do " VerticalAlignment="Center" Margin="6,0"/>
+                    <DatePicker x:Name="DpDoDatuma" Width="130"/>
+                </StackPanel>
+
+                <Button Grid.Column="3" Content="🔄 Osveži obračun" Click="BtnOsvezi_Click" Padding="12,6" Background="#2563EB" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Tabovi -->
+        <TabControl Grid.Row="2" Background="White">
+            <!-- TAB 1: KIR -->
+            <TabItem Header="📤 KIR — Knjiga Izdatih Računa (Izlaz)">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock x:Name="TxtKirUkupno" Text="Ukupno izlazni PDV: 0.00 RSD" FontWeight="Bold" FontSize="13" Foreground="#1E3A8A" VerticalAlignment="Center"/>
+                        <Button DockPanel.Dock="Right" Content="📥 Štampaj KIR (PDF)" Click="BtnStampajKirPdf_Click" Padding="10,5" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </DockPanel>
+
+                    <DataGrid Grid.Row="1" x:Name="DgKir" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="White">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="R.br" Binding="{Binding RedniBroj}" Width="45"/>
+                            <DataGridTextColumn Header="Datum" Binding="{Binding DatumRacuna, StringFormat={}{0:dd.MM.yyyy}}" Width="85"/>
+                            <DataGridTextColumn Header="Br. računa" Binding="{Binding BrojDokumenta}" Width="100"/>
+                            <DataGridTextColumn Header="Kupac" Binding="{Binding PartnerNaziv}" Width="*"/>
+                            <DataGridTextColumn Header="PIB" Binding="{Binding PartnerPib}" Width="90"/>
+                            <DataGridTextColumn Header="Ukupno (RSD)" Binding="{Binding UkupnaNaknadaSaPdv, StringFormat={}{0:N2}}" Width="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Osnovica 20%" Binding="{Binding Osnovica20, StringFormat={}{0:N2}}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="PDV 20%" Binding="{Binding Pdv20, StringFormat={}{0:N2}}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#2563EB"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Osnovica 10%" Binding="{Binding Osnovica10, StringFormat={}{0:N2}}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="PDV 10%" Binding="{Binding Pdv10, StringFormat={}{0:N2}}" Width="90">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 2: KPR -->
+            <TabItem Header="📥 KPR — Knjiga Primljenih Računa (Ulaz)">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock x:Name="TxtKprUkupno" Text="Ukupno prethodni PDV: 0.00 RSD" FontWeight="Bold" FontSize="13" Foreground="#1E3A8A" VerticalAlignment="Center"/>
+                        <Button DockPanel.Dock="Right" Content="📥 Štampaj KPR (PDF)" Click="BtnStampajKprPdf_Click" Padding="10,5" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </DockPanel>
+
+                    <DataGrid Grid.Row="1" x:Name="DgKpr" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="White">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="R.br" Binding="{Binding RedniBroj}" Width="45"/>
+                            <DataGridTextColumn Header="Datum" Binding="{Binding DatumRacuna, StringFormat={}{0:dd.MM.yyyy}}" Width="85"/>
+                            <DataGridTextColumn Header="Br. računa" Binding="{Binding BrojDokumenta}" Width="100"/>
+                            <DataGridTextColumn Header="Dobavljač" Binding="{Binding PartnerNaziv}" Width="*"/>
+                            <DataGridTextColumn Header="PIB" Binding="{Binding PartnerPib}" Width="90"/>
+                            <DataGridTextColumn Header="Ukupno (RSD)" Binding="{Binding UkupnaNaknadaSaPdv, StringFormat={}{0:N2}}" Width="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Osnovica 20%" Binding="{Binding Osnovica20, StringFormat={}{0:N2}}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Preth. PDV 20%" Binding="{Binding Pdv20, StringFormat={}{0:N2}}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#D97706"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Osnovica 10%" Binding="{Binding Osnovica10, StringFormat={}{0:N2}}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Preth. PDV 10%" Binding="{Binding Pdv10, StringFormat={}{0:N2}}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 3: POPDV OBRAČUN -->
+            <TabItem Header="⚖️ POPDV Rekapitulacija Obaveze">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="20" MaxWidth="700" HorizontalAlignment="Left">
+                        <TextBlock Text="Rekapitulacija PDV obaveze za izabrani period" FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,15"/>
+
+                        <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="1. Izlazni PDV (KIR - Obaveza po računu 20% + 10%):" FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" x:Name="TxtObracunKirPdv" Text="0.00 RSD" FontSize="14" FontWeight="Bold" Foreground="#2563EB"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="2. Prethodni PDV (KPR - Odbitni pretporez 20% + 10%):" FontSize="14" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TxtObracunKprPdv" Text="0.00 RSD" FontSize="14" FontWeight="Bold" Foreground="#D97706" Margin="0,10,0,0"/>
+
+                                <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,12"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="KONAČNI OBRAČUN PDV-A:" FontSize="15" FontWeight="Bold"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="TxtObracunKonačni" Text="0.00 RSD" FontSize="16" FontWeight="Bold" Foreground="#059669"/>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="PnlStatusPdv" Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="6" Padding="12">
+                            <TextBlock x:Name="TxtStatusPdvPoruka" Text="Obračun je urađen." FontSize="13" FontWeight="SemiBold" Foreground="#166534"/>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

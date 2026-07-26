@@ -22,10 +22,15 @@ public class AccountingDbContext : DbContext
     public DbSet<PrimopredajaNalog> PrimopredajaNalozi => Set<PrimopredajaNalog>();
     public DbSet<PrimopredajaStavka> PrimopredajaStavke => Set<PrimopredajaStavka>();
     public DbSet<Kalkulacija> Kalkulacije => Set<Kalkulacija>();
+    public DbSet<KalkulacijaStavka> KalkulacijaStavke => Set<KalkulacijaStavka>();
     public DbSet<MaloprodajnaKalkulacija> MaloprodajneKalkulacije => Set<MaloprodajnaKalkulacija>();
     public DbSet<KarticaKonta> KarticeKonta => Set<KarticaKonta>();
     public DbSet<KamatnaStopa> KamatneStope => Set<KamatnaStopa>();
     public DbSet<Promena> Promene => Set<Promena>();
+    public DbSet<RacunOtpremnica> RacuniOtpremnice => Set<RacunOtpremnica>();
+    public DbSet<RacunOtpremnicaStavka> RacunOtpremnicaStavke => Set<RacunOtpremnicaStavka>();
+    public DbSet<NivelacijaCena> NivelacijeCena => Set<NivelacijaCena>();
+    public DbSet<NivelacijaStavka> NivelacijaStavke => Set<NivelacijaStavka>();
 
     public AccountingDbContext(DbContextOptions<AccountingDbContext> options) : base(options)
     {

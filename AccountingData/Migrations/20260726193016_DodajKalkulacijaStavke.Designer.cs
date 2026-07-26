@@ -3,6 +3,7 @@ using System;
 using AccountingData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AccountingData.Migrations
 {
     [DbContext(typeof(AccountingDbContext))]
-    partial class AccountingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726193016_DodajKalkulacijaStavke")]
+    partial class DodajKalkulacijaStavke
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
@@ -669,84 +672,6 @@ namespace AccountingData.Migrations
                     b.ToTable("Nalozi");
                 });
 
-            modelBuilder.Entity("AccountingData.Models.NivelacijaCena", b =>
-                {
-                    b.Property<int>("NivelacijaCenaId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("BrojNivelacije")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("DatumNivelacije")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsKnjizen")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MagacinId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("NalogId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Opis")
-                        .HasMaxLength(250)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("UkupnoRazlika")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.HasKey("NivelacijaCenaId");
-
-                    b.HasIndex("MagacinId");
-
-                    b.HasIndex("NalogId");
-
-                    b.ToTable("NivelacijeCena");
-                });
-
-            modelBuilder.Entity("AccountingData.Models.NivelacijaStavka", b =>
-                {
-                    b.Property<int>("NivelacijaStavkaId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ArtikalId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("KolicinaZaliha")
-                        .HasColumnType("decimal(18, 3)");
-
-                    b.Property<int>("NivelacijaCenaId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("NovaCena")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("RazlikaPoJedinici")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<int>("RedniBroj")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("StaraCena")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("UkupnaRazlika")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.HasKey("NivelacijaStavkaId");
-
-                    b.HasIndex("ArtikalId");
-
-                    b.HasIndex("NivelacijaCenaId");
-
-                    b.ToTable("NivelacijaStavke");
-                });
-
             modelBuilder.Entity("AccountingData.Models.Partner", b =>
                 {
                     b.Property<int>("PartnerId")
@@ -884,107 +809,6 @@ namespace AccountingData.Migrations
                     b.HasIndex("Sifra");
 
                     b.ToTable("Promene");
-                });
-
-            modelBuilder.Entity("AccountingData.Models.RacunOtpremnica", b =>
-                {
-                    b.Property<int>("RacunOtpremnicaId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("BrojRacuna")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("DatumRacuna")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsKnjizen")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MagacinId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("NalogId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Napomena")
-                        .HasMaxLength(250)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("PartnerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("RokPlacanja")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("UkupnoOsnovica")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("UkupnoPdv")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("UkupnoRabat")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("UkupnoZaUplatu")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.HasKey("RacunOtpremnicaId");
-
-                    b.HasIndex("MagacinId");
-
-                    b.HasIndex("NalogId");
-
-                    b.HasIndex("PartnerId");
-
-                    b.ToTable("RacuniOtpremnice");
-                });
-
-            modelBuilder.Entity("AccountingData.Models.RacunOtpremnicaStavka", b =>
-                {
-                    b.Property<int>("RacunOtpremnicaStavkaId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ArtikalId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("IznosPdv")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("Kolicina")
-                        .HasColumnType("decimal(18, 3)");
-
-                    b.Property<decimal>("Osnovica")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("ProdajnaCena")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("RabatProcenat")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<int>("RacunOtpremnicaId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("RedniBroj")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("StopaPdv")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("Ukupno")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.HasKey("RacunOtpremnicaStavkaId");
-
-                    b.HasIndex("ArtikalId");
-
-                    b.HasIndex("RacunOtpremnicaId");
-
-                    b.ToTable("RacunOtpremnicaStavke");
                 });
 
             modelBuilder.Entity("AccountingData.Models.StavkaNaloga", b =>
@@ -1189,42 +1013,6 @@ namespace AccountingData.Migrations
                     b.Navigation("Kalkulacija");
                 });
 
-            modelBuilder.Entity("AccountingData.Models.NivelacijaCena", b =>
-                {
-                    b.HasOne("AccountingData.Models.Magacin", "Magacin")
-                        .WithMany()
-                        .HasForeignKey("MagacinId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AccountingData.Models.Nalog", "Nalog")
-                        .WithMany()
-                        .HasForeignKey("NalogId");
-
-                    b.Navigation("Magacin");
-
-                    b.Navigation("Nalog");
-                });
-
-            modelBuilder.Entity("AccountingData.Models.NivelacijaStavka", b =>
-                {
-                    b.HasOne("AccountingData.Models.Artikal", "Artikal")
-                        .WithMany()
-                        .HasForeignKey("ArtikalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AccountingData.Models.NivelacijaCena", "NivelacijaCena")
-                        .WithMany("Stavke")
-                        .HasForeignKey("NivelacijaCenaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Artikal");
-
-                    b.Navigation("NivelacijaCena");
-                });
-
             modelBuilder.Entity("AccountingData.Models.PrimopredajaStavka", b =>
                 {
                     b.HasOne("AccountingData.Models.PrimopredajaNalog", "PrimopredajaNalog")
@@ -1234,48 +1022,6 @@ namespace AccountingData.Migrations
                         .IsRequired();
 
                     b.Navigation("PrimopredajaNalog");
-                });
-
-            modelBuilder.Entity("AccountingData.Models.RacunOtpremnica", b =>
-                {
-                    b.HasOne("AccountingData.Models.Magacin", "Magacin")
-                        .WithMany()
-                        .HasForeignKey("MagacinId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AccountingData.Models.Nalog", "Nalog")
-                        .WithMany()
-                        .HasForeignKey("NalogId");
-
-                    b.HasOne("AccountingData.Models.Partner", "Partner")
-                        .WithMany()
-                        .HasForeignKey("PartnerId");
-
-                    b.Navigation("Magacin");
-
-                    b.Navigation("Nalog");
-
-                    b.Navigation("Partner");
-                });
-
-            modelBuilder.Entity("AccountingData.Models.RacunOtpremnicaStavka", b =>
-                {
-                    b.HasOne("AccountingData.Models.Artikal", "Artikal")
-                        .WithMany()
-                        .HasForeignKey("ArtikalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AccountingData.Models.RacunOtpremnica", "RacunOtpremnica")
-                        .WithMany("Stavke")
-                        .HasForeignKey("RacunOtpremnicaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Artikal");
-
-                    b.Navigation("RacunOtpremnica");
                 });
 
             modelBuilder.Entity("AccountingData.Models.StavkaNaloga", b =>
@@ -1327,17 +1073,7 @@ namespace AccountingData.Migrations
                     b.Navigation("Stavke");
                 });
 
-            modelBuilder.Entity("AccountingData.Models.NivelacijaCena", b =>
-                {
-                    b.Navigation("Stavke");
-                });
-
             modelBuilder.Entity("AccountingData.Models.PrimopredajaNalog", b =>
-                {
-                    b.Navigation("Stavke");
-                });
-
-            modelBuilder.Entity("AccountingData.Models.RacunOtpremnica", b =>
                 {
                     b.Navigation("Stavke");
                 });

@@ -175,28 +175,32 @@ netestirani na realnim brojevima.
 
 - [x] **Kalkulacija veleprodaje** (troškovi → razlika → PDV → prodajna, analogno `kalkknjizenje`
   iz MAT2.PRG) — `KalkulacijaService.Izracunaj` (čista formula, bez zavisnosti od baze) +
-  CRUD/knjiženje, `KalkulacijaEditWindow` (live obračun po unosu), `TrgovinaView` (lista +
-  Nova/Proknjiži). **5 xUnit testova** u `AccountingData.Tests` (formula, edge case bez marže/poreza,
-  perzistencija, duplo knjiženje) — prvi kalkulator u projektu testiran na ovaj način, po uzoru
-  na SredstvaSystem konvenciju za kalkulatore koji ne zavise od baze.
-- [ ] Kalkulacija maloprodaje (isti obrazac + rabat) — odloženo, prirodan follow-up
-- [ ] Nivelacija cena — odloženo (nema podataka)
-- [ ] Računi-otpremnice sa tarifama/porezom/rabatom — odloženo (nema podataka)
-- [ ] Robne kartice, bruto bilans robni, cenovnik — odloženo; robne kartice bi tehnički mogle da
-  koriste isti `MaterijalnaKarticaService` iz Faze 4 (kartica je generička po paru magacin/artikal,
-  ne zavisi od `Artikal.Vrsta`), ali bi zahtevalo dodavanje stavki (linije) kalkulaciji, što nije
-  urađeno u ovom krugu
-
-**Usput otkriven i ispravljen bag:** `KalkulacijaEditWindow` je pucao pri otvaranju —
-`Text="0"`/`Text="20"` kao XAML literali na input poljima okidali su `TextChanged` tokom
-`InitializeComponent()`, pre nego što su kasnije deklarisani elementi (sekcija "Obračun") uopšte
-kreirani. Isti obrazac buga kao u `NaloziView` iz Faze 1 — potvrđuje da je to sistemski rizik u
-ovom kodbazu (videti napomenu u `run-accounting-app` SKILL.md) na koji treba paziti kod svakog
-novog ekrana koji koristi `TextChanged`/`Checked` sa XAML literal default vrednostima.
+ - [x] **Kalkulacija maloprodaje** (MAT3 / `MALKULAC.DBF` sa ukalkulisanom maržom i maloprodajnim PDV-om) — omogućeno filtriranje i prebacivanje Tip-a (Veleprodaja vs Maloprodaja) u `TrgovinaView`.
+- [x] **Nivelacija cena** (MAT7 / `NIV_NAL.DBF`) — promena prodajnih cena artikala u magacinu sa proračunom razlike u ceni, knjiženjem na kontima `1320`/`1340` i PDF zapisnikom (`NivelacijaEditWindow`).
+- [x] **Računi-otpremnice (Fakture)** (MAT5 / `RAC_OTP.DBF`) — prodaja robe kupcima sa rokom dospelosti, rabatom %, PDV-om (20%/10%/0%), automatskim razduženjem magacina i knjiženjem finansijskog naloga u Glavnoj knjizi (`Kupci 2040` / `Prihod 6120` / `PDV 4700`) + Zvanični PDF račun-faktura.
+- [x] **Primopredaje / Interni prenosi** (M4 / `M_PRIMO.DBF`) — interni prenos materijala iz dajućeg u ulazni magacin sa automatskim proračunom ponderisane prosečne cene (`PrimopredajaEditWindow`).
+- [x] **Korisnički Help i Prečice** — obogaćen `PomocView` i podržan taster `Esc` za brzi izlaz iz svih modalnih prozora.
 
 ---
 
-## 6. Ključni algoritmi za portovanje (ne izmišljati — preslikati iz PRG)
+## 6. SredstvaSystem & Budući plan razvoja (Roadmap)
+
+### 🏢 6.1 Integracija sa SredstvaSystem (`C:\SREDSTVA\SredstvaSystem`)
+- **Automatsko knjiženje amortizacije u Glavnu knjigu**:
+  - Generisanje naloga knjiženja u `AccountingSystem` (Konto `5400` Troškovi amortizacije / Konto `0290` Ispravka vrednosti) direktno iz obračuna u `SredstvaSystem`.
+- **Poreska amortizacija i bilansi**:
+  - Povezivanje obračuna poreske amortizacije (Obrazac OA) i privremenih razlika sa Poreskim bilansom (**Obrazac PB-1**).
+
+### 📊 6.2 Zvanični Finansijski Izveštaji za APR
+- **Bilans Stanja**: Pregled aktivnih i pasivnih konta po zvaničnoj AOP šemi.
+- **Bilans Uspeha**: Pregled rashoda i prihoda po grupacijama konta.
+
+### 🧾 6.3 PDV Evidencija (KPR i KIR)
+- Knjiga primljenih računa (KPR) i Knjiga izdatih računa (KIR) sa automatskim punjenjem iz faktura i kalkulacija.
+
+---
+
+## 7. Ključni algoritmi za portovanje (ne izmišljati — preslikati iz PRG)
 
 1. **Kartica sa saldom** (`prik_kar`/`stampav_kartica`, FIN1) — hronološko ređanje,
    `UKUP_DUG += DUGUJE`, `UKUP_POT += POTRAZUJE`, `SALDO = UKUP_DUG − UKUP_POT`.

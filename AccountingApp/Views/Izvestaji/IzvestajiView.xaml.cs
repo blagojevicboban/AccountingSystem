@@ -55,6 +55,20 @@ public partial class IzvestajiView : UserControl
         }
     }
 
+    private int? OdabranaKlasaBrutoBilansa()
+    {
+        var sadrzaj = (CmbBrutoBilansKlasa.SelectedItem as ComboBoxItem)?.Content as string;
+        return int.TryParse(sadrzaj, out var klasa) ? klasa : null;
+    }
+
+    private async Task<List<BrutoBilansRed>> UcitajBrutoBilansRedoveAsync(BrutoBilansService service, DateTime? odDatuma, DateTime? doDatuma)
+    {
+        var klasa = OdabranaKlasaBrutoBilansa();
+        return ChkBrutoBilansTotali.IsChecked == true
+            ? await service.GetBrutoBilansSaTotalimaAsync(odDatuma, doDatuma, klasa)
+            : await service.GetBrutoBilansAsync(odDatuma, doDatuma, klasa);
+    }
+
     private async void BtnGenerisiBrutoBilans_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -67,7 +81,7 @@ public partial class IzvestajiView : UserControl
             var service = new BrutoBilansService(db);
             var odDatuma = DpBrutoBilansOd.SelectedDate;
             var doDatuma = DpBrutoBilansDo.SelectedDate;
-            var redovi = await service.GetBrutoBilansAsync(odDatuma, doDatuma);
+            var redovi = await UcitajBrutoBilansRedoveAsync(service, odDatuma, doDatuma);
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new AccountingData.Models.Firma { Naziv = "ARHIBEL - 2026" };
 
@@ -81,6 +95,29 @@ public partial class IzvestajiView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri generisanju PDF-a: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnPrikaziBrutoBilans_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new BrutoBilansService(db);
+            var odDatuma = DpBrutoBilansOd.SelectedDate;
+            var doDatuma = DpBrutoBilansDo.SelectedDate;
+            var redovi = await UcitajBrutoBilansRedoveAsync(service, odDatuma, doDatuma);
+
+            var dijalog = new BrutoBilansPreviewWindow("BRUTO BILANS", redovi, odDatuma, doDatuma) { Owner = Window.GetWindow(this) };
+            dijalog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri prikazu bruto bilansa: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

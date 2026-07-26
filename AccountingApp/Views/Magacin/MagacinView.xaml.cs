@@ -19,6 +19,7 @@ public partial class MagacinView : UserControl
         LoadMagaciniIArtikli();
         LoadUlazi();
         LoadTrebovanja();
+        LoadPrimopredaje();
     }
 
     private async void LoadMagaciniIArtikli()
@@ -221,6 +222,77 @@ public partial class MagacinView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri knjiženju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    // ===================== PRIMOPREDAJE (M4) =====================
+
+    private List<PrimopredajaNalog> _svePrimopredaje = new();
+
+    private async void LoadPrimopredaje()
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+            var service = new PrimopredajaService(db);
+
+            _svePrimopredaje = await service.GetPrimopredajeAsync();
+            ApplyFilterPrimopredaja();
+        }
+        catch { }
+    }
+
+    private void ApplyFilterPrimopredaja()
+    {
+        string search = TxtPretragaPrimopredaja.Text.Trim().ToLower();
+        DgPrimopredaje.ItemsSource = string.IsNullOrEmpty(search)
+            ? _svePrimopredaje
+            : _svePrimopredaje.Where(n => n.BrojNaloga.ToLower().Contains(search) || n.SifraMagacinaDaje.ToLower().Contains(search) || n.SifraMagacinaPrima.ToLower().Contains(search)).ToList();
+    }
+
+    private void TxtPretragaPrimopredaja_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterPrimopredaja();
+
+    private void DgPrimopredaje_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        DgPrimopredajaStavke.ItemsSource = DgPrimopredaje.SelectedItem is PrimopredajaNalog nalog ? nalog.Stavke : null;
+    }
+
+    private void BtnNovaPrimopredaja_Click(object sender, RoutedEventArgs e)
+    {
+        var dijalog = new PrimopredajaEditWindow { Owner = Window.GetWindow(this) };
+        if (dijalog.ShowDialog() == true)
+        {
+            LoadPrimopredaje();
+        }
+    }
+
+    private async void BtnKnjiziPrimopredaju_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgPrimopredaje.SelectedItem is not PrimopredajaNalog selektovano)
+        {
+            MessageBox.Show("Izaberite primopredaju sa liste.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        if (selektovano.IsKnjizen)
+        {
+            MessageBox.Show($"Primopredaja #{selektovano.BrojNaloga} je već proknjižena!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+            var service = new PrimopredajaService(db);
+
+            await service.KnjiziPrimopredajuAsync(selektovano.PrimopredajaNalogId);
+            MessageBox.Show($"Primopredaja #{selektovano.BrojNaloga} je uspešno proknjižena u materijalnom knjigovodstvu!", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+            LoadPrimopredaje();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri knjiženju primopredaje: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }

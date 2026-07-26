@@ -17,12 +17,18 @@
 - 💰 **Kamate** — obračun zatezne kamate po danu kašnjenja, sa podrškom za više kamatnih stopa kroz vreme; unos novih stopa iz aplikacije.
 - 📊 **Bruto bilans analitike** — promet i saldo po partneru (paralelno finansijskom bruto bilansu po kontu).
 
-### Magacin i zalihe (MAT)
-- 📦 **Materijalne kartice po prosečnoj (ponderisanoj) ceni** — prijem se vrednuje po unetoj ceni, izdavanje po trenutnoj prosečnoj ceni; sistem odbija izdavanje koje bi izazvalo negativno stanje.
-- 📥📤 **Ulazi i trebovanja** — unos, pregled i knjiženje dokumenata po magacinu.
+### Zvanični Finansijski Izveštaji za APR (Bilansi)
+- 🏛️ **Bilans Stanja** — Obračun AOP pozicija za Aktivu (Klasa 0–2) i Pasivu (Klasa 3–4) na izabrani datum, uz automatsku proveru ravnoteže (`Aktiva == Pasiva`).
+- 📈 **Bilans Uspeha** — Obračun AOP pozicija za Poslovne prihode (Klasa 6), Poslovne rashode (Klasa 5), Finansijske prihode/rashode i obračun Neto dobitka ili gubitka perioda.
+- 📥 **PDF Štampa Bilansa** — Izvoz zvaničnih PDF izveštaja Bilansa Stanja i Bilansa Uspeha.
 
-### Trgovina (ROB)
-- 🛒 **Kalkulacija veleprodaje** — nabavna vrednost + zavisni troškovi → trgovačka marža → PDV → prodajna vrednost, sa **live obračunom** tokom unosa.
+### PDV Evidencija (KIR, KPR i POPDV)
+- 🧾 **KIR (Knjiga Izdatih Računa)** i **KPR (Knjiga Primljenih Računa)** — Automatsko prikupljanje izlaznih računa i ulaznih kalkulacija sa raščlanjavanjem osnovice i PDV-a (20%, 10%, 0%).
+- ⚖️ **POPDV Rekapitulacija Obaveze** — Obračun PDV obaveze za uplatu ili prava na povraćaj.
+
+### Magacin i Trgovina (MAT & ROB)
+- 📦 **Magacin i zalihe** — Materijalne kartice po ponderisanoj prosečnoj ceni (`M1`), Ulazi (`M2`), Trebovanja (`M3`) i **Primopredaje / Interni prenosi (`M4`)**.
+- 🛒 **Trgovina i Fakture** — Veleprodajne (`MAT6`) i Maloprodajne (`MAT3`) kalkulacije, **Računi-Otpremnice / Fakture (`MAT5`)** sa rokom dospelosti, rabatom i PDV-om, i **Nivelacije cena (`MAT7`)**.
 
 ### Zajedničko
 - 🔐 **Prijava i uloge** — lozinke osoljene (PBKDF2), uloga Administrator za osetljive operacije (rasknjižavanje, nova godina).

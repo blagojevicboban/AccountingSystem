@@ -70,4 +70,6 @@ public class Kalkulacija
     public string? SifraMagacina { get; set; }
 
     public bool IsKnjizen { get; set; }
+
+    public List<KalkulacijaStavka> Stavke { get; set; } = new();
 }

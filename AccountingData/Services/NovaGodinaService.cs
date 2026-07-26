@@ -34,13 +34,15 @@ public class NovaGodinaService
             {
                 decimal duguje = g.Sum(x => x.Duguje);
                 decimal potrazuje = g.Sum(x => x.Potrazuje);
+                decimal saldo = duguje - potrazuje;
                 return new BrutoBilansRed
                 {
                     BrojKonta = g.Key,
                     NazivKonta = konta.TryGetValue(g.Key, out var naziv) ? naziv : g.Key,
                     Duguje = duguje,
                     Potrazuje = potrazuje,
-                    Saldo = duguje - potrazuje
+                    SaldoDuguje = saldo > 0 ? saldo : 0,
+                    SaldoPotrazuje = saldo < 0 ? -saldo : 0
                 };
             })
             .Where(r => r.Saldo != 0m)

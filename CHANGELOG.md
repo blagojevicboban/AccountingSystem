@@ -4,6 +4,38 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.16] - 2026-07-26
+
+### 🚀 Zvanični Finansijski Izveštaji za APR (Bilansi)
+- **Bilans Stanja (`BilansiView`)**: Obračun AOP pozicija za Aktivu (Klasa 0–2) i Pasivu (Klasa 3–4) na izabrani datum, uz automatsku proveru ravnoteže (`Aktiva == Pasiva`) i upozorenje u realnom vremenu.
+- **Bilans Uspeha (`BilansiView`)**: Obračun AOP pozicija za Poslovne prihode (Klasa 6), Poslovne rashode (Klasa 5), Finansijske prihode/rashode i obračun Neto dobitka ili gubitka perioda.
+- **PDF Štampa Bilansa**: Izvoz zvaničnih PDF izveštaja Bilansa Stanja i Bilansa Uspeha sa AOP pozicijama i zaglavljem firme (`GenerisiBilansStanjaPdf`, `GenerisiBilansUspehaPdf`).
+
+### 🧾 PDV Evidencija (KIR, KPR i POPDV)
+- **Knjiga Izdatih Računa (KIR)**: Automatsko prikupljanje proknjiženih računa-otpremnica (`RacunOtpremnica`), kupaca, PIB-a i raščlanjivanje osnovica i PDV-a (20%, 10%, 0%).
+- **Knjiga Primljenih Računa (KPR)**: Automatsko prikupljanje proknjiženih ulaznih kalkulacija (`Kalkulacija`) i prijemnica dobavljača sa raščlanjavanjem prethodnog PDV-a koji se može odbiti.
+- **POPDV Rekapitulacija Obaveze**: Obračun konačne PDV obaveze (`PdvRazlika = KirUkupanPdv - KprUkupanPdv`) sa vizuelnom karticom (crvena pozadina za obavezu za uplatu / zelena za povraćaj/preplatu).
+- **PDF Štampa KIR / KPR**: Zvanični pejzažni (Landscape A4) PDF izvoz Knjige izdatih i Knjige primljenih računa.
+
+### 🛒 Robno i Materijalno Knjigovodstvo (ROB & MAT)
+- **Fakture / Računi-Otpremnice (MAT5)**: Izdavanje faktura kupcima sa rokom dospelosti, rabatima %, PDV-om, automatskim razduženjem zaliha i finansijskim nalogom u Glavnoj knjizi (`RacunOtpremnicaEditWindow`).
+- **Nivelacije cena (MAT7)**: Promena prodajnih cena artikala u magacinu sa proračunom razlike i PDF zapisnikom (`NivelacijaEditWindow`).
+- **Primopredaje / Interni prenosi (M4)**: Interni prenos materijala iz dajućeg u primajući magacin sa automatskim proračunom ponderisane prosečne cene (`PrimopredajaEditWindow`).
+- **Maloprodajne vs Veleprodajne Kalkulacije**: Dodat `CmbTipKalkulacije` selector u `TrgovinaView` za razdvajanje Veleprodaje (`MAT6`) i Maloprodaje (`MAT3`).
+
+### 📊 Bruto Bilans 6 Kolona (FIN2)
+- **Rigorozna 6-kolonska struktura**: Proširenje Bruto Bilansa na tačno 6 kolona (Promet Duguje, Promet Potražuje, Saldo Duguje, Saldo Potražuje) sa međuzbirovima po 3-cifrenim sintetičkim kontima i klasama, sa 100% poklapanjem sa Clipper txt ispisima.
+
+### 🎨 UI / UX i Korisnički Help
+- **Osvežena Pomoć (`PomocView.xaml`)**: Kompletno ažurirane teme za Robno, Materijalno, Bilanse, PDV i prečice.
+- **Globalna `Esc` prečica**: Podržan taster `Esc` za brzi izlaz iz svih novih modalnih prozora (Fakture, Nivelacije, Primopredaje).
+
+### ⚠️ Migracije i Baza Podataka
+- `20260726193016_DodajKalkulacijaStavke` — Dodate stavke kalkulacije za robne kartice.
+- `20260726201947_AddRacunOtpremnicaAndNivelacija` — Dodate tabele `RacuniOtpremnice`, `RacunOtpremnicaStavke`, `NivelacijeCena`, `NivelacijaStavke`.
+
+---
+
 ## [1.0.15] - 2026-07-26
 
 ### 🚀 Šifarnik opisa promena u unosu naloga i Esc navigacija

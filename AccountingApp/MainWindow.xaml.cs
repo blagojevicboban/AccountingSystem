@@ -132,8 +132,20 @@ public partial class MainWindow : Window
 
     private void NavIzvestaji_Click(object sender, RoutedEventArgs e)
     {
-        TxtHeaderTitle.Text = "📄 Finansijski izveštaji i PDF";
+        TxtHeaderTitle.Text = "📄 Izveštaji i PDF";
         MainContentHost.Content = new IzvestajiView();
+    }
+
+    private void NavBilansi_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "🏛️ Zvanični Finansijski Izveštaji za APR";
+        MainContentHost.Content = new Views.Bilansi.BilansiView();
+    }
+
+    private void NavPdv_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "🧾 PDV Evidencija (KIR i KPR)";
+        MainContentHost.Content = new Views.Pdv.PdvEvidencijaView();
     }
 
     private void FirmaBorder_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)

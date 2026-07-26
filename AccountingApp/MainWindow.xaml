@@ -83,6 +83,8 @@
                         <TextBlock Text="IZVEŠTAJI" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
                         <RadioButton x:Name="BtnIzvestaji" Content="📄 Izveštaji i PDF" Style="{StaticResource NavButtonStyle}" Click="NavIzvestaji_Click"/>
+                        <RadioButton x:Name="BtnBilansi" Content="🏛️ Bilansi (APR)" Style="{StaticResource NavButtonStyle}" Click="NavBilansi_Click"/>
+                        <RadioButton x:Name="BtnPdv" Content="🧾 PDV Evidencija (KIR/KPR)" Style="{StaticResource NavButtonStyle}" Click="NavPdv_Click"/>
 
                         <Separator Background="#334155" Margin="16,8"/>
                         <TextBlock Text="PODEŠAVANJA" FontSize="10" FontWeight="SemiBold"

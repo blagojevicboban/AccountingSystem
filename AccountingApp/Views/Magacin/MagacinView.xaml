@@ -166,6 +166,55 @@
                     </Border>
                 </Grid>
             </TabItem>
+
+            <!-- ===================== PRIMOPREDAJE (M4) ===================== -->
+            <TabItem x:Name="TabPrimopredaje" Header="🔄 Primopredaje">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1.2*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPretragaPrimopredaja" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPrimopredaja_TextChanged"/>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                                <Button x:Name="BtnNovaPrimopredaja" Content="➕ Nova primopredaja" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,0" Click="BtnNovaPrimopredaja_Click"/>
+                                <Button x:Name="BtnKnjiziPrimopredaju" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Click="BtnKnjiziPrimopredaju_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgPrimopredaje" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgPrimopredaje_SelectionChanged">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="100"/>
+                                <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Daje (Izlaz)" Binding="{Binding SifraMagacinaDaje}" Width="110"/>
+                                <DataGridTextColumn Header="Prima (Ulaz)" Binding="{Binding SifraMagacinaPrima}" Width="110"/>
+                                <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="#E2E8F0"/>
+
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" Margin="0,16,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgPrimopredajaStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="60"/>
+                                <DataGridTextColumn Header="Artikal" Binding="{Binding SifraArtikla}" Width="120"/>
+                                <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

@@ -28,12 +28,32 @@
                                 <TextBlock Text="Od datuma" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
                                 <DatePicker x:Name="DpBrutoBilansOd" Width="120" Height="30"/>
                             </StackPanel>
-                            <StackPanel>
+                            <StackPanel Margin="0,0,10,0">
                                 <TextBlock Text="Do datuma" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
                                 <DatePicker x:Name="DpBrutoBilansDo" Width="120" Height="30"/>
                             </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Klasa" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                <ComboBox x:Name="CmbBrutoBilansKlasa" Width="70" Height="30" SelectedIndex="0">
+                                    <ComboBoxItem Content="Sve"/>
+                                    <ComboBoxItem Content="0"/>
+                                    <ComboBoxItem Content="1"/>
+                                    <ComboBoxItem Content="2"/>
+                                    <ComboBoxItem Content="3"/>
+                                    <ComboBoxItem Content="4"/>
+                                    <ComboBoxItem Content="5"/>
+                                    <ComboBoxItem Content="6"/>
+                                    <ComboBoxItem Content="7"/>
+                                    <ComboBoxItem Content="8"/>
+                                    <ComboBoxItem Content="9"/>
+                                </ComboBox>
+                            </StackPanel>
                         </StackPanel>
-                        <Button Content="📥 Izvezi bruto bilans (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#059669" Click="BtnGenerisiBrutoBilans_Click"/>
+                        <CheckBox x:Name="ChkBrutoBilansTotali" Content="Prikaži totale po sintetičkim kontima i klasama" FontSize="12" Margin="0,0,0,12"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="📥 Izvezi PDF" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,0,8,0" Click="BtnGenerisiBrutoBilans_Click"/>
+                            <Button Content="👁 Prikaži na ekranu" Style="{StaticResource ActionButtonStyle}" Background="#0EA5E9" Click="BtnPrikaziBrutoBilans_Click"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

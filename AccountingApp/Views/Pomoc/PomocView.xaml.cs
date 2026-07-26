@@ -10,9 +10,9 @@ public partial class PomocView : UserControl
         {
             Naslov = "👋 Dobrodošli",
             Sadrzaj =
-                "AccountingSystem je desktop ERP aplikacija za finansijsko knjigovodstvo, razvijena po uzoru na " +
-                "legacy DOS/Clipper sistem (moduli FIN, ANAL, ROB, MAT).\n\n" +
-                "Sa leve strane izaberite temu da biste videli uputstvo za tu funkciju. Svaka firma ima sopstvenu " +
+                "AccountingSystem je savremena desktop ERP aplikacija za finansijsko, robno i materijalno knjigovodstvo, " +
+                "razvijena po uzoru na legacy DOS/Clipper sistem (moduli FIN, ANAL, ROB, MAT).\n\n" +
+                "Sa leve strane izaberite temu da biste videli detaljno uputstvo za odabranu funkciju. Svaka firma ima sopstvenu " +
                 "SQLite bazu podataka — trenutno aktivna firma je prikazana u gornjem levom uglu sidebar-a.\n\n" +
                 "Podrazumevana prijava (na novoj bazi) je korisničko ime „admin“ i lozinka „admin“."
         },
@@ -41,101 +41,63 @@ public partial class PomocView : UserControl
                 "• „Novi nalog“ — otvara dijalog za unos naloga: broj, datum, opis, i stavke (konto, dokument, " +
                 "opis, duguje, potražuje, opciono partner). Dijalog prikazuje ŽIVU proveru ravnoteže (zeleno = " +
                 "u ravnoteži, žuto = nema stavki, crveno = razlika).\n" +
+                "• „Brzi šifrarnik opisa promena (... / F2)“ — direktan unos i izbor šifara opisa u toku knjiženja.\n" +
                 "• „Izmeni“ — dozvoljeno samo za neproknjižene naloge (nacrte).\n" +
                 "• „Proknjiži“ — knjiži nalog; odbija ako Duguje ≠ Potražuje.\n" +
-                "• „Rasknjiži“ (samo Administrator) — vraća proknjižen nalog u status nacrta radi ispravke, uz " +
-                "potvrdu. Posle rasknjižavanja nalog se ponovo može izmeniti.\n" +
+                "• „Rasknjiži“ (samo Administrator) — vraća proknjižen nalog u status nacrta radi ispravke.\n" +
                 "• „Nova godina“ (samo Administrator) — prenosi zaključni saldo svih konta u nalog za početno " +
-                "stanje naredne godine (01.01.). Odbija prenos ako knjige nisu u ravnoteži — to je znak da " +
-                "postoji neispravan nalog koji treba ispraviti (rasknjižiti i popraviti) pre prenosa."
+                "stanje naredne godine (01.01.)."
         },
         new PomocTema
         {
-            Naslov = "📋 Kartice konta",
+            Naslov = "📋 Kartice konta & Bruto bilans",
             Sadrzaj =
-                "Hronološki pregled prometa i tekućeg salda za izabrani konto iz kontnog plana. Pretražite konto " +
-                "sa leve strane, a tabela prikazuje datum, nalog, opis, duguje/potražuje i kumulativni saldo posle " +
-                "svake stavke. Dugme „Štampaj karticu (PDF)“ izvozi karticu u PDF."
+                "Hronološki pregled prometa i tekućeg salda za kontni plan.\n\n" +
+                "• Kartice konta: pretraga po broju konta, prikaz duguje/potražuje i kumulativnog salda.\n" +
+                "• Bruto bilans (PDF): prikaz sa tačno 6 kolona (Promet Duguje, Promet Potražuje, Saldo Duguje, Saldo Potražuje) " +
+                "sa međuzbirovima po 3-cifrenim sintetičkim kontima i klasama, potpuno usaglašeno sa Clipper FIN2.PRG izveštajima."
         },
         new PomocTema
         {
-            Naslov = "👥 Partneri (Analitika) i otvorene stavke",
+            Naslov = "🛒 Trgovina, Fakture i Kalkulacije (ROB)",
             Sadrzaj =
-                "Ovde se prati analitika kupaca i dobavljača — otvorene stavke (nenaplaćena/neplaćena dugovanja) " +
-                "po partneru.\n\n" +
-                "Napomena: da bi se stavka pojavila kod partnera, mora joj se dodeliti partner u polju „Partner“ " +
-                "prilikom unosa naloga (u Glavnoj knjizi). Istorijski uvezeni nalozi iz DOS sistema nemaju " +
-                "dodeljene partnere jer legacy ANAL modul za ovu firmu nije korišćen.\n\n" +
-                "• „Izvezi IOS (PDF)“ — generiše Izvod Otvorenih Stavki za odabranog partnera.\n" +
-                "• „Obračun kamate“ — otvara poseban prozor za obračun zatezne kamate (videti sledeću temu)."
+                "Modul za robno poslovanje i trgovinu (odgovara Clipper modulima MAT1–MAT7):\n\n" +
+                "• Kalkulacije: izbor Veleprodaje (MAT6) sa zavisnim troškovima i maržom, ili Maloprodaje (MAT3) sa ukalkulisanom maržom i PDV-om.\n" +
+                "• Računi - Otpremnice / Fakture (MAT5): izdavanje faktura kupcima sa rokom dospelosti, rabatom %, PDV-om, automatskim razduživanjem robe i generisanjem finansijskog naloga u Glavnoj knjizi.\n" +
+                "• Nivelacije cena (MAT7): promena prodajnih cena artikala po magacinu sa proračunom i knjiženjem razlike u ceni.\n" +
+                "• PDF Štampa: izvoz zvaničnih faktura, kalkulacija i zapisnika o nivelaciji cena u PDF format."
         },
         new PomocTema
         {
-            Naslov = "💰 Kamate",
+            Naslov = "📦 Magacin i zalihe (MAT)",
             Sadrzaj =
-                "Obračun zatezne kamate na dugovne otvorene stavke partnera, po danu kašnjenja i važećoj " +
-                "kamatnoj stopi.\n\n" +
-                "• Sa leve strane se vidi tabela kamatnih stopa (svaka važi od svog datuma do sledeće stope) i " +
-                "forma za unos nove stope.\n" +
-                "• Unesite datum obračuna i kliknite „Obračunaj“ — tabela prikazuje svaku dugovnu stavku, broj " +
-                "dana kašnjenja i obračunatu kamatu.\n\n" +
-                "VAŽNA NAPOMENA: uvezene istorijske stope (iz legacy sistema) datiraju iz 2004–2006. godine. Za " +
-                "ispravan obračun na tekućim dugovanjima unesite AKTUELNU zvaničnu stopu zatezne kamate pre " +
-                "obračuna — sistem ne pretpostavlja niti izmišlja trenutnu stopu."
+                "Praćenje materijala po magacinima po uzoru na Clipper M1–M4 modula:\n\n" +
+                "• Kartice materijala (M1): praćenje zaliha po ponderisanoj prosečnoj ceni (Weighted Average Cost).\n" +
+                "• Ulazi (M2): prijem materijala u magacin po unetim dobavljačkim cenama.\n" +
+                "• Trebovanja (M3): izdavanje materijala na konto troška po trenutnoj prosečnoj ceni.\n" +
+                "• Primopredaje (M4): interni prenos materijala iz dajućeg magacina u ulazni magacin sa automatskim proračunom prosečne vrednosti."
         },
         new PomocTema
         {
-            Naslov = "📦 Magacin i zalihe",
+            Naslov = "💰 Kamate i partneri (ANAL)",
             Sadrzaj =
-                "Praćenje materijala po magacinima, sa karticom po prosečnoj (ponderisanoj) ceni.\n\n" +
-                "• Tab „Kartice materijala“ — izaberite magacin i artikal da vidite karticu (ulaz/izlaz/stanje/" +
-                "cena/vrednost).\n" +
-                "• Tab „Ulazi“ — prijem materijala. Pri knjiženju, prijem se vrednuje po UNETOJ ceni, a vrednost " +
-                "zaliha se akumulira.\n" +
-                "• Tab „Trebovanja“ — izdavanje materijala iz magacina. Pri knjiženju, izdavanje se vrednuje po " +
-                "TRENUTNOJ prosečnoj ceni (ukupna vrednost zaliha / ukupna količina) — cena se ne unosi ručno. " +
-                "Sistem odbija trebovanje ako bi izazvalo negativno stanje na zalihama."
+                "Pratite analitiku kupaca i dobavljača (otvorene stavke / IOS) i obračun zatezne kamate po važećim dnevnim stopama kašnjenja."
         },
         new PomocTema
         {
-            Naslov = "🛒 Trgovina i fakture",
+            Naslov = "⌨️ Korisne prečice i tasteri",
             Sadrzaj =
-                "Kalkulacija veleprodaje — obračun prodajne cene robe na osnovu nabavne vrednosti, zavisnih " +
-                "troškova, trgovačke marže i poreza (PDV).\n\n" +
-                "Formula: Svega troškovi = zbir zavisnih troškova (transport, uskladištenje, utovar/istovar, " +
-                "osiguranje, ostalo). Svega nabavno = nabavna vrednost + svega troškovi. Razlika = svega nabavno " +
-                "× marža%. Porez = (svega nabavno + razlika) × PDV%. Prodajna vrednost = svega nabavno + razlika " +
-                "+ porez.\n\n" +
-                "Obračun se prikazuje uživo dok unosite vrednosti. „Snimi kalkulaciju“ čuva nacrt, a „Proknjiži“ " +
-                "ga zaključuje."
-        },
-        new PomocTema
-        {
-            Naslov = "📄 Izveštaji i PDF",
-            Sadrzaj =
-                "Dostupni PDF izveštaji:\n\n" +
-                "• Dnevnik glavne knjige — hronološki spisak svih proknjiženih naloga.\n" +
-                "• Bruto bilans — promet i saldo po kontu (finansijski).\n" +
-                "• IOS — izvod otvorenih stavki (bira se partner na tabu Partneri).\n" +
-                "• Izveštaj o zalihama.\n" +
-                "• Bruto bilans analitike — promet i saldo po partneru (analitika kupaca/dobavljača)."
-        },
-        new PomocTema
-        {
-            Naslov = "📋 Kontni plan (Šifarnik konta)",
-            Sadrzaj =
-                "Modul za pregled, unos, izmenu i štampu kontnog plana (analogno DOS proceduri gk1).\n\n" +
-                "• „Novi konto“ — otvara dijalog za unos novog konta (broj konta, naziv, vrsta konta). Klasa i sintetički/analitički status se automatski određuju.\n" +
-                "• „Izmeni“ — izmena naziva ili vrste postojećeg konta.\n" +
-                "• „Obriši“ — brisanje konta (dozvoljeno samo za konta bez proknjiženih stavki).\n" +
-                "• „Štampaj Kontni plan (PDF)“ — generisanje i pregled kompletne liste konta u PDF formatu."
+                "Brza i efikasna navigacija u radu sa aplikacijom:\n\n" +
+                "• Esc — zatvara svaki otvoreni modalni dijalog (Fakture, Nivelacije, Unos naloga, Primopredaje, Opise promena).\n" +
+                "• Tab / Enter — pomeranje fokusa između polja za brzi unos podataka bez upotrebe miša.\n" +
+                "• F2 / ... — brzi pristup šifrarnicima unutar polja unosa."
         },
         new PomocTema
         {
             Naslov = "🔄 Uvoz iz DOS sistema",
             Sadrzaj =
-                "Dugme za pokretanje uvoza DOS podataka nalazi se u ekranu Podešavanja aplikacije (⚙️ Podešavanja -> 🔄 Uvoz podataka iz legacy DOS sistema).\n\n" +
-                "Alat uvozi kontni plan, naloge knjiženja, partnere, materijale, magacine, ulaze i kartice iz dBase III / Clipper datoteka (C:\\KNJIGE\\Radni\\KORxx) direktno u SQLite bazu aktivne firme."
+                "Nalazi se u ⚙️ Podešavanja -> 🔄 Uvoz podataka iz legacy DOS sistema.\n\n" +
+                "Alat automatski binarno čita dBase III / Clipper fajlove (KONTPLAN, NALOG, PROMENE, MAGACIN, ARTIKLI, ULAZ, TREBOV, RAC_OTP, KALKULAC) i uvozi ih u SQLite bazu."
         }
     };
 
