@@ -33,6 +33,7 @@
                     <TextBlock Text="📋 Stavke naloga" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" Margin="0,0,16,0"/>
                     <Button x:Name="BtnDodajStavku" Content="➕ Dodaj stavku" Style="{StaticResource ActionButtonStyle}" Click="BtnDodajStavku_Click" Margin="0,0,8,0"/>
                     <Button x:Name="BtnPretragaKonta" Content="🔍 Pretraga konta (F2)" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Click="BtnPretragaKonta_Click" Margin="0,0,8,0"/>
+                    <Button x:Name="BtnSifarnikOpisa" Content="📝 Šifarnik opisa" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Click="BtnSifarnikOpisa_Click" Margin="0,0,8,0"/>
                     <Button x:Name="BtnObrisiStavku" Content="🗑 Obriši stavku" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Click="BtnObrisiStavku_Click" Margin="0,0,8,0"/>
                     <Button x:Name="BtnPomoc" Content="❓ Pomoć (F1)" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Click="BtnPomoc_Click"/>
                 </StackPanel>
@@ -40,16 +41,31 @@
                 <DataGrid x:Name="DgStavke" AutoGenerateColumns="False" CanUserAddRows="False" GridLinesVisibility="Horizontal"
                           HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
                           CellEditEnding="DgStavke_CellEditEnding"
-                          PreviewKeyDown="DgStavke_PreviewKeyDown">
+                          PreviewKeyDown="DgStavke_PreviewKeyDown"
+                          PreparingCellForEdit="DgStavke_PreparingCellForEdit">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50" IsReadOnly="True"/>
                         <DataGridComboBoxColumn x:Name="ColKonto" Header="Konto (F2)"
                                                  SelectedValueBinding="{Binding BrojKonta, UpdateSourceTrigger=PropertyChanged}"
                                                  SelectedValuePath="BrojKonta"
                                                  DisplayMemberPath="Prikaz"
-                                                 Width="220"/>
+                                                 Width="240"/>
                         <DataGridTextColumn Header="Dokument" Binding="{Binding BrojDokumenta, UpdateSourceTrigger=PropertyChanged}" Width="130"/>
-                        <DataGridTextColumn Header="Opis" Binding="{Binding Opis, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                        <DataGridTemplateColumn Header="Opis" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Opis}" VerticalAlignment="Center" Margin="4,0"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <ComboBox IsEditable="True"
+                                              Text="{Binding Opis, UpdateSourceTrigger=PropertyChanged}"
+                                              ItemsSource="{Binding DataContext.OpisiPromenaOptions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              VerticalContentAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Duguje" Binding="{Binding Duguje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
                         <DataGridTextColumn Header="Potražuje" Binding="{Binding Potrazuje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
                         <DataGridComboBoxColumn x:Name="ColPartner" Header="Partner"
@@ -73,7 +89,7 @@
         </Border>
 
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button x:Name="BtnOtkazi" Content="Otkaži" Style="{StaticResource ActionButtonStyle}" Background="#64748B" Click="BtnOtkazi_Click" Margin="0,0,10,0"/>
+            <Button x:Name="BtnOtkazi" Content="Otkaži (Esc)" IsCancel="True" Style="{StaticResource ActionButtonStyle}" Background="#64748B" Click="BtnOtkazi_Click" Margin="0,0,10,0"/>
             <Button x:Name="BtnSnimi" Content="💾 Snimi nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Click="BtnSnimi_Click"/>
         </StackPanel>
     </Grid>

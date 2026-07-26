@@ -147,6 +147,49 @@ switch ($Command) {
         "Typed into '$Arg1'"
     }
 
+    "keys" {
+        if (-not $Arg1) { throw "Usage: driver.ps1 keys <SendKeys-string>" }
+        # Unlike 'type', does not look up an AutomationId first — sends raw SendKeys
+        # to whatever control currently has focus. Needed for controls with no
+        # AutomationId, e.g. a DataGrid cell's auto-generated editing ComboBox.
+        Get-TopWindow | Out-Null
+        # Each driver.ps1 call is a fresh process; the terminal regains OS
+        # foreground activation between calls, which can leave WPF's *logical*
+        # focus target un-reasserted at the OS level even though it never
+        # changed inside the app. Re-assert focus on whatever UIA reports as
+        # focused before sending keys, so keystrokes land on the actual control.
+        $focused = [System.Windows.Automation.AutomationElement]::FocusedElement
+        if ($null -ne $focused) { $focused.SetFocus() }
+        Start-Sleep -Milliseconds 400
+        [System.Windows.Forms.SendKeys]::SendWait($Arg1)
+        "Sent keys '$Arg1'"
+    }
+
+    "clicktype" {
+        if (-not $Arg1 -or -not $Arg2) { throw "Usage: driver.ps1 clicktype <AutomationId> <SendKeys-string>" }
+        # Combines 'click' + 'keys' in a single process/activation cycle. Needed when
+        # the click triggers an async UI update (e.g. a DataGrid row opening a cell
+        # into edit mode via Dispatcher.BeginInvoke) that must be typed into before
+        # anything reactivates the window again — a second driver.ps1 call's own
+        # Get-TopWindow/AppActivate would otherwise close an open ComboBox dropdown
+        # (see SKILL.md gotcha) before the keys ever got sent.
+        $el = Find-ById $Arg1
+        $el.SetFocus()
+        Start-Sleep -Milliseconds 100
+        $patternObj = $null
+        if ($el.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$patternObj)) {
+            $patternObj.Invoke()
+        } else {
+            [System.Windows.Forms.SendKeys]::SendWait(" ")
+        }
+        Start-Sleep -Milliseconds 900
+        $focused = [System.Windows.Automation.AutomationElement]::FocusedElement
+        if ($null -ne $focused) { $focused.SetFocus() }
+        Start-Sleep -Milliseconds 200
+        [System.Windows.Forms.SendKeys]::SendWait($Arg2)
+        "Clicked '$Arg1' then sent keys '$Arg2'"
+    }
+
     "ss" {
         if (-not $Arg1) { throw "Usage: driver.ps1 ss <output.png>" }
         $win = Get-TopWindow

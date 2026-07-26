@@ -62,8 +62,11 @@ powershell -ExecutionPolicy Bypass -File $Drv close
 ```
 
 Commands: `launch <exe>`, `tree`, `click <AutomationId>`, `type <AutomationId> <text>`,
-`ss <out.png>`, `close`. `AutomationId` is the control's `x:Name` in XAML (WPF
-exposes it 1:1 to UI Automation for named elements).
+`keys <SendKeys-string>`, `ss <out.png>`, `close`. `AutomationId` is the control's
+`x:Name` in XAML (WPF exposes it 1:1 to UI Automation for named elements).
+`keys` sends raw SendKeys to whatever control currently has focus (no AutomationId
+lookup) — needed for controls with none, e.g. a `DataGrid` cell's auto-generated
+editing `ComboBox`/`TextBox` (see gotcha below).
 
 Default seeded login is **`admin` / `admin123`** (PBKDF2 hash via EF Core `HasData`
 in `AccountingData/AccountingDbContext.cs` — see the `sqlite-efcore-schema-migration`
@@ -153,6 +156,29 @@ General lesson for this codebase: **don't set `IsChecked`/`IsSelected`/etc. as a
 XAML literal on a control if its `Checked`/`SelectionChanged`/etc. handler touches
 sibling named elements declared later in the same file** — the event can fire
 before those elements exist. Set the initial state in code instead.
+
+- **`keys` is flaky in this sandbox: the first keystroke of a call is sometimes
+  dropped, and occasionally focus jumps away from the app entirely (e.g. to the
+  Windows taskbar search box) between driver invocations** — each `driver.ps1`
+  call is a fresh process, so every `keys` call redoes window activation, and on
+  this remote/virtual desktop that activation isn't 100% reliable. Mitigations:
+  add a generous `Start-Sleep` (400ms+) before `keys`, prefer one `keys` call
+  with the full string over several single-character calls, and always screenshot
+  *immediately* after to confirm the text actually landed in the target control
+  before trusting the next step — don't chain several blind `keys` calls in a row.
+  If a screenshot shows the taskbar or wrong window, the keys went nowhere useful;
+  just retry the step, it's environmental, not app state.
+- **An open `ComboBox` dropdown (`IsDropDownOpen=true`) is a separate top-level
+  Popup hwnd, and it auto-closes the instant the window is reactivated** — which
+  `Get-TopWindow` does on *every* `driver.ps1` call (`AppActivate`). So there is no
+  way with this driver to open a dropdown in one call and then inspect/click one of
+  its rows (`ListItem`) in a later call — by the time the later call's `Get-TopWindow`
+  runs, the popup is already gone. Verified empirically trying to build a
+  `clickitem` command (removed again). If you need to test dropdown-row selection,
+  either drive it with `keys` (types + `{ENTER}`/`{DOWN}{ENTER}` in the *same*
+  `keys` call as opening it, so no intervening reactivation) or accept that only
+  the "type to filter" part is screenshot-verifiable with this driver, not the
+  "click a specific row" part.
 
 ## Troubleshooting
 

@@ -95,14 +95,35 @@ public class KarticaService
         foreach (var s in stavke)
         {
             saldo += s.Duguje - s.Potrazuje;
+
+            string opisPromene = s.PromenaKod.HasValue
+                ? (promene.TryGetValue(s.PromenaKod.Value, out var opis) ? opis : s.PromenaKod.Value.ToString())
+                : "";
+
+            string prikazOpis;
+            if (!string.IsNullOrWhiteSpace(s.BrojDokumenta))
+            {
+                prikazOpis = s.BrojDokumenta;
+            }
+            else if (!string.IsNullOrWhiteSpace(s.Opis) && !s.Opis.Equals(opisPromene, StringComparison.OrdinalIgnoreCase))
+            {
+                prikazOpis = s.Opis;
+            }
+            else if (!string.IsNullOrWhiteSpace(s.Nalog?.Opis) && !s.Nalog.Opis.Equals(opisPromene, StringComparison.OrdinalIgnoreCase))
+            {
+                prikazOpis = s.Nalog.Opis;
+            }
+            else
+            {
+                prikazOpis = "";
+            }
+
             rezultat.Add(new KarticaRed
             {
                 Datum = s.Nalog!.DatumNaloga,
                 BrojNaloga = s.Nalog.BrojNaloga,
-                Opis = string.IsNullOrWhiteSpace(s.Opis) ? s.Nalog.Opis : s.Opis,
-                OpisPromene = s.PromenaKod.HasValue
-                    ? (promene.TryGetValue(s.PromenaKod.Value, out var opis) ? opis : s.PromenaKod.Value.ToString())
-                    : "",
+                Opis = prikazOpis,
+                OpisPromene = opisPromene,
                 Duguje = s.Duguje,
                 Potrazuje = s.Potrazuje,
                 Saldo = saldo

@@ -15,6 +15,8 @@ public partial class NalogEditWindow : Window
 {
     private readonly ObservableCollection<StavkaNaloga> _stavke = new();
     private readonly int _existingNalogId;
+    private List<KontoOption> _svaKonta = new();
+    private ComboBox? _aktivniKontoCombo;
 
     public class KontoOption
     {
@@ -26,6 +28,7 @@ public partial class NalogEditWindow : Window
     public NalogEditWindow(Nalog? existingNalog = null)
     {
         InitializeComponent();
+        DataContext = this;
         DgStavke.ItemsSource = _stavke;
         _stavke.CollectionChanged += (s, e) => PrikaziSaldo();
 
@@ -35,17 +38,39 @@ public partial class NalogEditWindow : Window
             TxtBrojNaloga.Text = existingNalog.BrojNaloga;
             DpDatum.SelectedDate = existingNalog.DatumNaloga;
             TxtOpisNaloga.Text = existingNalog.Opis;
+
+            Dictionary<int, string> promeneDict = new();
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                    .UseSqlite($"Data Source={AppConfig.DbPath}")
+                    .Options;
+                using var db = new AccountingDbContext(options);
+                promeneDict = db.Promene.ToDictionary(p => p.Sifra, p => p.Opis);
+            }
+            catch { }
+
             foreach (var s in existingNalog.Stavke.OrderBy(s => s.RedniBroj))
             {
+                string opisStavke = s.Opis;
+                if (s.PromenaKod.HasValue && promeneDict.TryGetValue(s.PromenaKod.Value, out var textIzPromena) && !string.IsNullOrWhiteSpace(textIzPromena))
+                {
+                    if (string.IsNullOrWhiteSpace(opisStavke) || opisStavke == s.BrojDokumenta)
+                    {
+                        opisStavke = textIzPromena;
+                    }
+                }
+
                 _stavke.Add(new StavkaNaloga
                 {
                     RedniBroj = s.RedniBroj,
                     BrojKonta = s.BrojKonta,
                     BrojDokumenta = s.BrojDokumenta,
-                    Opis = s.Opis,
+                    Opis = opisStavke,
                     Duguje = s.Duguje,
                     Potrazuje = s.Potrazuje,
-                    PartnerId = s.PartnerId
+                    PartnerId = s.PartnerId,
+                    PromenaKod = s.PromenaKod
                 });
             }
             Title = $"Izmena naloga #{existingNalog.BrojNaloga}";
@@ -59,7 +84,54 @@ public partial class NalogEditWindow : Window
 
         _ = UcitajKontaAsync();
         _ = UcitajPartnereAsync();
+        _ = UcitajPromeneAsync();
         PrikaziSaldo();
+    }
+
+    public ObservableCollection<string> OpisiPromenaOptions { get; } = new();
+
+    private async Task UcitajPromeneAsync()
+    {
+        var defaultPromene = new[]
+        {
+            "Pocetno stanje", "izvod", "isplate", "uplate", "glavna blagajna",
+            "cekovi gradjana", "racuni", "putni troskovi", "avans", "cesija",
+            "kompenzacija", "licni dohodak", "terenski dodatak", "topli obrok",
+            "UGOVOR O PREUZIMANJU DUGA", "ulazi", "trebovanja"
+        };
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+
+            var promene = await db.Promene.OrderBy(p => p.Sifra).Select(p => p.Opis).ToListAsync();
+            
+            OpisiPromenaOptions.Clear();
+            if (promene != null && promene.Count > 0)
+            {
+                foreach (var p in promene)
+                {
+                    if (!string.IsNullOrWhiteSpace(p) && !OpisiPromenaOptions.Contains(p))
+                    {
+                        OpisiPromenaOptions.Add(p);
+                    }
+                }
+            }
+
+            // Ako u bazi nema unetih promena, ubacujemo podrazumevani šifarnik iz legacy PROMENE.DBF
+            if (OpisiPromenaOptions.Count == 0)
+            {
+                foreach (var p in defaultPromene) OpisiPromenaOptions.Add(p);
+            }
+        }
+        catch
+        {
+            OpisiPromenaOptions.Clear();
+            foreach (var p in defaultPromene) OpisiPromenaOptions.Add(p);
+        }
     }
 
     private async Task UcitajKontaAsync()
@@ -79,6 +151,7 @@ public partial class NalogEditWindow : Window
                 NazivKonta = k.NazivKonta
             }).ToList();
 
+            _svaKonta = opcije;
             ColKonto.ItemsSource = opcije;
         }
         catch
@@ -197,6 +270,12 @@ public partial class NalogEditWindow : Window
         }
         else if (e.Key == Key.Enter || e.Key == Key.Tab)
         {
+            // Must run here (DataGrid-level PreviewKeyDown), not on the ComboBox
+            // itself: DataGridCell swallows Enter/Tab internally (BeginEdit/CommitEdit
+            // bookkeeping) before the tunnel ever reaches a cell's editing element, so
+            // a handler attached directly to the ComboBox never sees these keys.
+            RazresiUnetiKontoPriPotvrdi();
+
             if (DgStavke.CurrentCell.Column != null && DgStavke.SelectedItem is StavkaNaloga currentStavka)
             {
                 var columnIndex = DgStavke.Columns.IndexOf(DgStavke.CurrentCell.Column);
@@ -216,6 +295,13 @@ public partial class NalogEditWindow : Window
     private void BtnPretragaKonta_Click(object sender, RoutedEventArgs e)
     {
         OtvoriPretraguKonta();
+    }
+
+    private async void BtnSifarnikOpisa_Click(object sender, RoutedEventArgs e)
+    {
+        var win = new PromeneWindow { Owner = this };
+        win.ShowDialog();
+        await UcitajPromeneAsync();
     }
 
     private void BtnPomoc_Click(object sender, RoutedEventArgs e)
@@ -238,6 +324,11 @@ public partial class NalogEditWindow : Window
         else if (e.Key == Key.Insert)
         {
             DodajNovuStavku();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            Close();
             e.Handled = true;
         }
     }
@@ -294,6 +385,71 @@ public partial class NalogEditWindow : Window
     private void DgStavke_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
     {
         Dispatcher.BeginInvoke(new Action(PrikaziSaldo));
+    }
+
+    private void DgStavke_PreparingCellForEdit(object sender, DataGridPreparingCellForEditEventArgs e)
+    {
+        if (e.Column != ColKonto || e.EditingElement is not ComboBox cb) return;
+
+        cb.IsEditable = true;
+        cb.IsTextSearchEnabled = false;
+        cb.StaysOpenOnEdit = true;
+        cb.ItemsSource = _svaKonta;
+        _aktivniKontoCombo = cb;
+
+        cb.ApplyTemplate();
+        if (cb.Template.FindName("PART_EditableTextBox", cb) is TextBox tb)
+        {
+            tb.TextChanged += ComboKonto_TextChanged;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                tb.SelectAll();
+                tb.Focus();
+                cb.IsDropDownOpen = true;
+            }), System.Windows.Threading.DispatcherPriority.Input);
+        }
+    }
+
+    private void ComboKonto_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is not TextBox tb || tb.TemplatedParent is not ComboBox cb) return;
+
+        string query = tb.Text.Trim().ToLower();
+        var filtrirano = string.IsNullOrEmpty(query)
+            ? _svaKonta
+            : _svaKonta.Where(k => k.BrojKonta.ToLower().Contains(query) || k.NazivKonta.ToLower().Contains(query)).ToList();
+
+        cb.ItemsSource = filtrirano;
+        cb.IsDropDownOpen = filtrirano.Count > 0;
+    }
+
+    // Editable ComboBox's own Text/SelectedItem sync becomes unreliable once
+    // ItemsSource is swapped on every keystroke (WPF quirk), so on commit we
+    // resolve the typed text against _svaKonta ourselves instead of trusting cb.Text/SelectedItem.
+    private void RazresiUnetiKontoPriPotvrdi()
+    {
+        var cb = _aktivniKontoCombo;
+        if (cb == null || DgStavke.CurrentCell.Column != ColKonto) return;
+        if (cb.SelectedItem is KontoOption) return;
+
+        string typed = (cb.Template.FindName("PART_EditableTextBox", cb) as TextBox)?.Text?.Trim() ?? string.Empty;
+        if (typed.Length == 0) return;
+
+        var poklapanje = _svaKonta.FirstOrDefault(k => k.BrojKonta.Equals(typed, StringComparison.OrdinalIgnoreCase))
+            ?? _svaKonta.FirstOrDefault(k => k.BrojKonta.ToLower().Contains(typed.ToLower()) || k.NazivKonta.ToLower().Contains(typed.ToLower()));
+
+        // Not cb.SelectedItem = poklapanje: the ComboBox's ItemsSource was just
+        // swapped by the last keystroke's filter, and WPF's ItemContainerGenerator
+        // for the popup's (separate visual root) content hasn't caught up yet —
+        // assigning SelectedItem right after silently no-ops (confirmed via logging:
+        // SelectedItem read back as null immediately after the assignment). Go
+        // straight to the row's model instead of fighting the ComboBox's selection
+        // machinery; nothing else writes BrojKonta here since we never touch
+        // SelectedValue, so there's no competing binding push to race against.
+        if (poklapanje != null && DgStavke.SelectedItem is StavkaNaloga trenutna)
+        {
+            trenutna.BrojKonta = poklapanje.BrojKonta;
+        }
     }
 
     private void PrikaziSaldo()

@@ -60,20 +60,35 @@ public partial class DashboardView : UserControl
                 new PieSeries<int> { Values = new[] { neproknjizenoCount }, Name = "Neproknjiženi", InnerRadius = 40 }
             };
 
-            // Promet po kontu — Top 10 (Pie)
+            // Promet po kontu — Top 10 (horizontalni bar, najveći na vrhu)
             var brutoBilansService = new BrutoBilansService(db);
             var bilansPoKontu = await brutoBilansService.GetBrutoBilansAsync();
             var top10Konta = bilansPoKontu
                 .OrderByDescending(r => r.Duguje + r.Potrazuje)
                 .Take(10)
                 .ToList();
+            top10Konta.Reverse();
 
-            PiePrometKonta.Series = top10Konta.Select(k => (ISeries)new PieSeries<double>
+            BarPrometKonta.Series = new ISeries[]
             {
-                Values = new[] { (double)(k.Duguje + k.Potrazuje) },
-                Name = $"{k.BrojKonta} {k.NazivKonta}",
-                ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2}"
-            }).ToArray();
+                new RowSeries<double>
+                {
+                    Values = top10Konta.Select(k => (double)(k.Duguje + k.Potrazuje)).ToArray(),
+                    Fill = new SolidColorPaint(SKColor.Parse("#2563EB")),
+                    DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#334155")),
+                    DataLabelsPosition = DataLabelsPosition.End,
+                    DataLabelsFormatter = point => point.Model.ToString("N0"),
+                    XToolTipLabelFormatter = point => point.Model.ToString("N2")
+                }
+            };
+            BarPrometKonta.YAxes = new Axis[]
+            {
+                new Axis
+                {
+                    Labels = top10Konta.Select(k => $"{k.BrojKonta} {k.NazivKonta}").ToArray(),
+                    TextSize = 11
+                }
+            };
 
             // Top 5 partnera po prometu (Bar)
             var otvoreneStavkeService = new OtvoreneStavkeService(db);

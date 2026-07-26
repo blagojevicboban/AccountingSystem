@@ -4,6 +4,25 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.15] - 2026-07-26
+
+### 🚀 Šifarnik opisa promena u unosu naloga i Esc navigacija
+- **Brzi prozor Šifarnika opisa (`PromeneWindow`)**: Pored dugmeta za pretragu konta (`F2`) dodato je dugme **`📝 Šifarnik opisa`** u prozoru unosa naloga. Omogućava instant pretragu, dodavanje, izmenu i brisanje standardnih opisa promena bez napuštanja naloga sa automatskim osvežavanjem padajuće liste.
+- **Unapređena `Esc` navigacija**: Taster `Esc` i dugme `Otkaži (Esc)` (sa `IsCancel="True"`) sada zatvaraju sve prozorčiće i dijaloge u aplikaciji (`NalogEditWindow`, `PromeneWindow`, `KontoPickerWindow`, `NalogHelpWindow`).
+
+### 🎨 UI / UX i uočljivost fokusirane ćelije
+- **Čist narandžasti okvir aktivne ćelije**: Refaktorisana uočljivost fokusirane ćelije u tabelama u `App.xaml` — uklonjena žuta podloga (`#FEF08A`) i definisan jasan 2px narandžasti okvir (`#D97706`) bez promene pozadine celog reda.
+- **Povezana padajuća lista u tabeli stavki**: Povezan `DataContext` u `NalogEditWindow.xaml` tako da `ComboBox` u koloni Opis nudi punu listu opisa iz šifarnika `Promene` ili podrazumevanog šifarnika.
+
+### 📖 Automatsko uvoženje i dekodiranje opisa promena
+- **Redosled uvoza DOS baza**: Uvoz šifarnika `PROMENE.DBF` pomeren pre uvoza naloga u `DosImportService.cs` i `DbfImportService.cs`, čime se brojevi promena (`PROMENA`) iz `NALOG.DBF` automatski prevode u tekstualne nazive.
+- **Auto-popravka opisa u nalozima**: Pri otvaranju naloga i kartica konta, sistem automatski prepoznaje `PromenaKod` i zamenjuje tekualni broj dokumenta u polju Opis sa odgovarajućim nazivom promene iz baze.
+
+### 📄 Izveštaji i PDF Štampa
+- **Diferencijacija kolona Opis i Promena**: Na štampi Dnevnika knjiženja, Kartice konta i Naloga u `PdfReportService.cs` i `KarticaService.cs`, kolona **Dokument / Opis** prikazuje stvarni broj dokumenta (npr. `RN 5/26 OD 08.06.2026`), dok kolona **Promena** prikazuje naziv promene (`PO RACUNU`, `IZVOD`, `UPLATE`, `ULAZI`...), čime je sprečeno dupliranje identičnih podataka na štampi.
+
+---
+
 ## [1.0.14] - 2026-07-26
 
 ### 🔍 Brza pretraga konta (F2) i unosi sa tastature u nalozima

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace AccountingApp.Services;
 
@@ -278,12 +279,38 @@ public class DosImportService
                     Report(progress, firmaDto.Naziv, "Artikli", basePercent + 55, $"   --> Uvezeno {count} novih artikala!");
                 }
 
-                // 5. Nalozi za knjiženje (NALOG.DBF)
+                // 5. Šifarnik opisa promena (PROMENE.DBF) — razlikuje se po firmi, nije deljen rečnik
+                var promeneMap = new Dictionary<int, string>();
+                var promeneFile = Path.Combine(firmaDto.FolderPath, "PROMENE.DBF");
+                if (File.Exists(promeneFile))
+                {
+                    Report(progress, firmaDto.Naziv, "Šifarnik promena", basePercent + 58, "🏷️ Uvoz šifarnika opisa promena (PROMENE.DBF)...");
+                    var rows = DbfImportService.ReadRows(promeneFile);
+                    int count = 0;
+                    foreach (var r in rows)
+                    {
+                        var promena = DbfImportService.MapPromena(r);
+                        if (promena != null && existingPromene.Add(promena.Sifra))
+                        {
+                            firmDb.Promene.Add(promena);
+                            promeneMap[promena.Sifra] = promena.Opis;
+                            count++;
+                        }
+                    }
+                    await firmDb.SaveChangesAsync();
+                    Report(progress, firmaDto.Naziv, "Šifarnik promena", basePercent + 60, $"   --> Uvezeno {count} opisa promena!");
+                }
+
+                // Ako u bazi već postoje promene od ranije, učitaj ih u promeneMap
+                var svePromene = await firmDb.Promene.ToListAsync();
+                foreach (var p in svePromene) promeneMap[p.Sifra] = p.Opis;
+
+                // 6. Nalozi za knjiženje (NALOG.DBF)
                 var nalogFile = Path.Combine(firmaDto.FolderPath, "NALOG.DBF");
 
                 if (File.Exists(nalogFile))
                 {
-                    Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 60, "📖 Uvoz Naloga za knjiženje i stavki (NALOG.DBF)...");
+                    Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 65, "📖 Uvoz Naloga za knjiženje i stavki (NALOG.DBF)...");
                     var rows = DbfImportService.ReadRows(nalogFile);
                     var groups = DbfImportService.GroupNalogRows(rows);
 
@@ -294,7 +321,7 @@ public class DosImportService
                     {
                         if (!existingNalogi.Add(bNaloga)) continue;
 
-                        var nalog = DbfImportService.MapNalogGrupa(bNaloga, redovi);
+                        var nalog = DbfImportService.MapNalogGrupa(bNaloga, redovi, promeneMap);
                         if (nalog == null) continue;
 
                         firmDb.Nalozi.Add(nalog);
@@ -304,26 +331,6 @@ public class DosImportService
 
                     await firmDb.SaveChangesAsync();
                     Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 90, $"   --> Uvezeno {nalogiCount} naloga i {stavkeCount} stavki knjiženja u zasebnu bazu!");
-                }
-
-                // 6. Šifarnik opisa promena (PROMENE.DBF) — razlikuje se po firmi, nije deljen rečnik
-                var promeneFile = Path.Combine(firmaDto.FolderPath, "PROMENE.DBF");
-                if (File.Exists(promeneFile))
-                {
-                    Report(progress, firmaDto.Naziv, "Šifarnik promena", basePercent + 92, "🏷️ Uvoz šifarnika opisa promena (PROMENE.DBF)...");
-                    var rows = DbfImportService.ReadRows(promeneFile);
-                    int count = 0;
-                    foreach (var r in rows)
-                    {
-                        var promena = DbfImportService.MapPromena(r);
-                        if (promena != null && existingPromene.Add(promena.Sifra))
-                        {
-                            firmDb.Promene.Add(promena);
-                            count++;
-                        }
-                    }
-                    await firmDb.SaveChangesAsync();
-                    Report(progress, firmaDto.Naziv, "Šifarnik promena", basePercent + 95, $"   --> Uvezeno {count} šifara promena!");
                 }
 
                 Report(progress, firmaDto.Naziv, "Završeno", basePercent + 100, $"✅ Uspešno kreirana i uvežena baza za firmu: {firmaDto.Naziv} ({dbFileName})!\n");

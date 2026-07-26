@@ -164,7 +164,7 @@ public static class DbfImportService
     }
 
     /// <summary>Grupa redova NALOG.DBF (isti BR_NALOGA) → Nalog sa stavkama.</summary>
-    public static Nalog? MapNalogGrupa(string brojNaloga, List<Dictionary<string, string>> redovi)
+    public static Nalog? MapNalogGrupa(string brojNaloga, List<Dictionary<string, string>> redovi, Dictionary<int, string>? promeneMap = null)
     {
         if (redovi.Count == 0) return null;
 
@@ -195,16 +195,26 @@ public static class DbfImportService
             int.TryParse(Get(row, "RED_BROJ"), out int redBr);
             int.TryParse(Get(row, "PROMENA"), out int promena);
 
+            string opisStavke;
+            if (promena > 0 && promeneMap != null && promeneMap.TryGetValue(promena, out var textIzPromene) && !string.IsNullOrWhiteSpace(textIzPromene))
+            {
+                opisStavke = textIzPromene;
+            }
+            else
+            {
+                opisStavke = string.IsNullOrWhiteSpace(brDokum) ? nalog.Opis : brDokum;
+            }
+
             nalog.Stavke.Add(new StavkaNaloga
             {
                 RedniBroj = redBr > 0 ? redBr : rbFallback,
                 BrojKonta = konto,
                 BrojDokumenta = NullIfEmpty(brDokum),
-                Opis = string.IsNullOrWhiteSpace(brDokum) ? nalog.Opis : brDokum,
+                Opis = opisStavke,
                 Duguje = dug,
                 Potrazuje = pot,
                 StariKonto = NullIfEmpty(Get(row, "ST_KON")),
-                PromenaKod = promena
+                PromenaKod = promena > 0 ? promena : null
             });
             rbFallback++;
         }
