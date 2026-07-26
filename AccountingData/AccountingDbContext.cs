@@ -48,14 +48,14 @@ public class AccountingDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Podrazumevani administratorski nalog (lozinka: admin123).
+        // Podrazumevani administratorski nalog (lozinka: admin).
         modelBuilder.Entity<Korisnik>().HasData(new Korisnik
         {
             KorisnikId = 1,
             KorisnickoIme = "admin",
-            // Fiksni, osoljeni PBKDF2 heš za "admin123" — mora biti konstanta jer
+            // Fiksni, osoljeni PBKDF2 heš za "admin" — mora biti konstanta jer
             // EF HasData zahteva determinističku vrednost (ulazi u model snapshot).
-            LozinkaHash = "PBKDF2$100000$CnYWiALqycqWTueq6ayEvQ==$hvm9e8z3e+KVeRsego3azOuoTp3q64deikPgUB9/D4o=",
+            LozinkaHash = "PBKDF2$100000$IxpGjzsTHvV0x7fZq6RdJQ==$6ERduoiJeJ9Iwc5bF56gYD0r3MqcFCWBYyw8XTHQ3u4=",
             ImeIPrezime = "Administrator",
             Uloga = "Administrator",
             IsActive = true

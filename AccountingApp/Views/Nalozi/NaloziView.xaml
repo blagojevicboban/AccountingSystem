@@ -18,31 +18,47 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,16,2">
                     <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
                     <TextBox x:Name="TxtPretraga" Width="180" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="TxtPretraga_TextChanged"/>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <WrapPanel VerticalAlignment="Center" Margin="12,0,0,0">
                         <RadioButton x:Name="RbSviNalozi" Content="Svi" GroupName="StatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Changed"/>
                         <RadioButton x:Name="RbProknjizeni" Content="Proknjiženi" GroupName="StatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Changed"/>
                         <RadioButton x:Name="RbNeproknjizeni" Content="Neproknjiženi" GroupName="StatusFilter" VerticalAlignment="Center" Margin="0,0,0,0" Checked="Filter_Changed"/>
-                    </StackPanel>
+                    </WrapPanel>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,2">
-                    <Button x:Name="BtnNoviNalog" Content="➕ Novi nalog" Style="{StaticResource ActionButtonStyle}" Margin="0,0,6,0" Click="BtnNoviNalog_Click"/>
-                    <Button x:Name="BtnIzmeniNalog" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,0,6,0" Click="BtnIzmeniNalog_Click"/>
-                    <Button x:Name="BtnProknjizi" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,0,6,0" Click="BtnProknjizi_Click"/>
-                    <Button x:Name="BtnProknjiziSve" Content="⚡ Proknjiži sve" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,0,6,0" Click="BtnProknjiziSve_Click"/>
-                    <Button x:Name="BtnRasknjizi" Content="🔓 Rasknjiži" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Margin="0,0,6,0" Click="BtnRasknjizi_Click"/>
-                    <Button x:Name="BtnPreknjizavanje" Content="🔄 Preknjižavanje" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,0,6,0" Click="BtnPreknjizavanje_Click"/>
-                    <Button x:Name="BtnStampa" Content="🖨️ Štampa" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,0,6,0" Click="BtnStampa_Click"/>
-                    <Separator Width="1" Background="{StaticResource BorderBrush}" Margin="0,4,6,4"/>
-                    <Button x:Name="BtnNovaGodina" Content="📅 Nova godina" Style="{StaticResource ActionButtonStyle}" Background="#0F172A" Click="BtnNovaGodina_Click"/>
-                </StackPanel>
+                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                    <Button x:Name="BtnNoviNalog" Content="➕ Novi nalog" Style="{StaticResource ActionButtonStyle}" Margin="0,2,6,2" Click="BtnNoviNalog_Click"/>
+                    <Button x:Name="BtnIzmeniNalog" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,6,2" Click="BtnIzmeniNalog_Click"/>
+                    <Button x:Name="BtnProknjizi" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" Click="BtnProknjizi_Click"/>
+                    <Button x:Name="BtnProknjiziSve" Content="⚡ Proknjiži sve" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,2,6,2" Click="BtnProknjiziSve_Click"/>
+                    <Button x:Name="BtnRasknjizi" Content="🔓 Rasknjiži" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Margin="0,2,6,2" Click="BtnRasknjizi_Click"/>
+                    <Button x:Name="BtnPreknjizavanje" Content="🔄 Preknjižavanje" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,2,6,2" Click="BtnPreknjizavanje_Click"/>
+                    <Button x:Name="BtnStampa" Content="🖨️ Štampa" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,2,6,2" Click="BtnStampa_Click"/>
+                    <Separator Width="1" Height="24" Background="{StaticResource BorderBrush}" Margin="2,4,8,4"/>
+                    <Button x:Name="BtnNovaGodina" Content="📅 Nova godina" Style="{StaticResource ActionButtonStyle}" Background="#0F172A" Margin="0,2,6,2" Click="BtnNovaGodina_Click"/>
+                </WrapPanel>
             </WrapPanel>
         </Border>
 
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
                 <TextBlock Text="📖 Nalozi za knjiženje (Glavna knjiga)" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
-                <DataGrid x:Name="DgNalozi" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgNalozi_SelectionChanged" Sorting="DgNalozi_Sorting">
+                <DataGrid x:Name="DgNalozi" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgNalozi_SelectionChanged" Sorting="DgNalozi_Sorting" MouseDoubleClick="DgNalozi_MouseDoubleClick">
+                    <DataGrid.ContextMenu>
+                        <ContextMenu x:Name="CmNalozi">
+                            <MenuItem Header="➕ Novi nalog" Click="BtnNoviNalog_Click"/>
+                            <MenuItem x:Name="CmiIzmeni" Header="✏️ Izmeni" Click="BtnIzmeniNalog_Click"/>
+                            <Separator/>
+                            <MenuItem x:Name="CmiProknjizi" Header="✅ Proknjiži" Click="BtnProknjizi_Click"/>
+                            <MenuItem x:Name="CmiRasknjizi" Header="🔓 Rasknjiži" Click="BtnRasknjizi_Click"/>
+                            <Separator/>
+                            <MenuItem Header="🖨️ Štampa" Click="BtnStampa_Click"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <EventSetter Event="PreviewMouseRightButtonDown" Handler="DataGridRow_PreviewMouseRightButtonDown"/>
+                        </Style>
+                    </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="120"/>
                         <DataGridTextColumn Header="Datum" Binding="{Binding DatumNaloga, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>

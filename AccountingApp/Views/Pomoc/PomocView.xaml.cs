@@ -14,7 +14,7 @@ public partial class PomocView : UserControl
                 "legacy DOS/Clipper sistem (moduli FIN, ANAL, ROB, MAT).\n\n" +
                 "Sa leve strane izaberite temu da biste videli uputstvo za tu funkciju. Svaka firma ima sopstvenu " +
                 "SQLite bazu podataka — trenutno aktivna firma je prikazana u gornjem levom uglu sidebar-a.\n\n" +
-                "Podrazumevana prijava (na novoj bazi) je korisničko ime „admin“ i lozinka „admin123“."
+                "Podrazumevana prijava (na novoj bazi) je korisničko ime „admin“ i lozinka „admin“."
         },
         new PomocTema
         {

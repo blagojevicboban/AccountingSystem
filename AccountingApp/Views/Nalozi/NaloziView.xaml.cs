@@ -79,11 +79,38 @@ public partial class NaloziView : UserControl
     /// </summary>
     private void AzurirajDugmad()
     {
-        bool imaSelekciju = DgNalozi.SelectedItem is Nalog;
+        var selectedNalog = DgNalozi.SelectedItem as Nalog;
+        bool imaSelekciju = selectedNalog != null;
+        bool isKnjizen = selectedNalog?.IsKnjizen == true;
+
         BtnIzmeniNalog.IsEnabled = imaSelekciju;
-        BtnProknjizi.IsEnabled = imaSelekciju;
-        BtnRasknjizi.IsEnabled = imaSelekciju;
         BtnStampa.IsEnabled = imaSelekciju;
+
+        bool mozeKnjiziti = imaSelekciju && !isKnjizen;
+        BtnProknjizi.IsEnabled = mozeKnjiziti;
+        if (CmiProknjizi != null) CmiProknjizi.IsEnabled = mozeKnjiziti;
+
+        bool mozeRasknjiziti = imaSelekciju && isKnjizen;
+        BtnRasknjizi.IsEnabled = mozeRasknjiziti;
+        if (CmiRasknjizi != null) CmiRasknjizi.IsEnabled = mozeRasknjiziti;
+
+        bool samoProknjizeni = RbProknjizeni?.IsChecked == true;
+        bool imaNeproknjizenih = _allNalozi != null && _allNalozi.Any(n => !n.IsKnjizen);
+        BtnProknjiziSve.IsEnabled = !samoProknjizeni && imaNeproknjizenih;
+
+        if (CmiIzmeni != null) CmiIzmeni.IsEnabled = imaSelekciju;
+    }
+
+    private void DataGridRow_PreviewMouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is DataGridRow row)
+        {
+            row.Focus();
+            if (!row.IsSelected)
+            {
+                DgNalozi.SelectedItem = row.DataContext;
+            }
+        }
     }
 
     private void TxtPretraga_TextChanged(object sender, TextChangedEventArgs e)
@@ -168,17 +195,81 @@ public partial class NaloziView : UserControl
             return;
         }
 
-        if (selectedNalog.IsKnjizen)
+        OtvoriIzmenuNaloga(selectedNalog);
+    }
+
+    private void DgNalozi_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (FindAncestor<DataGridRow>(e.OriginalSource as DependencyObject) == null) return;
+        if (DgNalozi.SelectedItem is not Nalog selectedNalog) return;
+
+        OtvoriIzmenuNaloga(selectedNalog);
+    }
+
+    private async void OtvoriIzmenuNaloga(Nalog nalog)
+    {
+        if (nalog.IsKnjizen)
         {
-            MessageBox.Show("Proknjižen nalog se ne može menjati.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            var odgovor = MessageBox.Show(
+                $"Nalog #{nalog.BrojNaloga} je proknjižen i ne može se menjati u ovom statusu.\n\nDa li želite da ga rasknjižite radi izmene?",
+                "Proknjižen nalog", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (odgovor != MessageBoxResult.Yes) return;
+
+            if (!AppSession.IsAdministrator)
+            {
+                MessageBox.Show("Rasknjižavanje naloga dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                    .UseSqlite($"Data Source={AppConfig.DbPath}")
+                    .Options;
+
+                using var db = new AccountingDbContext(options);
+                var service = new NaloziService(db);
+
+                await service.RasknjiziNalogAsync(nalog.NalogId);
+                int nalogId = nalog.NalogId;
+                
+                _allNalozi = await service.GetNaloziAsync();
+                _promeneMap = await new PromenaService(db).GetMapAsync();
+                ApplyFilter();
+
+                var osvezeniNalog = _allNalozi.FirstOrDefault(n => n.NalogId == nalogId);
+                if (osvezeniNalog != null)
+                {
+                    var dijalog = new NalogEditWindow(osvezeniNalog) { Owner = Window.GetWindow(this) };
+                    if (dijalog.ShowDialog() == true)
+                    {
+                        LoadNalozi();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri rasknjižavanju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             return;
         }
 
-        var dijalog = new NalogEditWindow(selectedNalog) { Owner = Window.GetWindow(this) };
-        if (dijalog.ShowDialog() == true)
+        var editDijalog = new NalogEditWindow(nalog) { Owner = Window.GetWindow(this) };
+        if (editDijalog.ShowDialog() == true)
         {
             LoadNalozi();
         }
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
+    {
+        while (current != null)
+        {
+            if (current is T match) return match;
+            current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+        }
+        return null;
     }
 
     private async void BtnProknjizi_Click(object sender, RoutedEventArgs e)

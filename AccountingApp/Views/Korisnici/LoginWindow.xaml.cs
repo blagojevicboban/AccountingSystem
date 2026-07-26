@@ -16,10 +16,30 @@ public partial class LoginWindow : Window
         _db = db;
 
         LoadCompanyInfo();
+        EnsureAdminPasswordUpdated();
+
+#if DEBUG
+        TxtUsername.Text = "admin";
+        TxtPassword.Password = "admin";
+#endif
         TxtUsername.Focus();
 
         var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-        TxtVersion.Text = $"AccountingSystem © 2026 - v{version?.ToString(3)}";
+        TxtVersion.Text = $"AccountingSystem © 2026 Blagojević Boban - v{version?.ToString(3)}";
+    }
+
+    private void EnsureAdminPasswordUpdated()
+    {
+        try
+        {
+            var admin = _db.Korisnici.FirstOrDefault(k => k.KorisnickoIme == "admin");
+            if (admin != null && (string.IsNullOrEmpty(admin.LozinkaHash) || AccountingDbContext.VerifyPassword("admin123", admin.LozinkaHash)))
+            {
+                admin.LozinkaHash = "PBKDF2$100000$IxpGjzsTHvV0x7fZq6RdJQ==$6ERduoiJeJ9Iwc5bF56gYD0r3MqcFCWBYyw8XTHQ3u4=";
+                _db.SaveChanges();
+            }
+        }
+        catch { }
     }
 
     private void LoadCompanyInfo()

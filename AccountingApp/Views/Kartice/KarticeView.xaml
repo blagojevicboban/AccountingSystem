@@ -36,21 +36,26 @@
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <Grid>
-                    <StackPanel>
-                        <TextBlock x:Name="TxtNaslovKonta" Text="Izaberite konto sa leve strane" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
-                        <TextBlock x:Name="TxtPodnaslovKonta" Text=" " FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0"/>
+                <DockPanel LastChildFill="True">
+                    <WrapPanel DockPanel.Dock="Right" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,12,2">
+                            <TextBlock Text="Od:" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                            <DatePicker x:Name="DpKarticaOd" Width="115" Height="32" Margin="0,0,8,0" SelectedDateChanged="Period_Changed"/>
+                            <TextBlock Text="Do:" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                            <DatePicker x:Name="DpKarticaDo" Width="115" Height="32" SelectedDateChanged="Period_Changed"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,12,2">
+                            <TextBlock Text="Saldo: " VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,4,0"/>
+                            <TextBlock x:Name="TxtSaldoKonta" Text="0,00" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#2563EB"/>
+                        </StackPanel>
+                        <Button x:Name="BtnStampaj" Content="📥 Štampaj karticu (PDF)" Style="{StaticResource ActionButtonStyle}" VerticalAlignment="Center" Margin="0,2,0,2" Click="BtnStampaj_Click"/>
+                    </WrapPanel>
+
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                        <TextBlock x:Name="TxtNaslovKonta" Text="Izaberite konto sa leve strane" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock x:Name="TxtPodnaslovKonta" Text=" " FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                        <TextBlock Text="Od:" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                        <DatePicker x:Name="DpKarticaOd" Width="110" Height="30" Margin="0,0,10,0" SelectedDateChanged="Period_Changed"/>
-                        <TextBlock Text="Do:" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                        <DatePicker x:Name="DpKarticaDo" Width="110" Height="30" Margin="0,0,16,0" SelectedDateChanged="Period_Changed"/>
-                        <TextBlock Text="Saldo: " VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                        <TextBlock x:Name="TxtSaldoKonta" Text="0,00" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#2563EB" Margin="0,0,16,0"/>
-                        <Button x:Name="BtnStampaj" Content="📥 Štampaj karticu (PDF)" Style="{StaticResource ActionButtonStyle}" Click="BtnStampaj_Click"/>
-                    </StackPanel>
-                </Grid>
+                </DockPanel>
             </Border>
 
             <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">

@@ -75,6 +75,10 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -89,6 +93,52 @@
         </Style>
         <Style x:Key="NumericColumnEditingStyle" TargetType="TextBox">
             <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        </Style>
+
+        <!-- Visoko uočljiv stil za aktivne / fokusirane ćelije u svim DataGrid tabelama -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#FEF08A"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#D97706"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="2"/>
+                                <Setter Property="Foreground" Value="#0F172A"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#2563EB"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="IsKeyboardFocusWithin" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="border" Property="Background" Value="#FEF08A"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#D97706"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="2"/>
+                                <Setter Property="Foreground" Value="#0F172A"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Application.Resources>
 </Application>

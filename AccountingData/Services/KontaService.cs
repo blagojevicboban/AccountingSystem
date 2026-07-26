@@ -83,4 +83,29 @@ public class KontaService
         await _db.SaveChangesAsync();
         return true;
     }
+
+    public async Task<int> DeleteKontaAsync(IEnumerable<int> ids)
+    {
+        var idList = ids.ToList();
+        if (!idList.Any()) return 0;
+
+        var konta = await _db.Konta.Where(k => idList.Contains(k.KontoId)).ToListAsync();
+        var brojevi = konta.Select(k => k.BrojKonta).ToList();
+
+        var zauzetiKonta = await _db.StavkeNaloga
+            .Where(s => brojevi.Contains(s.BrojKonta))
+            .Select(s => s.BrojKonta)
+            .Distinct()
+            .ToListAsync();
+
+        if (zauzetiKonta.Any())
+        {
+            var spisak = string.Join(", ", zauzetiKonta);
+            throw new InvalidOperationException($"Sledeća konta se ne mogu obrisati jer postoje knjiženja sa njima: {spisak}");
+        }
+
+        _db.Konta.RemoveRange(konta);
+        await _db.SaveChangesAsync();
+        return konta.Count;
+    }
 }

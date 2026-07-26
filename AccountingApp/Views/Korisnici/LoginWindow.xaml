@@ -48,6 +48,6 @@
 
         <TextBlock x:Name="TxtError" Grid.Row="9" Foreground="#DC2626" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,16,0,0" Visibility="Collapsed"/>
 
-        <TextBlock x:Name="TxtVersion" Grid.Row="10" Text="AccountingSystem © 2026" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center"/>
+        <TextBlock x:Name="TxtVersion" Grid.Row="10" Text="AccountingSystem © 2026 Blagojević Boban" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center"/>
     </Grid>
 </Window>

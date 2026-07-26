@@ -53,6 +53,33 @@ public partial class KontaView : UserControl
             : _allKonta.Where(k => k.BrojKonta.ToLower().Contains(search) || k.NazivKonta.ToLower().Contains(search)).ToList();
 
         DgKonta.ItemsSource = filtered;
+        UpdateActionButtonsState();
+    }
+
+    private void DgKonta_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        UpdateActionButtonsState();
+    }
+
+    private void UpdateActionButtonsState()
+    {
+        var count = DgKonta?.SelectedItems?.Count ?? 0;
+        if (BtnIzmeniKonto != null) BtnIzmeniKonto.IsEnabled = count > 0;
+        if (BtnObrisiKonto != null) BtnObrisiKonto.IsEnabled = count > 0;
+        if (CmiIzmeniKonto != null) CmiIzmeniKonto.IsEnabled = count > 0;
+        if (CmiObrisiKonto != null) CmiObrisiKonto.IsEnabled = count > 0;
+    }
+
+    private void DataGridRow_PreviewMouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is DataGridRow row)
+        {
+            row.Focus();
+            if (!row.IsSelected)
+            {
+                row.IsSelected = true;
+            }
+        }
     }
 
     private void TxtPretraga_TextChanged(object sender, TextChangedEventArgs e)
@@ -71,7 +98,8 @@ public partial class KontaView : UserControl
 
     private void BtnIzmeniKonto_Click(object sender, RoutedEventArgs e)
     {
-        if (DgKonta.SelectedItem is not Konto selectedKonto)
+        var selectedKonto = DgKonta.SelectedItems.OfType<Konto>().FirstOrDefault();
+        if (selectedKonto == null)
         {
             MessageBox.Show("Izaberite konto za izmenu.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
@@ -109,14 +137,19 @@ public partial class KontaView : UserControl
 
     private async void BtnObrisiKonto_Click(object sender, RoutedEventArgs e)
     {
-        if (DgKonta.SelectedItem is not Konto selectedKonto)
+        var selectedKonta = DgKonta.SelectedItems.OfType<Konto>().ToList();
+        if (!selectedKonta.Any())
         {
             MessageBox.Show("Izaberite konto za brisanje.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
+        string poruka = selectedKonta.Count == 1
+            ? $"Da li ste sigurni da želite da obrišete konto {selectedKonta[0].BrojKonta} ({selectedKonta[0].NazivKonta})?"
+            : $"Da li ste sigurni da želite da obrišete {selectedKonta.Count} izabranih konta?";
+
         var potvrda = MessageBox.Show(
-            $"Da li ste sigurni da želite da obrišete konto {selectedKonto.BrojKonta} ({selectedKonto.NazivKonta})?",
+            poruka,
             "Potvrda brisanja", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
         if (potvrda != MessageBoxResult.Yes) return;
@@ -130,8 +163,14 @@ public partial class KontaView : UserControl
             using var db = new AccountingDbContext(options);
             var service = new KontaService(db);
 
-            await service.DeleteKontoAsync(selectedKonto.KontoId);
-            MessageBox.Show($"Konto {selectedKonto.BrojKonta} je uspešno obrisan.", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+            var ids = selectedKonta.Select(k => k.KontoId);
+            int obrisanoCount = await service.DeleteKontaAsync(ids);
+
+            string uspehPoruka = obrisanoCount == 1
+                ? $"Konto {selectedKonta[0].BrojKonta} je uspešno obrisan."
+                : $"Uspešno je obrisano {obrisanoCount} konta.";
+
+            MessageBox.Show(uspehPoruka, "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
             LoadKonta();
         }
         catch (Exception ex)

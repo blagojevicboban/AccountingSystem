@@ -1,0 +1,86 @@
+<Window x:Class="AccountingApp.Views.Nalozi.NalogHelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="⌨️ Pomoć i prečice pri unosu naloga" Height="480" Width="580"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="{StaticResource BackgroundBrush}" KeyDown="Window_KeyDown">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="⌨️ Uputstvo i prečice za unos naloga" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+            <TextBlock Text="Brz unos stavki naloga knjigovodstva uz pomoć tastature." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="⌨️ Prečice na tastaturi" FontSize="14" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,0,0,8"/>
+                    
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="F1" FontWeight="Bold" Foreground="#1E293B"/>
+                        <TextBlock Grid.Column="1" Text="Otvara ovo uputstvo za pomoć." TextWrapping="Wrap"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="F2" FontWeight="Bold" Foreground="#1E293B"/>
+                        <TextBlock Grid.Column="1" Text="Otvara brzu pretragu kontnog plana (pretraga po šifri i nazivu konta)." TextWrapping="Wrap"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Insert" FontWeight="Bold" Foreground="#1E293B"/>
+                        <TextBlock Grid.Column="1" Text="Dodaje novu stavku u nalog i odmah fokusira polje Konto." TextWrapping="Wrap"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Enter / Tab na kraju" FontWeight="Bold" Foreground="#1E293B"/>
+                        <TextBlock Grid.Column="1" Text="Na poslednjoj ćeliji reda pritisak na Enter/Tab automatski otvara novu stavku." TextWrapping="Wrap"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Ctrl + Delete" FontWeight="Bold" Foreground="#1E293B"/>
+                        <TextBlock Grid.Column="1" Text="Briše trenutno selektovanu stavku naloga." TextWrapping="Wrap"/>
+                    </Grid>
+
+                    <Separator Background="{StaticResource BorderBrush}" Margin="0,0,0,16"/>
+
+                    <TextBlock Text="⚡ Pametne funkcije za brzi unos" FontSize="14" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,0,0,8"/>
+
+                    <TextBlock Text="• Automatski balans:" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,2"/>
+                    <TextBlock Text="Pri kreiranju nove stavke, sistem izračunava razliku između ukupno Duguje i Potražuje i automatski predlaže iznos razlike na suprotnoj strani da nalog dođe u ravnotežu." TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextMutedBrush}"/>
+
+                    <TextBlock Text="• Auto-prepisivanje opisa i dokumenta:" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,2"/>
+                    <TextBlock Text="Svaka nova stavka automatski preuzima broj dokumenta, opis i partnera iz prethodne stavke radi bržeg unosa." TextWrapping="Wrap" Foreground="{StaticResource TextMutedBrush}"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="U redu (Esc)" Width="120" Height="36" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Click="BtnZatvori_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

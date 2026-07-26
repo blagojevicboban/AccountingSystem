@@ -4,6 +4,36 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.14] - 2026-07-26
+
+### 🔍 Brza pretraga konta (F2) i unosi sa tastature u nalozima
+- **Modalan dijalog pretrage kontnog plana (`F2`)**: Pritisak na taster `F2` ili klik na dugme `Pretraga konta (F2)` otvara brzi pretraživač `KontoPickerWindow` za instant pretragu konta po šifri, nazivu ili starom kontu.
+- **Kombinovani prikaz konta u tabeli stavki**: Kolona "Konto (F2)" u tabeli stavki prikazuje puni opis `BrojKonta - NazivKonta`.
+- **Ekspresni unos sa tastature (`Insert` / `Enter` / `Tab`)**: `Enter` ili `Tab` na poslednjoj ćeliji reda automatski otvara novu stavku i fokusira polje Konto.
+- **Smart auto-balans salda**: Pri kreiranju nove stavke, sistem izračunava neizbalansiranu razliku salda i automatski predlaže iznos razlike na suprotnoj strani.
+- **Auto-prepisivanje**: Nova stavka automatski preuzima broj dokumenta, opis i partnera iz prethodne stavke.
+- **Pomoćni dijalog (`F1`)**: Poseban prozor `NalogHelpWindow` sa detaljnim uputstvom i opisom svih prečica na tastaturi.
+
+### 🎨 UI / UX i uočljivost u tabelama
+- **Visoka uočljivost aktivne ćelije**: Podešen `DataGridCell` stil sa uočljivom žutom podlogom (`#FEF08A`) i 2px amber okvirom za aktivnu/fokusiranu ćeliju.
+- **Responsivan toolbar u nalozima**: Zamenjen kruti `StackPanel` sa `WrapPanel` kontejnerom u `NaloziView.xaml` za pravilno prelamanje dugmadi na manjim širinama.
+- **Kontekstni meni na desni klik**: Dodat `ContextMenu` i auto-selektovanje reda u listama Naloga i Kontnog plana.
+- **Pravila za onemogućavanje dugmadi**: Onemogućeno "Proknjiži sve" kada je označen filter `Proknjiženi` ili kada su svi nalozi proknjiženi.
+- **Rasknjižavanje pri izmeni**: Dijalog sa upitom za rasknjižavanje i proverom administratorskih prava pri pokušaju izmeni proknjiženog naloga.
+
+### 📄 PDF Izveštaji
+- **Zbijeniji redovi tabela**: Smanjena vertikalna padding margina na `PaddingVertical(2).PaddingHorizontal(4)` radi većeg kapaciteta i veće preglednosti štampanih izveštaja.
+
+---
+
+## [1.0.13] - 2026-07-26
+
+### 📝 Šifarnik opisa promena (PROMENE.DBF) i UX poboljšanja
+- **Uvoz i šifarnik Opisa promena**: Podrška za uvoz šifarnika opisa promena iz legacy DOS `PROMENE.DBF` baze sa upravljanjem u podešavanjima.
+- **Grupisanje menija i UX doterivanja**: Poboljšana navigacija sa tematskim grupisanjem modulskih stavki.
+
+---
+
 ## [1.0.12] - 2026-07-26
 
 ### 📊 Period filteri i zaključni list
