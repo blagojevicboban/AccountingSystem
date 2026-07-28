@@ -4,6 +4,22 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.19] - 2026-07-28
+
+### 🚀 Višestruka štampa robnih kartica i analitika artikala (Trgovina)
+- **Višestruka štampa robnih kartica (`BtnStampajRobnuKarticu` & `BtnStampajSveKartice`)**: Omogućena selekcija više artikala (ili svih artikala u magacinu / svim magacinima) i generisanje objedinjenog PDF dokumenta sa robnim karticama.
+- **Raspored artikala — analitika (`MAT91`)**: Novi izveštaj i štampa „Raspored artikala (analitika)" sa prikazom stanja, nabavne cene i ukupne vrednosti zaliha po magacinima na izabrani datum.
+- **Obuhvat „Svi magacini”**: Dodata opcija „Svi magacini” u robnom knjigovodstvu radi sagledavanja zbirnog prometa i stanja robe u celom preduzeću.
+
+### 🎨 UI / UX i Odzivnost
+- **Proširena selekcija u listi artikala**: `LstArtikliRobno` sada podržava višestruki izbor artikala (`SelectionMode="Extended"`).
+- **Redizajn dugmadi za štampu**: Intuitivna organizacija komandi za štampu pojedinačne/grupne kartice, svih kartica i analitičkog rasporeda artikala.
+
+### ⚡ Optimizacija i Performanse
+- **Grupna agregacija kartica**: Efikasno skupljanje i spajanje svih robnih kartica u jedinstven PDF dokument uz minimalno opterećenje memorije.
+
+---
+
 ## [1.0.18] - 2026-07-28
 
 ### 🚀 PDF Štampa kalkulacija i primopredaja (Trgovina)

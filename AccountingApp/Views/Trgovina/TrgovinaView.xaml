@@ -372,8 +372,9 @@
                                       DisplayMemberPath="NazivMagacina" SelectionChanged="CmbMagacinRobno_SelectionChanged"/>
 
                             <TextBlock Text="📦 Artikli" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
-                            <TextBox x:Name="TxtPretragaArtiklaRobno" DockPanel.Dock="Top" Height="34" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,12" TextChanged="TxtPretragaArtiklaRobno_TextChanged"/>
-                            <ListBox x:Name="LstArtikliRobno" BorderThickness="0" SelectionChanged="LstArtikliRobno_SelectionChanged">
+                            <TextBox x:Name="TxtPretragaArtiklaRobno" DockPanel.Dock="Top" Height="34" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,8" TextChanged="TxtPretragaArtiklaRobno_TextChanged"/>
+                            <CheckBox x:Name="ChkSamoSaKarticom" Content="Samo artikli sa karticom" DockPanel.Dock="Top" Margin="0,0,0,12" Checked="ChkSamoSaKarticom_Changed" Unchecked="ChkSamoSaKarticom_Changed"/>
+                            <ListBox x:Name="LstArtikliRobno" BorderThickness="0" SelectionMode="Extended" SelectionChanged="LstArtikliRobno_SelectionChanged">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="4,6">
@@ -398,7 +399,10 @@
                                     <TextBlock x:Name="TxtNaslovArtiklaRobno" Text="Izaberite magacin i artikal sa leve strane" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
                                     <TextBlock x:Name="TxtStanjeArtiklaRobno" Text=" " FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
                                 </StackPanel>
-                                <Button x:Name="BtnStampajRobnuKarticu" Content="📥 Štampaj karticu (PDF)" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Click="BtnStampajRobnuKarticu_Click"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button x:Name="BtnStampajSveKartice" Content="📥 Štampaj sve kartice (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,0,8,0" Click="BtnStampajSveKartice_Click"/>
+                                    <Button x:Name="BtnStampajRobnuKarticu" Content="📥 Štampaj izabrane kartice (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Click="BtnStampajRobnuKarticu_Click"/>
+                                </StackPanel>
                             </Grid>
                         </Border>
 
@@ -409,9 +413,11 @@
                                     <DataGridTextColumn Header="Opis promene" Binding="{Binding OpisPromene}" Width="*"/>
                                     <DataGridTextColumn Header="Ulaz" Binding="{Binding Ulaz, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                                     <DataGridTextColumn Header="Izlaz" Binding="{Binding Izlaz, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
-                                    <DataGridTextColumn Header="Stanje kolićinski" Binding="{Binding Stanje, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Stanje" Binding="{Binding Stanje, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                                     <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
-                                    <DataGridTextColumn Header="Saldo RSD" Binding="{Binding Saldo, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Duguje" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Potražuje" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Saldo" Binding="{Binding Saldo, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>
@@ -443,6 +449,7 @@
 
                             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <Button x:Name="BtnOsveziBruto" Content="🔄 Osveži bilans" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,0,8,0" Click="BtnOsveziBruto_Click"/>
+                                <Button x:Name="BtnStampajRasporedArtikala" Content="📋 Raspored artikala (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,0,8,0" Click="BtnStampajRasporedArtikala_Click"/>
                                 <Button x:Name="BtnStampajRobniBruto" Content="🖨️ Štampaj PDF" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Click="BtnStampajRobniBruto_Click"/>
                             </StackPanel>
                         </Grid>

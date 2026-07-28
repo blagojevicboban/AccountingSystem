@@ -23,6 +23,7 @@ public partial class TrgovinaView : UserControl
     public TrgovinaView()
     {
         InitializeComponent();
+        ChkSamoSaKarticom.IsChecked = true;
         LoadAllData();
     }
 
@@ -433,32 +434,134 @@ public partial class TrgovinaView : UserControl
             using var db = new AccountingDbContext(options);
 
             var magacini = await db.Magacini.OrderBy(m => m.SifraMagacina).ToListAsync();
-            CmbMagacinRobno.ItemsSource = magacini;
-            if (magacini.Count > 0) CmbMagacinRobno.SelectedIndex = 0;
+            var stavkeZaCombo = new List<AccountingData.Models.Magacin> { SviMagaciniOpcija };
+            stavkeZaCombo.AddRange(magacini);
+            CmbMagacinRobno.ItemsSource = stavkeZaCombo;
+            CmbMagacinRobno.SelectedIndex = 0;
 
             _sviArtikliRobno = await db.Artikli.OrderBy(a => a.Naziv).ToListAsync();
+            await OsveziArtikleSaKarticomAsync();
             FiltrirajArtikleRobno();
         }
         catch { }
     }
 
+    private HashSet<string> _artikliSaKarticom = new(StringComparer.OrdinalIgnoreCase);
+
+    private async Task OsveziArtikleSaKarticomAsync()
+    {
+        if (CmbMagacinRobno.SelectedItem is not AccountingData.Models.Magacin magacin)
+        {
+            _artikliSaKarticom = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            return;
+        }
+
+        var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+        using var db = new AccountingDbContext(options);
+
+        var upit = db.MaterijalneKartice.AsQueryable();
+        if (!JeSviMagacini(magacin)) upit = upit.Where(k => k.SifraMagacina == magacin.SifraMagacina);
+
+        var sifre = await upit.Select(k => k.SifraArtikla).Distinct().ToListAsync();
+        _artikliSaKarticom = new HashSet<string>(sifre, StringComparer.OrdinalIgnoreCase);
+    }
+
     private void FiltrirajArtikleRobno()
     {
         var search = TxtPretragaArtiklaRobno.Text.Trim().ToLower();
-        LstArtikliRobno.ItemsSource = string.IsNullOrEmpty(search)
-            ? _sviArtikliRobno
-            : _sviArtikliRobno.Where(a => a.Naziv.ToLower().Contains(search) || a.SifraArtikla.ToLower().Contains(search)).ToList();
+        IEnumerable<Artikal> izvor = _sviArtikliRobno;
+
+        if (ChkSamoSaKarticom.IsChecked == true)
+            izvor = izvor.Where(a => _artikliSaKarticom.Contains(a.SifraArtikla));
+
+        if (!string.IsNullOrEmpty(search))
+            izvor = izvor.Where(a => a.Naziv.ToLower().Contains(search) || a.SifraArtikla.ToLower().Contains(search));
+
+        LstArtikliRobno.ItemsSource = izvor.ToList();
     }
 
     private void TxtPretragaArtiklaRobno_TextChanged(object sender, TextChangedEventArgs e) => FiltrirajArtikleRobno();
-    private void CmbMagacinRobno_SelectionChanged(object sender, SelectionChangedEventArgs e) => UcitajRobnuKarticu();
+    private void ChkSamoSaKarticom_Changed(object sender, RoutedEventArgs e) => FiltrirajArtikleRobno();
+
+    private async void CmbMagacinRobno_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        await OsveziArtikleSaKarticomAsync();
+        FiltrirajArtikleRobno();
+        UcitajRobnuKarticu();
+    }
     private void LstArtikliRobno_SelectionChanged(object sender, SelectionChangedEventArgs e) => UcitajRobnuKarticu();
 
     private List<MaterijalnaKartica> _trenutnaRobnaKartica = new();
 
+    private static readonly AccountingData.Models.Magacin SviMagaciniOpcija = new()
+    {
+        MagacinId = -1,
+        SifraMagacina = "*",
+        NazivMagacina = "🏢 Svi magacini"
+    };
+
+    private static bool JeSviMagacini(AccountingData.Models.Magacin? m) => m == null || m.MagacinId == -1;
+
+    private static string SifraZaFajl(AccountingData.Models.Magacin m) => JeSviMagacini(m) ? "SVI" : m.SifraMagacina;
+
+    /// <summary>Skuplja (magacin, artikal, kartice) trojke sa prometom. magacinFilter=null znači svi magacini; artikliFilter=null znači svi artikli.</summary>
+    private static async Task<List<(AccountingData.Models.Magacin Magacin, Artikal Artikal, List<MaterijalnaKartica> Kartice)>> PrikupiRobneKarticeAsync(
+        AccountingDbContext db, AccountingData.Models.Magacin? magacinFilter, IReadOnlyCollection<Artikal>? artikliFilter)
+    {
+        var magaciniZaObradu = magacinFilter == null
+            ? await db.Magacini.OrderBy(m => m.SifraMagacina).ToListAsync()
+            : new List<AccountingData.Models.Magacin> { magacinFilter };
+
+        var sifreFiltera = artikliFilter?.Select(a => a.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var artikliDict = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a);
+        var rezultat = new List<(AccountingData.Models.Magacin, Artikal, List<MaterijalnaKartica>)>();
+
+        foreach (var mag in magaciniZaObradu)
+        {
+            var upit = db.MaterijalneKartice.Where(k => k.SifraMagacina == mag.SifraMagacina);
+            if (sifreFiltera != null) upit = upit.Where(k => sifreFiltera.Contains(k.SifraArtikla));
+
+            var sifreArtikala = await upit.Select(k => k.SifraArtikla).Distinct().ToListAsync();
+
+            foreach (var sifra in sifreArtikala.OrderBy(s => s))
+            {
+                var kartice = await db.MaterijalneKartice
+                    .Where(k => k.SifraMagacina == mag.SifraMagacina && k.SifraArtikla == sifra)
+                    .OrderBy(k => k.DatumPromene)
+                    .ThenBy(k => k.MaterijalnaKarticaId)
+                    .ToListAsync();
+
+                if (kartice.Count == 0) continue;
+
+                var artikal = artikliDict.TryGetValue(sifra, out var art) ? art : new Artikal { SifraArtikla = sifra, Naziv = sifra };
+                rezultat.Add((mag, artikal, kartice));
+            }
+        }
+
+        return rezultat;
+    }
+
     private async void UcitajRobnuKarticu()
     {
-        if (LstArtikliRobno.SelectedItem is not Artikal artikal || CmbMagacinRobno.SelectedItem is not AccountingData.Models.Magacin magacin)
+        if (CmbMagacinRobno.SelectedItem is not AccountingData.Models.Magacin magacin)
+        {
+            TxtNaslovArtiklaRobno.Text = "Izaberite magacin i artikal sa liste";
+            TxtStanjeArtiklaRobno.Text = "";
+            DgRobnaKartica.ItemsSource = null;
+            _trenutnaRobnaKartica.Clear();
+            return;
+        }
+
+        if (LstArtikliRobno.SelectedItems.Count > 1)
+        {
+            TxtNaslovArtiklaRobno.Text = $"{LstArtikliRobno.SelectedItems.Count} artikala izabrano";
+            TxtStanjeArtiklaRobno.Text = "Koristite 'Štampaj karticu (PDF)' za štampu kartica svih izabranih artikala.";
+            DgRobnaKartica.ItemsSource = null;
+            _trenutnaRobnaKartica.Clear();
+            return;
+        }
+
+        if (LstArtikliRobno.SelectedItem is not Artikal artikal)
         {
             TxtNaslovArtiklaRobno.Text = "Izaberite magacin i artikal sa liste";
             TxtStanjeArtiklaRobno.Text = "";
@@ -472,8 +575,10 @@ public partial class TrgovinaView : UserControl
             var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
             using var db = new AccountingDbContext(options);
 
-            _trenutnaRobnaKartica = await db.MaterijalneKartice
-                .Where(k => k.SifraMagacina == magacin.SifraMagacina && k.SifraArtikla == artikal.SifraArtikla)
+            var upit = db.MaterijalneKartice.Where(k => k.SifraArtikla == artikal.SifraArtikla);
+            if (!JeSviMagacini(magacin)) upit = upit.Where(k => k.SifraMagacina == magacin.SifraMagacina);
+
+            _trenutnaRobnaKartica = await upit
                 .OrderBy(k => k.DatumPromene)
                 .ThenBy(k => k.MaterijalnaKarticaId)
                 .ToListAsync();
@@ -494,15 +599,10 @@ public partial class TrgovinaView : UserControl
 
     private async void BtnStampajRobnuKarticu_Click(object sender, RoutedEventArgs e)
     {
-        if (LstArtikliRobno.SelectedItem is not Artikal artikal || CmbMagacinRobno.SelectedItem is not AccountingData.Models.Magacin magacin)
+        var izabraniArtikli = LstArtikliRobno.SelectedItems.Cast<Artikal>().ToList();
+        if (izabraniArtikli.Count == 0 || CmbMagacinRobno.SelectedItem is not AccountingData.Models.Magacin magacin)
         {
-            MessageBox.Show("Izaberite magacin i artikal sa liste za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-
-        if (_trenutnaRobnaKartica.Count == 0)
-        {
-            MessageBox.Show($"Nema prometa na robnoj kartici za artikal '{artikal.Naziv}' u magacinu '{magacin.NazivMagacina}'.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Izaberite magacin i bar jedan artikal sa liste za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -510,11 +610,31 @@ public partial class TrgovinaView : UserControl
         {
             var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
             using var db = new AccountingDbContext(options);
-
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
-            var pdfBytes = Services.PdfReportService.GenerisiRobnuKarticuPdf(firma, magacin, artikal, _trenutnaRobnaKartica);
 
-            string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Robna_Kartica_{magacin.SifraMagacina}_{artikal.SifraArtikla}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            byte[] pdfBytes;
+            if (izabraniArtikli.Count == 1 && !JeSviMagacini(magacin))
+            {
+                if (_trenutnaRobnaKartica.Count == 0)
+                {
+                    MessageBox.Show($"Nema prometa na robnoj kartici za artikal '{izabraniArtikli[0].Naziv}' u magacinu '{magacin.NazivMagacina}'.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                pdfBytes = Services.PdfReportService.GenerisiRobnuKarticuPdf(firma, magacin, izabraniArtikli[0], _trenutnaRobnaKartica);
+            }
+            else
+            {
+                var sekcije = await PrikupiRobneKarticeAsync(db, magacinFilter: JeSviMagacini(magacin) ? null : magacin, artikliFilter: izabraniArtikli);
+                if (sekcije.Count == 0)
+                {
+                    MessageBox.Show("Nema prometa ni na jednoj robnoj kartici za izabrane artikle.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                pdfBytes = Services.PdfReportService.GenerisiSveRobneKarticePdf(firma, sekcije);
+            }
+
+            string sifraZaNaziv = izabraniArtikli.Count == 1 ? izabraniArtikli[0].SifraArtikla : $"{izabraniArtikli.Count}_artikala";
+            string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Robna_Kartica_{SifraZaFajl(magacin)}_{sifraZaNaziv}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
 
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
@@ -526,6 +646,45 @@ public partial class TrgovinaView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri štampi robne kartice: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnStampajSveKartice_Click(object sender, RoutedEventArgs e)
+    {
+        if (CmbMagacinRobno.SelectedItem is not AccountingData.Models.Magacin magacin)
+        {
+            MessageBox.Show("Izaberite magacin za štampu svih kartica.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+
+            var sekcije = await PrikupiRobneKarticeAsync(db, magacinFilter: JeSviMagacini(magacin) ? null : magacin, artikliFilter: null);
+
+            if (sekcije.Count == 0)
+            {
+                MessageBox.Show($"Nema prometa ni na jednoj robnoj kartici{(JeSviMagacini(magacin) ? "" : $" u magacinu '{magacin.NazivMagacina}'")}.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
+            var pdfBytes = Services.PdfReportService.GenerisiSveRobneKarticePdf(firma, sekcije);
+
+            string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Robne_Kartice_{SifraZaFajl(magacin)}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = tempFile,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri štampi svih robnih kartica: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -1462,6 +1621,40 @@ public partial class TrgovinaView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri štampi Robnog Bruto bilansa: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>Raspored artikala - analitika (MAT1.PRG:mat91): za svaki artikal, stanje/cena/vrednost po magacinu na zadati datum.</summary>
+    private async void BtnStampajRasporedArtikala_Click(object sender, RoutedEventArgs e)
+    {
+        if (_sviBrutoRedovi.Count == 0)
+        {
+            MessageBox.Show("Nema podataka za raspored artikala.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
+            DateTime? doDatuma = DpDoDatumaBruto?.SelectedDate;
+
+            var pdfBytes = Services.PdfReportService.GenerisiRasporedArtikalaPdf(firma, _sviBrutoRedovi, doDatuma);
+
+            string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Raspored_Artikala_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = tempFile,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri štampi rasporeda artikala: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }
