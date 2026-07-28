@@ -62,10 +62,13 @@ public partial class PomocView : UserControl
             Naslov = "🛒 Trgovina, Fakture i Kalkulacije (ROB)",
             Sadrzaj =
                 "Modul za robno poslovanje i trgovinu (odgovara Clipper modulima MAT1–MAT7):\n\n" +
+                "• Računopolagači (MAT1) i Šifarnik artikala (MAT2): samostalni CRUD ekrani za magacine i artikle, sa PDF štampom.\n" +
                 "• Kalkulacije: izbor Veleprodaje (MAT6) sa zavisnim troškovima i maržom, ili Maloprodaje (MAT3) sa ukalkulisanom maržom i PDV-om.\n" +
-                "• Računi - Otpremnice / Fakture (MAT5): izdavanje faktura kupcima sa rokom dospelosti, rabatom %, PDV-om, automatskim razduživanjem robe i generisanjem finansijskog naloga u Glavnoj knjizi.\n" +
-                "• Nivelacije cena (MAT7): promena prodajnih cena artikala po magacinu sa proračunom i knjiženjem razlike u ceni.\n" +
-                "• PDF Štampa: izvoz zvaničnih faktura, kalkulacija i zapisnika o nivelaciji cena u PDF format."
+                "• Računi - Otpremnice / Fakture (MAT5): izdavanje faktura kupcima sa rokom dospelosti, rabatom %, PDV-om, unosom stavki po šifri artikla, automatskim razduživanjem robe i generisanjem finansijskog naloga u Glavnoj knjizi.\n" +
+                "• Nivelacije cena (MAT7): promena prodajnih cena artikala po magacinu, uz automatsku generaciju zapisnika svođenjem na prosečnu nabavnu cenu i masovno knjiženje svih nezaknjiženih nivelacija.\n" +
+                "• Poreske tarife: šifarnik poreskih stopa (tarifni broj, porez %, poseban porez %) sa CRUD ekranom i PDF štampom.\n" +
+                "• Robni bruto bilans: početno stanje/ulaz/izlaz/stanje po magacinu i artiklu, količinski i vrednosno.\n" +
+                "• PDF Štampa: izvoz zvaničnih faktura, kalkulacija, zapisnika o nivelaciji cena, šifarnika i robnog bruto bilansa u PDF format."
         },
         new PomocTema
         {

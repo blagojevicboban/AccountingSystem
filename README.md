@@ -27,8 +27,11 @@
 - ⚖️ **POPDV Rekapitulacija Obaveze** — Obračun PDV obaveze za uplatu ili prava na povraćaj.
 
 ### Magacin i Trgovina (MAT & ROB)
-- 📦 **Magacin i zalihe** — Materijalne kartice po ponderisanoj prosečnoj ceni (`M1`), Ulazi (`M2`), Trebovanja (`M3`) i **Primopredaje / Interni prenosi (`M4`)**.
-- 🛒 **Trgovina i Fakture** — Veleprodajne (`MAT6`) i Maloprodajne (`MAT3`) kalkulacije, **Računi-Otpremnice / Fakture (`MAT5`)** sa rokom dospelosti, rabatom i PDV-om, i **Nivelacije cena (`MAT7`)**.
+- 📦 **Magacin i zalihe** — Materijalne kartice po ponderisanoj prosečnoj ceni (`M1`), Ulazi (`M2`), Trebovanja (`M3`) i **Primopredaje / Interni prenosi (`M4`)** (razlikuje Primopredaja/Zaduženje/Razduženje).
+- 🛒 **Trgovina i Fakture** — Veleprodajne (`MAT6`) i Maloprodajne (`MAT3`) kalkulacije, **Računi-Otpremnice / Fakture (`MAT5`)** sa rokom dospelosti, rabatom i PDV-om (unos stavki po šifri artikla), i **Nivelacije cena (`MAT7`)** sa automatskom generacijom svođenjem na prosečnu nabavnu cenu i masovnim knjiženjem.
+- 🧾 **Poreske tarife** — samostalan šifarnik poreskih stopa (tarifni broj, porez %, poseban porez %) sa CRUD ekranom i PDF štampom.
+- 📊 **Robni bruto bilans** — početno stanje/ulaz/izlaz/stanje po magacinu i artiklu, količinski i vrednosno, sa filterima i štampom.
+- 🏢 **Šifarnik artikala i Računopolagača** — samostalni CRUD ekrani (`MAT1`, `MAT2`) sa PDF štampom.
 
 ### Zajedničko
 - 🔐 **Prijava i uloge** — lozinke osoljene (PBKDF2), uloga Administrator za osetljive operacije (rasknjižavanje, nova godina).
@@ -116,7 +119,6 @@ Za automatizovano pokretanje, prijavljivanje i snimanje ekrana aplikacije pogled
 
 - **Kamatne stope** uvezene iz legacy sistema su istorijske (poslednja je iz 2006. godine) — pre obračuna kamate na tekućim dugovanjima unesite aktuelnu zvaničnu stopu kroz ekran „Kamate".
 - **Partneri (Analitika)** rade preko `StavkaNaloga.PartnerId`, koji se dodeljuje ručno pri unosu naloga — istorijski uvezeni nalozi iz DOS sistema nemaju dodeljene partnere (legacy ANAL modul za test firmu nije korišćen).
-- **Trgovina (ROB)** trenutno pokriva samo kalkulaciju veleprodaje — kalkulacija maloprodaje, nivelacija cena, računi-otpremnice i robne kartice nisu implementirani (test firma nema stvarnih podataka za te module). Detalji u [ANALIZA_I_PLAN.md](ANALIZA_I_PLAN.md).
 
 ---
 *Aplikacija služi za zamenu nasleđenog Clipper MS-DOS sistema (moduli FIN, ANAL, ROB, MAT) i razvija se po uzoru na [SredstvaSystem](https://github.com/blagojevicboban/AssetManager). Detaljan istorijat analize i faznog razvoja je u [ANALIZA_I_PLAN.md](ANALIZA_I_PLAN.md).*

@@ -4,6 +4,39 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.17] - 2026-07-28
+
+### 🧾 Poreske tarife (novi šifarnik)
+- **Šifarnik poreskih tarifa (`PoreskaTarifaEditWindow`)**: Novi CRUD ekran (tarifni broj, porez %, poseban porez %, porez u ceni) sa PDF štampom, analogan legacy `TARIFE.DBF`. Uvoz podržan i kroz `⚙️ Podešavanja` i kroz samostalni `AccountingMigration` alat.
+
+### 📊 Robni bruto bilans (novi izveštaj)
+- **Robni bruto bilans (`RobniBrutoBilansService`)**: Agregacija materijalnih kartica po magacinu i artiklu — početno stanje, ulaz, izlaz i stanje, količinski i vrednosno, sa filterima i PDF štampom. Napaja nove KPI pločice na Radnoj tabli (vrednost zaliha, negativna stanja).
+
+### 🔄 Nivelacije cena — proširenje
+- **Automatska generacija zapisnika o nivelaciji**: Svođenje na prosečnu nabavnu cenu po magacinu (analogno legacy `svodj_pros_p()`), pokreće se dugmetom „Generiši nivelaciju“.
+- **Ispravka knjiženja**: Knjiženje nivelacije sada stvarno ažurira prodajnu cenu artikla (ranije je promena cene ostajala nezabeležena) i knjiži na konto 1320 ili 1340 u zavisnosti od vrste magacina (maloprodaja/veleprodaja), umesto na fiksni konto.
+- **Masovno knjiženje nivelacija** — novo dugme za knjiženje svih nezaknjiženih nivelacija odjednom.
+
+### 📄 Računi-Otpremnice — unapređenja
+- **Unos stavki po šifri artikla**: Stavke računa se sada unose kucanjem šifre artikla umesto obavezne veze na postojeći šifarnik — omogućava unos i pre nego što je artikal formalno zaveden.
+- **Nova polja**: Broj otpremnice, konto kupca, rok plaćanja (broj dana), način plaćanja. Dodata PDF štampa računa-otpremnice.
+
+### 🏢 Šifarnik artikala i Računopolagača — samostalni CRUD
+- **Nove tabele u Trgovini**: „🏢 Računopolagači (MAT1)“ i „📦 Šifarnik artikala (MAT2)“ sa unosom, izmenom, brisanjem i PDF štampom (ranije se održavalo samo kroz uvoz).
+
+### 🔁 Uvoz DBF/DOS podataka — fleksibilnije mapiranje
+- **Mapiranje kolona sa fallback-om**: Uvoz sada proba više mogućih naziva kolone (npr. `SIFRA`/`KOD`, `NAZIV`/`IME`/`OPIS`) umesto tačno jednog imena — sprečava tihe neuspehe uvoza kad legacy DBF fajlovi variraju u nazivima polja.
+- **Novi mapperi**: poreske tarife, materijalne/robne kartice, kalkulacije veleprodaje, primopredaja/zaduženje/razduženje (novo polje `VrstaDokumenta`), računi-otpremnice, nivelacije cena.
+- **Ispravka**: Uvoz iz DOS sistema sada automatski aktivira novouvezenu firmu na kraju uvoza (ranije je ostajala neaktivna dok je korisnik ručno ne izabere).
+
+### 📊 Radna tabla — nove KPI pločice
+- Broj magacina, broj nezaknjiženih dokumenata (kalkulacije, računi, primopredaje, nivelacije), ukupno fakturisano, broj računa/kalkulacija, vrednost zaliha, negativna stanja.
+
+### ⚠️ Migracije i Baza Podataka
+- `20260727152534_DodajPoreskeTarife` — nova tabela `PoreskeTarife`; `MagacinId`/`ArtikalId` na stavkama Nivelacije/Računa-Otpremnice postaju nullable (dozvoljava uvoz legacy redova koji nemaju razrešivu vezu ka šifarniku).
+
+---
+
 ## [1.0.16] - 2026-07-26
 
 ### 🚀 Zvanični Finansijski Izveštaji za APR (Bilansi)
