@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using AccountingApp.Views.Backup;
 using AccountingApp.Views.Dashboard;
 using AccountingApp.Views.Izvestaji;
 using AccountingApp.Views.Kartice;
@@ -80,6 +81,7 @@ public partial class MainWindow : Window
         if (AppSession.TrenutniKorisnik?.Uloga == "Gledalac")
         {
             BtnPodesavanja.IsEnabled = false;
+            BtnBackup.IsEnabled = false;
         }
     }
 
@@ -148,13 +150,19 @@ public partial class MainWindow : Window
         MainContentHost.Content = new Views.Pdv.PdvEvidencijaView();
     }
 
+    private void NavFirme_Click(object sender, RoutedEventArgs e)
+    {
+        NavigateToFirme();
+    }
+
     private void FirmaBorder_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        foreach (var child in PnlNavigation.Children)
-        {
-            if (child is RadioButton rb) rb.IsChecked = false;
-        }
+        BtnFirme.IsChecked = true;
+        NavigateToFirme();
+    }
 
+    private void NavigateToFirme()
+    {
         TxtHeaderTitle.Text = "🏢 Upravljanje firmama";
         MainContentHost.Content = new Views.Firme.FirmeView();
     }
@@ -163,6 +171,12 @@ public partial class MainWindow : Window
     {
         TxtHeaderTitle.Text = "⚙️ Podešavanja aplikacije";
         MainContentHost.Content = new Views.Podesavanja.PodesavanjaView();
+    }
+
+    private void NavBackup_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "💾 Rezervne kopije i restauracija (Backup & Restore)";
+        MainContentHost.Content = new BackupView();
     }
 
     private void NavKorisnici_Click(object sender, RoutedEventArgs e)
@@ -195,5 +209,105 @@ public partial class MainWindow : Window
     {
         var dijalog = new ChangelogWindow { Owner = this };
         dijalog.ShowDialog();
+    }
+
+    private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if ((e.Key == System.Windows.Input.Key.F || e.Key == System.Windows.Input.Key.K) && 
+            (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == System.Windows.Input.ModifierKeys.Control)
+        {
+            TxtSearchNav.Focus();
+            TxtSearchNav.SelectAll();
+            e.Handled = true;
+        }
+        else if (e.Key == System.Windows.Input.Key.M && 
+                 (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == System.Windows.Input.ModifierKeys.Control)
+        {
+            BtnToggleSidebar_Click(sender, e);
+            e.Handled = true;
+        }
+        else if (e.Key == System.Windows.Input.Key.F1)
+        {
+            NavPomoc_Click(sender, e);
+            e.Handled = true;
+        }
+    }
+
+    private void BtnToggleSidebar_Click(object sender, RoutedEventArgs e)
+    {
+        if (SidebarColumn.Width.Value > 100)
+        {
+            SidebarColumn.Width = new GridLength(64);
+            TxtBrandTitle.Visibility = Visibility.Collapsed;
+            TxtBrandSubtitle.Visibility = Visibility.Collapsed;
+            PnlSearchNav.Visibility = Visibility.Collapsed;
+            PnlFirmaDetails.Visibility = Visibility.Collapsed;
+            PnlPromeniBadge.Visibility = Visibility.Collapsed;
+            HeaderFinansije.Visibility = Visibility.Collapsed;
+            HeaderRobno.Visibility = Visibility.Collapsed;
+            HeaderPorezi.Visibility = Visibility.Collapsed;
+            HeaderPodesavanja.Visibility = Visibility.Collapsed;
+            HeaderDokumentacija.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            SidebarColumn.Width = new GridLength(240);
+            TxtBrandTitle.Visibility = Visibility.Visible;
+            TxtBrandSubtitle.Visibility = Visibility.Visible;
+            PnlSearchNav.Visibility = Visibility.Visible;
+            PnlFirmaDetails.Visibility = Visibility.Visible;
+            PnlPromeniBadge.Visibility = Visibility.Visible;
+            HeaderFinansije.Visibility = Visibility.Visible;
+            HeaderRobno.Visibility = Visibility.Visible;
+            HeaderPorezi.Visibility = Visibility.Visible;
+            HeaderPodesavanja.Visibility = Visibility.Visible;
+            HeaderDokumentacija.Visibility = Visibility.Visible;
+        }
+    }
+
+    private void TxtSearchNav_GotFocus(object sender, RoutedEventArgs e)
+    {
+        TxtSearchPlaceholder.Visibility = Visibility.Collapsed;
+    }
+
+    private void TxtSearchNav_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(TxtSearchNav.Text))
+        {
+            TxtSearchPlaceholder.Visibility = Visibility.Visible;
+        }
+    }
+
+    private void TxtSearchNav_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        TxtSearchPlaceholder.Visibility = string.IsNullOrEmpty(TxtSearchNav.Text) ? Visibility.Visible : Visibility.Collapsed;
+        var query = TxtSearchNav.Text.Trim().ToLowerInvariant();
+
+        foreach (var child in PnlNavigation.Children)
+        {
+            if (child is RadioButton rb)
+            {
+                var text = rb.Content?.ToString()?.ToLowerInvariant() ?? "";
+                var toolTip = rb.ToolTip?.ToString()?.ToLowerInvariant() ?? "";
+                rb.Visibility = (string.IsNullOrEmpty(query) || text.Contains(query) || toolTip.Contains(query)) 
+                    ? Visibility.Visible 
+                    : Visibility.Collapsed;
+            }
+            else if (child is Button b)
+            {
+                var text = b.Content?.ToString()?.ToLowerInvariant() ?? "";
+                b.Visibility = (string.IsNullOrEmpty(query) || text.Contains(query)) 
+                    ? Visibility.Visible 
+                    : Visibility.Collapsed;
+            }
+            else if (child is Separator s)
+            {
+                s.Visibility = string.IsNullOrEmpty(query) ? Visibility.Visible : Visibility.Collapsed;
+            }
+            else if (child is TextBlock tb)
+            {
+                tb.Visibility = string.IsNullOrEmpty(query) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
     }
 }

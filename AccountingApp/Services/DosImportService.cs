@@ -483,20 +483,25 @@ public class DosImportService
                     Report(progress, firmaDto.Naziv, "Kalkulacije", basePercent + 97, $"   --> Uvezeno {kalkCount} kalkulacija sa {totalStavke} stavki!");
                 }
 
-                // 9. Uvoz Naloga za primopredaju (MAT_NAL.DBF)
                 // 9. Uvoz Naloga za primopredaju, zaduženja i razduženja (MAT_NAL.DBF, ZADUZ.DBF, RAZDUZ.DBF)
-                var svePrimopredaje = new List<PrimopredajaNalog>();
                 string matNalPath = Path.Combine(firmaDto.FolderPath, "MAT_NAL.DBF");
+                string zaduzPath = Path.Combine(firmaDto.FolderPath, "ZADUZ.DBF");
+                string razduzPath = Path.Combine(firmaDto.FolderPath, "RAZDUZ.DBF");
+                var svePrimopredaje = new List<PrimopredajaNalog>();
+
+                if (File.Exists(matNalPath) || File.Exists(zaduzPath) || File.Exists(razduzPath))
+                {
+                    Report(progress, firmaDto.Naziv, "Primopredaje", basePercent + 98, "🔄 Uvoz Naloga za primopredaju/zaduženje/razduženje (MAT_NAL.DBF, ZADUZ.DBF, RAZDUZ.DBF)...");
+                }
+
                 if (File.Exists(matNalPath))
                 {
                     svePrimopredaje.AddRange(DbfImportService.MapPrimopredajaNalozi(DbfImportService.ReadRows(matNalPath), "Primopredaja"));
                 }
-                string zaduzPath = Path.Combine(firmaDto.FolderPath, "ZADUZ.DBF");
                 if (File.Exists(zaduzPath))
                 {
                     svePrimopredaje.AddRange(DbfImportService.MapPrimopredajaNalozi(DbfImportService.ReadRows(zaduzPath), "Zaduženje"));
                 }
-                string razduzPath = Path.Combine(firmaDto.FolderPath, "RAZDUZ.DBF");
                 if (File.Exists(razduzPath))
                 {
                     svePrimopredaje.AddRange(DbfImportService.MapPrimopredajaNalozi(DbfImportService.ReadRows(razduzPath), "Razduženje"));

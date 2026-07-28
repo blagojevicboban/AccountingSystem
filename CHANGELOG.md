@@ -4,6 +4,25 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.22] - 2026-07-29
+
+### 🚀 Reorganizacija i Unapređenje Glavnog Menija
+- **Kompletan pristup modulu Rezervnih kopija (`BackupView`)**: Uvrštena nova stavka `💾 Rezervne kopije (Backup)` pod sekcijom Podešavanja i Sistem sa podrškom za ručne/automatske kopije i restauraciju baze.
+- **Eksplicitna opcija za promenu firme (`BtnFirme`)**: Dodata vidljiva stavka `🏢 Upravljanje firmama` u meniju kao i značka `🔄 Promeni` na kartici aktivne firme.
+- **Logička reorganizacija sekcija**: Meni je jasno struktuiran u 4 glavne knjigovodstvene celini: *FINANSIJSKO KNJIGOVODSTVO*, *ROBNO KNJIGOVODSTVO I MAGACINI*, *POREZI I ZVANIČNI BILANSI*, *PODEŠAVANJA I SISTEM*, *DOKUMENTACIJA*.
+
+### 🎨 UI / UX, Sklopivi Meni & Pretraga
+- **☰ Sklopivi bočni meni (Compact Sidebar Toggle)**: Dodato dugme `☰` u zaglavlju aplikacije za sklapanje menija sa `240px` na `64px` čime se oslobođava radni prostor za finansijske i robne tabele.
+- **🔍 Brza pretraga komandi u meniju**: Ugrađena traka za brzu pretragu sa automatskim filtriranjem stavki u realnom vremenu pri kucanju.
+- **⌨️ Tastaturne prečice (Global Shortcuts)**: Implementirani shortcut-ovi `Ctrl + F` / `Ctrl + K` (brza pretraga menija), `Ctrl + M` (sklapanje sidebara) i `F1` (pomoć).
+- **Redizajn kartice aktivne firme**: Prilagođen layout kartice firme u 3 odvojena reda sa `TextTrimming="CharacterEllipsis"` kako dugme *Promeni* više ne prekriva naziv preduzeća.
+- **ToolTip vodiči**: Dodati detaljni opisi za sve navigacione kontrole menija.
+
+### 🐛 Ispravke i Validacije
+- **Ispravka prikaza detalja firme (`FirmeView`)**: Rešen problem neprikazivanja podataka u desnom panelu pri selekciji firme iz tabele levo implementacijom `DgFirme_SelectionChanged` i automatskom selekcijom trenutno otvorene firme.
+
+---
+
 ## [1.0.21] - 2026-07-28
 
 ### 🚀 Modul Materijalne kartice & Provera salda (Magacin / MAT)

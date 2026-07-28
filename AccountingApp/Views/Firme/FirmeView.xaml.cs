@@ -104,6 +104,15 @@ public partial class FirmeView : UserControl
 
         DgFirme.ItemsSource = filtrirane;
         TxtUkupno.Text = $"Ukupno: {filtrirane.Count} firmi";
+
+        if (DgFirme.SelectedItem == null && filtrirane.Count > 0)
+        {
+            var aktivna = filtrirane.FirstOrDefault(f => f.JeTrenutnoOtvorena) ?? filtrirane.FirstOrDefault();
+            if (aktivna != null)
+            {
+                DgFirme.SelectedItem = aktivna;
+            }
+        }
     }
 
     private void TxtPretraga_TextChanged(object sender, TextChangedEventArgs e)
@@ -118,6 +127,18 @@ public partial class FirmeView : UserControl
 
     private void DgFirme_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (DgFirme.SelectedItem is FirmaGridItem item)
+        {
+            _selectedItem = item;
+            PopuniPolja(item);
+            TxtPanelTitle.Text = $"Detalji firme — {item.Naziv}";
+            TxtHint.Text = "Prikaz detalja selektovane firme. Za izmenu podataka kliknite '✏️ Izmeni' u tabeli.";
+            TxtHint.Visibility = Visibility.Visible;
+        }
+        else if (!_isNew)
+        {
+            PostaviRezimPregleda();
+        }
     }
 
     // ---- Panel: pregled / unos / izmena ----
