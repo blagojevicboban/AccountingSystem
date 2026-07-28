@@ -121,14 +121,69 @@ public partial class TrgovinaView : UserControl
         }
     }
 
-    private void BtnStampajKalkulaciju_Click(object sender, RoutedEventArgs e)
+    private async void BtnStampajKalkulaciju_Click(object sender, RoutedEventArgs e)
     {
-        if (DgKalkulacije.SelectedItem is not Kalkulacija selektovana)
+        bool isVeleprodaja = CmbTipKalkulacije?.SelectedIndex != 1;
+
+        try
         {
-            MessageBox.Show("Izaberite kalkulaciju za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
+            byte[] pdfBytes;
+            string brojZaFajl;
+
+            if (isVeleprodaja)
+            {
+                if (DgKalkulacije.SelectedItem is not Kalkulacija selektovana)
+                {
+                    MessageBox.Show("Izaberite kalkulaciju za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var puna = await db.Kalkulacije.Include(k => k.Stavke).FirstOrDefaultAsync(k => k.KalkulacijaId == selektovana.KalkulacijaId);
+                if (puna == null) return;
+
+                var artikliDict = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a);
+                foreach (var st in puna.Stavke)
+                {
+                    if (artikliDict.TryGetValue(st.SifraArtikla, out var art))
+                    {
+                        st.NazivArtikla = art.Naziv;
+                        st.JedinicaMere = art.JedinicaMere;
+                    }
+                }
+
+                var dobavljac = await db.Partneri.FirstOrDefaultAsync(p => p.SifraPartnera == puna.SifraDobavljaca);
+                var magacin = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == puna.SifraMagacina);
+
+                pdfBytes = Services.PdfReportService.GenerisiKalkulacijuPdf(firma, puna, dobavljac, magacin);
+                brojZaFajl = puna.BrojKalkulacije;
+            }
+            else
+            {
+                if (DgKalkulacije.SelectedItem is not MaloprodajnaKalkulacija selektovana)
+                {
+                    MessageBox.Show("Izaberite kalkulaciju za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var dobavljac = await db.Partneri.FirstOrDefaultAsync(p => p.SifraPartnera == selektovana.SifraDobavljaca);
+                var magacinDaje = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovana.SifraMagacinaDaje);
+                var magacinPrima = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovana.SifraMagacinaPrima);
+
+                pdfBytes = Services.PdfReportService.GenerisiMaloprodajnuKalkulacijuPdf(firma, selektovana, dobavljac, magacinDaje, magacinPrima);
+                brojZaFajl = selektovana.BrojKalkulacije;
+            }
+
+            string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Kalkulacija_{brojZaFajl}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
+            Process.Start(new ProcessStartInfo(tempFile) { UseShellExecute = true });
         }
-        MessageBox.Show($"Štampa kalkulacije #{selektovana.BrojKalkulacije} je poslata.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri štampi kalkulacije: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     // ================= RAČUNI - OTPREMNICE (MAT5 - rac_otpremnica) =================
@@ -953,10 +1008,14 @@ public partial class TrgovinaView : UserControl
 
             if (fullNalog != null)
             {
-                var artikliDict = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a.Naziv);
+                var artikliDict = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a);
                 foreach (var st in fullNalog.Stavke)
                 {
-                    if (artikliDict.TryGetValue(st.SifraArtikla, out string? nzv)) st.NazivArtikla = nzv;
+                    if (artikliDict.TryGetValue(st.SifraArtikla, out var art))
+                    {
+                        st.NazivArtikla = art.Naziv;
+                        st.JedinicaMere = art.JedinicaMere;
+                    }
                 }
                 DgPrimopredajaStavke.ItemsSource = fullNalog.Stavke;
             }
@@ -1097,10 +1156,14 @@ public partial class TrgovinaView : UserControl
 
             if (fullNalog == null) return;
 
-            var artikliDict = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a.Naziv);
+            var artikliDict = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a);
             foreach (var st in fullNalog.Stavke)
             {
-                if (artikliDict.TryGetValue(st.SifraArtikla, out string? nzv)) st.NazivArtikla = nzv;
+                if (artikliDict.TryGetValue(st.SifraArtikla, out var art))
+                {
+                    st.NazivArtikla = art.Naziv;
+                    st.JedinicaMere = art.JedinicaMere;
+                }
             }
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };

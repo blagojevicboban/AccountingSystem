@@ -50,4 +50,10 @@ public class KalkulacijaStavka
     /// <summary>ProdajnaVrednost / Kolicina — ovo se knjiži u robnu karticu kao Cena (MAT6.PRG: prod_po_jm).</summary>
     [Column(TypeName = "decimal(18, 4)")]
     public decimal ProdajnaCena { get; set; }
+
+    [NotMapped]
+    public string? NazivArtikla { get; set; }
+
+    [NotMapped]
+    public string? JedinicaMere { get; set; }
 }

@@ -113,14 +113,14 @@ public static class DbfImportService
         string sifra = Get(row, "SIFRA", "KOD");
         if (string.IsNullOrWhiteSpace(sifra)) return null;
 
-        string naziv = Get(row, "RACUNOPOL", "NAZIV", "IME");
+        string naziv = Get(row, "NAZIV", "IME", "OPIS");
         if (string.IsNullOrWhiteSpace(naziv)) naziv = $"Magacin {sifra}";
 
         return new Magacin
         {
             SifraMagacina = sifra,
             NazivMagacina = naziv,
-            OdgovornoLice = NullIfEmpty(Get(row, "ODG_LICE", "LICE", "RACUNOPOL")),
+            OdgovornoLice = NullIfEmpty(Get(row, "RACUNOPOL", "ODG_LICE", "LICE")),
             VrstaMagacina = "Veleprodaja"
         };
     }

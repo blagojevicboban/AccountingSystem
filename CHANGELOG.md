@@ -4,6 +4,21 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.18] - 2026-07-28
+
+### 🚀 PDF Štampa kalkulacija i primopredaja (Trgovina)
+- **Štampa kalkulacija (`BtnStampajKalkulaciju`)**: Omogućena direktna generacija i otvaranje PDF dokumenata za veleprodajne (`MAT6`) i maloprodajne (`MAT3`) kalkulacije iz pregleda kalkulacija.
+- **Prikaz jedinica mere i naziva artikala**: Automatsko dopunjavanje naziva artikla i jedinice mere u svim tabelarnim pregledima i PDF dokumentima kalkulacija i primopredajnih naloga.
+
+### 🎨 UI / UX i Odzivnost
+- **PDF Nivelacija cena — zbirna traka (TOTAL)**: Dodata zbirna traka sa ukupnim vrednostima starog iznosa, novog iznosa i ukupne razlike u PDF zapisniku o nivelaciji cena.
+- **Prikaz u listi primopredajnih naloga**: Ubačene kolone za naziv artikla i jedinicu mere u detaljnom prikazu stavki primopredajnog naloga (`DgPrimopredajaStavke`).
+
+### 🐛 Ispravke i Validacije
+- **KalkulacijaStavka & PrimopredajaStavka models**: Dodata unmapped svojstva `NazivArtikla` i `JedinicaMere` radi bezbednog prenosa i prikaza podataka u UI i PDF servisu.
+
+---
+
 ## [1.0.17] - 2026-07-28
 
 ### 🧾 Poreske tarife (novi šifarnik)

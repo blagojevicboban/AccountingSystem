@@ -57,4 +57,7 @@ public class PrimopredajaStavka
 
     [NotMapped]
     public string? NazivArtikla { get; set; }
+
+    [NotMapped]
+    public string? JedinicaMere { get; set; }
 }
