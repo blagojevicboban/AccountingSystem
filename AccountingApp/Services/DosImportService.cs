@@ -74,8 +74,8 @@ public class DosImportService
             {
                 string sifra = GetVal(r, "KOR", "SIFRA", "KOD");
                 string naziv = GetVal(r, "IME", "NAZIV", "FIRMA");
-                string pib = GetVal(r, "PIB");
-                string mb = GetVal(r, "MB", "MATICNI");
+                string pib = GetVal(r, "PIB", "PIBK");
+                string mb = GetVal(r, "MB", "MATICNI", "MATK");
                 // "UL" nosi celu vrednost "Ulica i broj", a "BR" (uprkos imenu) nosi
                 // "Mesto i post. br." — potvrđeno u FIN2.PRG novikorisnik()/izmenakorisnika().
                 string adresa = GetVal(r, "UL", "ADRESA", "ULICA");
@@ -262,16 +262,16 @@ public class DosImportService
                 }
 
                 var artikliFile = Path.Combine(firmaDto.FolderPath, "ARTIKLI.DBF");
-                if (!File.Exists(artikliFile)) artikliFile = Path.Combine(firmaDto.FolderPath, "M_SIFR.DBF");
+                var msifrFile = Path.Combine(firmaDto.FolderPath, "M_SIFR.DBF");
 
                 if (File.Exists(artikliFile))
                 {
-                    Report(progress, firmaDto.Naziv, "Artikli", basePercent + 40, $"🛒 Uvoz Artikala ({Path.GetFileName(artikliFile)})...");
+                    Report(progress, firmaDto.Naziv, "Artikli", basePercent + 38, "🛒 Uvoz Artikala robe (ARTIKLI.DBF)...");
                     var rows = DbfImportService.ReadRows(artikliFile);
                     int count = 0;
                     foreach (var r in rows)
                     {
-                        var artikal = DbfImportService.MapArtikal(r);
+                        var artikal = DbfImportService.MapArtikal(r, "Roba");
                         if (artikal != null && existingArtikli.Add(artikal.SifraArtikla))
                         {
                             firmDb.Artikli.Add(artikal);
@@ -279,7 +279,25 @@ public class DosImportService
                         }
                     }
                     await firmDb.SaveChangesAsync();
-                    Report(progress, firmaDto.Naziv, "Artikli", basePercent + 55, $"   --> Uvezeno {count} novih artikala!");
+                    Report(progress, firmaDto.Naziv, "Artikli", basePercent + 47, $"   --> Uvezeno {count} novih artikala (roba)!");
+                }
+
+                if (File.Exists(msifrFile))
+                {
+                    Report(progress, firmaDto.Naziv, "Artikli", basePercent + 48, "🧱 Uvoz Šifarnika materijala (M_SIFR.DBF)...");
+                    var rows = DbfImportService.ReadRows(msifrFile);
+                    int count = 0;
+                    foreach (var r in rows)
+                    {
+                        var artikal = DbfImportService.MapArtikal(r, "Materijal");
+                        if (artikal != null && existingArtikli.Add(artikal.SifraArtikla))
+                        {
+                            firmDb.Artikli.Add(artikal);
+                            count++;
+                        }
+                    }
+                    await firmDb.SaveChangesAsync();
+                    Report(progress, firmaDto.Naziv, "Artikli", basePercent + 55, $"   --> Uvezeno {count} novih materijala!");
                 }
 
                 // 4b. Poreske tarife (TARIFE.DBF)
@@ -356,15 +374,15 @@ public class DosImportService
                     Report(progress, firmaDto.Naziv, "Nalozi", basePercent + 80, $"   --> Uvezeno {nalogiCount} naloga i {stavkeCount} stavki knjiženja u zasebnu bazu!");
                 }
 
-                // 7. Materijalne / Robne kartice (MAT_KART.DBF / M_KART.DBF)
-                var karticaFile = Path.Combine(firmaDto.FolderPath, "MAT_KART.DBF");
-                if (!File.Exists(karticaFile)) karticaFile = Path.Combine(firmaDto.FolderPath, "M_KART.DBF");
+                // 7. Materijalne / Robne kartice (MAT_KART.DBF i M_KART.DBF — oba, ako oba postoje)
+                var matKarticaFile = Path.Combine(firmaDto.FolderPath, "MAT_KART.DBF");
+                var mKarticaFile = Path.Combine(firmaDto.FolderPath, "M_KART.DBF");
+                int karticeCount = 0;
 
-                if (File.Exists(karticaFile))
+                if (File.Exists(matKarticaFile))
                 {
-                    Report(progress, firmaDto.Naziv, "Materijalne kartice", basePercent + 85, $"📊 Uvoz Materijalnih/Robnih kartica ({Path.GetFileName(karticaFile)})...");
-                    var rows = DbfImportService.ReadRows(karticaFile);
-                    int karticeCount = 0;
+                    Report(progress, firmaDto.Naziv, "Robne kartice", basePercent + 84, "📊 Uvoz Robnih kartica (MAT_KART.DBF)...");
+                    var rows = DbfImportService.ReadRows(matKarticaFile);
                     int rBr = 1;
                     foreach (var r in rows)
                     {
@@ -376,7 +394,55 @@ public class DosImportService
                         }
                     }
                     await firmDb.SaveChangesAsync();
+                }
+
+                if (File.Exists(mKarticaFile))
+                {
+                    Report(progress, firmaDto.Naziv, "Materijalne kartice", basePercent + 87, "📊 Uvoz Materijalnih kartica (M_KART.DBF)...");
+                    var rows = DbfImportService.ReadRows(mKarticaFile);
+                    int rBr = 1;
+                    foreach (var r in rows)
+                    {
+                        var mk = DbfImportService.MapMaterijalnaKartica(r, rBr++);
+                        if (mk != null)
+                        {
+                            firmDb.MaterijalneKartice.Add(mk);
+                            karticeCount++;
+                        }
+                    }
+                    await firmDb.SaveChangesAsync();
+                }
+
+                if (karticeCount > 0)
+                {
                     Report(progress, firmaDto.Naziv, "Materijalne kartice", basePercent + 90, $"   --> Uvezeno {karticeCount} stavki robnih/materijalnih kartica!");
+                }
+
+                // 7b. Ulazi materijala (ULAZ.DBF) i Trebovanja (TREBOV.DBF)
+                var ulazFile = Path.Combine(firmaDto.FolderPath, "ULAZ.DBF");
+                if (File.Exists(ulazFile))
+                {
+                    Report(progress, firmaDto.Naziv, "Ulazi materijala", basePercent + 91, "📥 Uvoz Ulaza materijala (ULAZ.DBF)...");
+                    var ulazi = DbfImportService.MapUlazNalozi(DbfImportService.ReadRows(ulazFile));
+                    if (ulazi.Count > 0)
+                    {
+                        firmDb.UlazNalozi.AddRange(ulazi);
+                        await firmDb.SaveChangesAsync();
+                    }
+                    Report(progress, firmaDto.Naziv, "Ulazi materijala", basePercent + 92, $"   --> Uvezeno {ulazi.Count} ulaza materijala!");
+                }
+
+                var trebovFile = Path.Combine(firmaDto.FolderPath, "TREBOV.DBF");
+                if (File.Exists(trebovFile))
+                {
+                    Report(progress, firmaDto.Naziv, "Trebovanja", basePercent + 92, "📤 Uvoz Trebovanja materijala (TREBOV.DBF)...");
+                    var trebovanja = DbfImportService.MapTrebovanjeNalozi(DbfImportService.ReadRows(trebovFile));
+                    if (trebovanja.Count > 0)
+                    {
+                        firmDb.TrebovanjeNalozi.AddRange(trebovanja);
+                        await firmDb.SaveChangesAsync();
+                    }
+                    Report(progress, firmaDto.Naziv, "Trebovanja", basePercent + 93, $"   --> Uvezeno {trebovanja.Count} trebovanja materijala!");
                 }
 
                 // 8. Kalkulacije veleprodaje (KALKULAC.DBF i KAL_NAL.DBF)

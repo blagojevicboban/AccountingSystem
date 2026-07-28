@@ -10,6 +10,7 @@ namespace AccountingApp.Views.Magacin;
 public partial class TrebovanjeEditWindow : Window
 {
     private readonly ObservableCollection<TrebovanjeStavka> _stavke = new();
+    private readonly int _postojeciId;
 
     public TrebovanjeEditWindow()
     {
@@ -20,7 +21,32 @@ public partial class TrebovanjeEditWindow : Window
         LoadMagacine();
     }
 
-    private async void LoadMagacine()
+    public TrebovanjeEditWindow(TrebovanjeNalog postojeci)
+    {
+        InitializeComponent();
+        DgStavke.ItemsSource = _stavke;
+        _postojeciId = postojeci.TrebovanjeNalogId;
+
+        if (postojeci.IsKnjizen)
+        {
+            MessageBox.Show($"Trebovanje br. {postojeci.BrojNaloga} je proknjiženo i nisu dozvoljene nikakve izmene.", "Izmena nije moguća", MessageBoxButton.OK, MessageBoxImage.Warning);
+            IsEnabled = false;
+        }
+
+        Title = $"Izmena trebovanja br. {postojeci.BrojNaloga}";
+        TxtBrojNaloga.Text = postojeci.BrojNaloga;
+        TxtBrojNaloga.IsReadOnly = true;
+        DpDatum.SelectedDate = postojeci.Datum;
+
+        foreach (var s in postojeci.Stavke.OrderBy(s => s.RedniBroj))
+        {
+            _stavke.Add(new TrebovanjeStavka { RedniBroj = s.RedniBroj, SifraArtikla = s.SifraArtikla, Kolicina = s.Kolicina, KontoTroska = s.KontoTroska });
+        }
+
+        LoadMagacine(postojeci.SifraMagacina);
+    }
+
+    private async void LoadMagacine(string? selektujSifru = null)
     {
         try
         {
@@ -30,15 +56,26 @@ public partial class TrebovanjeEditWindow : Window
 
             var magacini = await service.GetMagaciniAsync();
             CmbMagacin.ItemsSource = magacini;
-            if (magacini.Count > 0) CmbMagacin.SelectedIndex = 0;
-
-            var brojevi = await db.TrebovanjeNalozi.Select(n => n.BrojNaloga).ToListAsync();
-            int max = 0;
-            foreach (var b in brojevi)
+            if (selektujSifru != null)
             {
-                if (int.TryParse(b, out var v) && v > max) max = v;
+                var m = magacini.FirstOrDefault(x => x.SifraMagacina == selektujSifru);
+                CmbMagacin.SelectedItem = m ?? (magacini.Count > 0 ? magacini[0] : null);
             }
-            TxtBrojNaloga.Text = (max + 1).ToString();
+            else if (magacini.Count > 0)
+            {
+                CmbMagacin.SelectedIndex = 0;
+            }
+
+            if (_postojeciId == 0)
+            {
+                var brojevi = await db.TrebovanjeNalozi.Select(n => n.BrojNaloga).ToListAsync();
+                int max = 0;
+                foreach (var b in brojevi)
+                {
+                    if (int.TryParse(b, out var v) && v > max) max = v;
+                }
+                TxtBrojNaloga.Text = (max + 1).ToString();
+            }
         }
         catch
         {
@@ -94,17 +131,11 @@ public partial class TrebovanjeEditWindow : Window
             using var db = new AccountingDbContext(options);
             var service = new TrebovanjeService(db);
 
-            var nalog = new TrebovanjeNalog
-            {
-                BrojNaloga = TxtBrojNaloga.Text.Trim(),
-                Datum = DpDatum.SelectedDate ?? DateTime.Now,
-                SifraMagacina = magacin.SifraMagacina
-            };
-
+            var noveStavke = new List<TrebovanjeStavka>();
             int red = 1;
             foreach (var s in _stavke)
             {
-                nalog.Stavke.Add(new TrebovanjeStavka
+                noveStavke.Add(new TrebovanjeStavka
                 {
                     RedniBroj = red++,
                     SifraArtikla = s.SifraArtikla.Trim(),
@@ -113,7 +144,22 @@ public partial class TrebovanjeEditWindow : Window
                 });
             }
 
-            await service.SaveTrebovanjeAsync(nalog);
+            if (_postojeciId == 0)
+            {
+                var nalog = new TrebovanjeNalog
+                {
+                    BrojNaloga = TxtBrojNaloga.Text.Trim(),
+                    Datum = DpDatum.SelectedDate ?? DateTime.Now,
+                    SifraMagacina = magacin.SifraMagacina
+                };
+                nalog.Stavke.AddRange(noveStavke);
+                await service.SaveTrebovanjeAsync(nalog);
+            }
+            else
+            {
+                await service.UpdateTrebovanjeAsync(_postojeciId, DpDatum.SelectedDate ?? DateTime.Now, magacin.SifraMagacina, noveStavke);
+            }
+
             DialogResult = true;
             Close();
         }

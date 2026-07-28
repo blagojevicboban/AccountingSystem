@@ -4,6 +4,22 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.21] - 2026-07-28
+
+### 🚀 Modul Materijalne kartice & Provera salda (Magacin / MAT)
+- **Kompletiran modul Materijalnih kartica (`M1.PRG`)**: Omogućen rad sa materijalnim karticama zaliha po ponderisanoj prosečnoj ceni — unos i izmena materijala u šifarniku magacina (`MaterijalEditWindow`).
+- **Provera i rekalkulacija materijalnih kartica (`ProveraKarticaWindow`)**: Novi modul za dijagnostiku slaganja kartica sa dokumentima ulaza i trebovanja sa mogućnošću automatske rekalkulacije i korekcije salda zaliha.
+- **Upravljanje karticama i štampa (`MagacinView`)**: Omogućen prikaz pojedinačne kartice, prikaz svih kartica, pojedinačna/masovna PDF štampa materijalnih kartica i pokretanje provere zaliha.
+
+### 🎨 UI / UX i Odzivnost
+- **Novi dijaloški prozori**: Ugrađeni namenski dijalozi za brzi unos/izmenu materijala i dijagnostički prozor za proveru kartica.
+- **PDF Izveštaji materijalnih kartica**: Novi format i izgled PDF dokumenata za materijalne kartice i izveštaj provere kartica.
+
+### ⚡ Optimizacija i Performanse
+- **MaterijalnaKarticaService & Uvoz**: Proširen servis za automatsko ažuriranje salda i prosečne cene zaliha, uz unapređen uvoz materijala, ulaza i trebovanja iz Clipper DOS baza (`KOR03`, `KOR04`, `KOR05`).
+
+---
+
 ## [1.0.20] - 2026-07-28
 
 ### 🚀 Sintetički izveštaj "Stanje po artiklima" (Trgovina)

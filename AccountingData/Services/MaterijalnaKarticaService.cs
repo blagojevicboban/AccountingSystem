@@ -42,6 +42,64 @@ public class MaterijalnaKarticaService
         return await query.OrderBy(a => a.Naziv).ToListAsync();
     }
 
+    /// <summary>Šifre artikala/materijala koji imaju bar jedan red na kartici — za "samo sa karticom" filter. sifraMagacina=null znači svi magacini.</summary>
+    public async Task<HashSet<string>> GetArtikliSaKarticomAsync(string? sifraMagacina)
+    {
+        var upit = _db.MaterijalneKartice.AsQueryable();
+        if (!string.IsNullOrEmpty(sifraMagacina)) upit = upit.Where(k => k.SifraMagacina == sifraMagacina);
+
+        var sifre = await upit.Select(k => k.SifraArtikla).Distinct().ToListAsync();
+        return new HashSet<string>(sifre, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Skuplja (magacin, artikal, kartice) trojke sa prometom. sifraMagacina=null znači svi magacini; artikliFilter=null znači svi artikli.</summary>
+    public async Task<List<(Magacin Magacin, Artikal Artikal, List<MaterijalnaKartica> Kartice)>> PrikupiKarticeAsync(
+        string? sifraMagacina, IReadOnlyCollection<Artikal>? artikliFilter)
+    {
+        var magaciniZaObradu = sifraMagacina == null
+            ? await _db.Magacini.OrderBy(m => m.SifraMagacina).ToListAsync()
+            : await _db.Magacini.Where(m => m.SifraMagacina == sifraMagacina).ToListAsync();
+
+        var sifreFiltera = artikliFilter?.Select(a => a.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var artikliDict = await _db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a);
+        var rezultat = new List<(Magacin, Artikal, List<MaterijalnaKartica>)>();
+
+        foreach (var mag in magaciniZaObradu)
+        {
+            var upit = _db.MaterijalneKartice.Where(k => k.SifraMagacina == mag.SifraMagacina);
+            if (sifreFiltera != null) upit = upit.Where(k => sifreFiltera.Contains(k.SifraArtikla));
+
+            var sifreArtikala = await upit.Select(k => k.SifraArtikla).Distinct().ToListAsync();
+
+            foreach (var sifra in sifreArtikala.OrderBy(s => s))
+            {
+                var kartice = await _db.MaterijalneKartice
+                    .Where(k => k.SifraMagacina == mag.SifraMagacina && k.SifraArtikla == sifra)
+                    .OrderBy(k => k.DatumPromene)
+                    .ThenBy(k => k.MaterijalnaKarticaId)
+                    .ToListAsync();
+
+                if (kartice.Count == 0) continue;
+
+                var artikal = artikliDict.TryGetValue(sifra, out var art) ? art : new Artikal { SifraArtikla = sifra, Naziv = sifra };
+                rezultat.Add((mag, artikal, kartice));
+            }
+        }
+
+        return rezultat;
+    }
+
+    /// <summary>Redovi kartice sa negativnim stanjem ili negativnom cenom — znak greške u knjiženju (legacy provera_m_kart()).</summary>
+    public async Task<List<MaterijalnaKartica>> GetNegativnaStanjaAsync()
+    {
+        return await _db.MaterijalneKartice
+            .Where(k => k.Stanje < 0 || k.Cena < 0)
+            .OrderBy(k => k.SifraMagacina)
+            .ThenBy(k => k.SifraArtikla)
+            .ThenBy(k => k.RedniBroj)
+            .ToListAsync();
+    }
+
     public async Task<List<MaterijalnaKartica>> GetKarticaAsync(string sifraMagacina, string sifraArtikla)
     {
         return await _db.MaterijalneKartice

@@ -1,0 +1,111 @@
+using System.Windows;
+using AccountingData;
+using AccountingData.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace AccountingApp.Views.Magacin;
+
+public partial class MaterijalEditWindow : Window
+{
+    private readonly Artikal? _existingMaterijal;
+
+    public MaterijalEditWindow(Artikal? existingMaterijal = null)
+    {
+        InitializeComponent();
+        _existingMaterijal = existingMaterijal;
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        if (_existingMaterijal != null)
+        {
+            TxtNaslov.Text = "✏️ Izmena materijala";
+            TxtSifra.Text = _existingMaterijal.SifraArtikla;
+            TxtSifra.IsReadOnly = true; // Šifra se ne menja
+            TxtNaziv.Text = _existingMaterijal.Naziv;
+            CmbJedinicaMere.Text = _existingMaterijal.JedinicaMere ?? "kom";
+            TxtPakovanje.Text = _existingMaterijal.Pakovanje ?? "";
+        }
+        else
+        {
+            TxtNaslov.Text = "➕ Novi materijal";
+        }
+    }
+
+    private async void BtnSacuvaj_Click(object sender, RoutedEventArgs e)
+    {
+        string sifra = TxtSifra.Text.Trim();
+        string naziv = TxtNaziv.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(sifra))
+        {
+            MessageBox.Show("Molimo unesite šifru materijala.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            TxtSifra.Focus();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(naziv))
+        {
+            MessageBox.Show("Molimo unesite naziv materijala.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            TxtNaziv.Focus();
+            return;
+        }
+
+        string jm = CmbJedinicaMere.Text.Trim();
+        if (string.IsNullOrWhiteSpace(jm)) jm = "kom";
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+
+            if (_existingMaterijal == null)
+            {
+                bool vecPostoji = await db.Artikli.AnyAsync(a => a.SifraArtikla == sifra);
+                if (vecPostoji)
+                {
+                    MessageBox.Show($"Artikal/materijal sa šifrom '{sifra}' već postoji.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    TxtSifra.Focus();
+                    return;
+                }
+
+                db.Artikli.Add(new Artikal
+                {
+                    SifraArtikla = sifra,
+                    Naziv = naziv,
+                    JedinicaMere = jm,
+                    Pakovanje = string.IsNullOrWhiteSpace(TxtPakovanje.Text) ? null : TxtPakovanje.Text.Trim(),
+                    Vrsta = "Materijal"
+                });
+            }
+            else
+            {
+                var a = await db.Artikli.FirstOrDefaultAsync(x => x.ArtikalId == _existingMaterijal.ArtikalId);
+                if (a != null)
+                {
+                    a.Naziv = naziv;
+                    a.JedinicaMere = jm;
+                    a.Pakovanje = string.IsNullOrWhiteSpace(TxtPakovanje.Text) ? null : TxtPakovanje.Text.Trim();
+                }
+            }
+
+            await db.SaveChangesAsync();
+            DialogResult = true;
+            Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri čuvanju materijala:\n{ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnOtkazi_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+        Close();
+    }
+}

@@ -37,6 +37,36 @@ public class UlazService
     }
 
     /// <summary>
+    /// Izmena postojećeg, neproknjiženog ulaza — briše stare stavke i upisuje nove
+    /// (legacy izmena_ulaza() dozvoljava izmenu samo dok ulaz nije proknjižen).
+    /// </summary>
+    public async Task UpdateUlazAsync(int ulazNalogId, DateTime datum, string sifraMagacina, string? brojRacuna, List<UlazStavka> noveStavke)
+    {
+        var nalog = await _db.UlazNalozi.Include(n => n.Stavke).FirstOrDefaultAsync(n => n.UlazNalogId == ulazNalogId);
+        if (nalog == null)
+        {
+            throw new InvalidOperationException("Ulazni nalog nije pronađen.");
+        }
+        if (nalog.IsKnjizen)
+        {
+            throw new InvalidOperationException($"Ulaz {nalog.BrojNaloga} je već proknjižen i nisu dozvoljene nikakve izmene.");
+        }
+
+        nalog.Datum = datum;
+        nalog.SifraMagacina = sifraMagacina;
+        nalog.BrojRacuna = brojRacuna;
+
+        _db.UlazStavke.RemoveRange(nalog.Stavke);
+        nalog.Stavke.Clear();
+        foreach (var s in noveStavke)
+        {
+            nalog.Stavke.Add(s);
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Knjiži ulazni nalog — za svaku stavku dodaje red materijalne kartice.
     /// Pozitivna količina = prijem (po unetoj ceni); negativna količina = storno/
     /// korekcija u okviru ulaznog dokumenta (po trenutnoj prosečnoj ceni) — isti

@@ -10,6 +10,7 @@ namespace AccountingApp.Views.Magacin;
 public partial class UlazEditWindow : Window
 {
     private readonly ObservableCollection<UlazStavka> _stavke = new();
+    private readonly int _postojeciId;
 
     public UlazEditWindow()
     {
@@ -20,7 +21,33 @@ public partial class UlazEditWindow : Window
         LoadMagacine();
     }
 
-    private async void LoadMagacine()
+    public UlazEditWindow(UlazNalog postojeci)
+    {
+        InitializeComponent();
+        DgStavke.ItemsSource = _stavke;
+        _postojeciId = postojeci.UlazNalogId;
+
+        if (postojeci.IsKnjizen)
+        {
+            MessageBox.Show($"Ulaz br. {postojeci.BrojNaloga} je proknjižen i nisu dozvoljene nikakve izmene.", "Izmena nije moguća", MessageBoxButton.OK, MessageBoxImage.Warning);
+            IsEnabled = false;
+        }
+
+        Title = $"Izmena ulaza br. {postojeci.BrojNaloga}";
+        TxtBrojNaloga.Text = postojeci.BrojNaloga;
+        TxtBrojNaloga.IsReadOnly = true;
+        DpDatum.SelectedDate = postojeci.Datum;
+        TxtBrojRacuna.Text = postojeci.BrojRacuna ?? "";
+
+        foreach (var s in postojeci.Stavke.OrderBy(s => s.RedniBroj))
+        {
+            _stavke.Add(new UlazStavka { RedniBroj = s.RedniBroj, SifraArtikla = s.SifraArtikla, Kolicina = s.Kolicina, Cena = s.Cena, Iznos = s.Iznos });
+        }
+
+        LoadMagacine(postojeci.SifraMagacina);
+    }
+
+    private async void LoadMagacine(string? selektujSifru = null)
     {
         try
         {
@@ -30,15 +57,26 @@ public partial class UlazEditWindow : Window
 
             var magacini = await service.GetMagaciniAsync();
             CmbMagacin.ItemsSource = magacini;
-            if (magacini.Count > 0) CmbMagacin.SelectedIndex = 0;
-
-            var brojevi = await db.UlazNalozi.Select(n => n.BrojNaloga).ToListAsync();
-            int max = 0;
-            foreach (var b in brojevi)
+            if (selektujSifru != null)
             {
-                if (int.TryParse(b, out var v) && v > max) max = v;
+                var m = magacini.FirstOrDefault(x => x.SifraMagacina == selektujSifru);
+                CmbMagacin.SelectedItem = m ?? (magacini.Count > 0 ? magacini[0] : null);
             }
-            TxtBrojNaloga.Text = (max + 1).ToString();
+            else if (magacini.Count > 0)
+            {
+                CmbMagacin.SelectedIndex = 0;
+            }
+
+            if (_postojeciId == 0)
+            {
+                var brojevi = await db.UlazNalozi.Select(n => n.BrojNaloga).ToListAsync();
+                int max = 0;
+                foreach (var b in brojevi)
+                {
+                    if (int.TryParse(b, out var v) && v > max) max = v;
+                }
+                TxtBrojNaloga.Text = (max + 1).ToString();
+            }
         }
         catch
         {
@@ -94,18 +132,11 @@ public partial class UlazEditWindow : Window
             using var db = new AccountingDbContext(options);
             var service = new UlazService(db);
 
-            var nalog = new UlazNalog
-            {
-                BrojNaloga = TxtBrojNaloga.Text.Trim(),
-                Datum = DpDatum.SelectedDate ?? DateTime.Now,
-                SifraMagacina = magacin.SifraMagacina,
-                BrojRacuna = TxtBrojRacuna.Text.Trim()
-            };
-
+            var noveStavke = new List<UlazStavka>();
             int red = 1;
             foreach (var s in _stavke)
             {
-                nalog.Stavke.Add(new UlazStavka
+                noveStavke.Add(new UlazStavka
                 {
                     RedniBroj = red++,
                     SifraArtikla = s.SifraArtikla.Trim(),
@@ -115,7 +146,23 @@ public partial class UlazEditWindow : Window
                 });
             }
 
-            await service.SaveUlazAsync(nalog);
+            if (_postojeciId == 0)
+            {
+                var nalog = new UlazNalog
+                {
+                    BrojNaloga = TxtBrojNaloga.Text.Trim(),
+                    Datum = DpDatum.SelectedDate ?? DateTime.Now,
+                    SifraMagacina = magacin.SifraMagacina,
+                    BrojRacuna = TxtBrojRacuna.Text.Trim()
+                };
+                nalog.Stavke.AddRange(noveStavke);
+                await service.SaveUlazAsync(nalog);
+            }
+            else
+            {
+                await service.UpdateUlazAsync(_postojeciId, DpDatum.SelectedDate ?? DateTime.Now, magacin.SifraMagacina, TxtBrojRacuna.Text.Trim(), noveStavke);
+            }
+
             DialogResult = true;
             Close();
         }

@@ -126,7 +126,7 @@ public static class DbfImportService
     }
 
     /// <summary>ARTIKLI.DBF / M_SIFR.DBF → Artikal. Vraća null ako red nema šifru.</summary>
-    public static Artikal? MapArtikal(Dictionary<string, string> row)
+    public static Artikal? MapArtikal(Dictionary<string, string> row, string vrsta = "Roba")
     {
         string sifra = Get(row, "SIFRA", "KOD", "SIFR");
         if (string.IsNullOrWhiteSpace(sifra)) return null;
@@ -144,7 +144,7 @@ public static class DbfImportService
             TarifniBroj = NullIfEmpty(Get(row, "TAR_BROJ", "TARIFNI", "TAR_BR")),
             KlasifikacionaSifra = NullIfEmpty(Get(row, "KLAS_SIFRA", "KLASIFIKAC")),
             Selektovan = selektovanStr is "T" or "1" or "TRUE" or "Y",
-            Vrsta = "Roba"
+            Vrsta = vrsta
         };
     }
 
@@ -194,7 +194,7 @@ public static class DbfImportService
             SifraMagacina = mag,
             SifraArtikla = art,
             RedniBroj = redBr,
-            DatumPromene = ParseDate(Get(row, "DAT_PROM", "DATUM", "DAT_PROMENE")),
+            DatumPromene = ParseDate(Get(row, "DAT_PROMEN", "DAT_PROM", "DATUM", "DAT_PROMENE")),
             OpisPromene = NullIfEmpty(Get(row, "OPIS", "OPIS_PROM", "OPIS_PROMENE")),
             Ulaz = ParseDecimal(Get(row, "ULAZ")),
             Izlaz = ParseDecimal(Get(row, "IZLAZ")),
@@ -611,16 +611,143 @@ public static class DbfImportService
         return result;
     }
 
+    /// <summary>ULAZ.DBF → UlazNalog i stavke, grupisano po broju naloga (BR_NALOGA).</summary>
+    public static List<UlazNalog> MapUlazNalozi(List<Dictionary<string, string>> rows)
+    {
+        var result = new List<UlazNalog>();
+
+        var grouped = rows
+            .Select(r => new { Row = r, Broj = Get(r, "BR_NALOGA").Trim() })
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "")
+            .GroupBy(x => x.Broj, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var group in grouped)
+        {
+            var firstRow = group.First().Row;
+            string mag = Get(firstRow, "MAG_PRIMA", "MAGACIN", "MAG");
+            string knjiStr = Get(firstRow, "KNJIZEN");
+            string datRacunaStr = Get(firstRow, "DAT_RACUNA");
+
+            var nalog = new UlazNalog
+            {
+                BrojNaloga = group.Key,
+                Datum = ParseDate(Get(firstRow, "DATUM")),
+                SifraMagacina = mag,
+                BrojRacuna = NullIfEmpty(Get(firstRow, "BR_RACUNA")),
+                DatumRacuna = string.IsNullOrWhiteSpace(datRacunaStr) ? null : ParseDate(datRacunaStr),
+                IsKnjizen = knjiStr is "T" or "1" or "TRUE" or "Y"
+            };
+
+            foreach (var r in group)
+            {
+                string art = Get(r.Row, "ARTIKAL", "SIFRA", "ART");
+                if (string.IsNullOrWhiteSpace(art)) continue;
+
+                int.TryParse(Get(r.Row, "RED_BROJ", "RBR"), out int rbr);
+                decimal kol = ParseDecimal(Get(r.Row, "KOLICINA", "KOL"));
+                decimal cena = ParseDecimal(Get(r.Row, "CENA"));
+                decimal iznos = ParseDecimal(Get(r.Row, "IZNOS"));
+                if (iznos == 0 && kol != 0 && cena != 0) iznos = kol * cena;
+
+                nalog.Stavke.Add(new UlazStavka
+                {
+                    RedniBroj = rbr > 0 ? rbr : nalog.Stavke.Count + 1,
+                    SifraArtikla = art,
+                    Kolicina = kol,
+                    Cena = cena,
+                    Iznos = iznos
+                });
+            }
+
+            if (nalog.Stavke.Count > 0)
+            {
+                result.Add(nalog);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>TREBOV.DBF → TrebovanjeNalog i stavke, grupisano po broju naloga (BR_NALOGA).</summary>
+    public static List<TrebovanjeNalog> MapTrebovanjeNalozi(List<Dictionary<string, string>> rows)
+    {
+        var result = new List<TrebovanjeNalog>();
+
+        var grouped = rows
+            .Select(r => new { Row = r, Broj = Get(r, "BR_NALOGA").Trim() })
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "")
+            .GroupBy(x => x.Broj, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var group in grouped)
+        {
+            var firstRow = group.First().Row;
+            string mag = Get(firstRow, "MAG_DAJE", "MAGACIN", "MAG");
+            string knjiStr = Get(firstRow, "KNJIZEN");
+
+            var nalog = new TrebovanjeNalog
+            {
+                BrojNaloga = group.Key,
+                Datum = ParseDate(Get(firstRow, "DATUM")),
+                SifraMagacina = mag,
+                IsKnjizen = knjiStr is "T" or "1" or "TRUE" or "Y"
+            };
+
+            foreach (var r in group)
+            {
+                string art = Get(r.Row, "ARTIKAL", "SIFRA", "ART");
+                if (string.IsNullOrWhiteSpace(art)) continue;
+
+                int.TryParse(Get(r.Row, "RED_BROJ", "RBR"), out int rbr);
+                decimal kol = ParseDecimal(Get(r.Row, "KOLICINA", "KOL"));
+                decimal cena = ParseDecimal(Get(r.Row, "CENA"));
+                decimal iznos = ParseDecimal(Get(r.Row, "IZNOS"));
+                if (iznos == 0 && kol != 0 && cena != 0) iznos = kol * cena;
+                string konto = Get(r.Row, "KONTO");
+
+                nalog.Stavke.Add(new TrebovanjeStavka
+                {
+                    RedniBroj = rbr > 0 ? rbr : nalog.Stavke.Count + 1,
+                    SifraArtikla = art,
+                    Kolicina = kol,
+                    Cena = cena,
+                    Iznos = iznos,
+                    KontoTroska = (!string.IsNullOrWhiteSpace(konto) && konto != "0") ? konto : null
+                });
+            }
+
+            if (nalog.Stavke.Count > 0)
+            {
+                result.Add(nalog);
+            }
+        }
+
+        return result;
+    }
+
     private static decimal ParseDecimal(string str)
     {
         if (string.IsNullOrWhiteSpace(str)) return 0m;
         return decimal.TryParse(str.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal val) ? val : 0m;
     }
 
+    // Legacy Clipper datumi dolaze kao "d.M.yyyy. H:mm:ss" (npr. "13.2.2002. 00:00:00").
+    // Generički DateTime.TryParse pod InvariantCulture čita ovo kao M.d.yyyy (pogrešno
+    // zamenjuje dan i mesec za dane <=12, a potpuno ne uspeva za dane >12), pa se prvo
+    // pokušava tačan legacy format.
+    private static readonly string[] LegacyDbfDateFormats =
+    {
+        "d.M.yyyy. H:mm:ss",
+        "d.M.yyyy.",
+        "d.M.yyyy H:mm:ss",
+        "d.M.yyyy"
+    };
+
     private static DateTime ParseDate(string str)
     {
         if (str.Length == 8 && DateTime.TryParseExact(str, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
             return dt;
+        if (DateTime.TryParseExact(str, LegacyDbfDateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dtExact))
+            return dtExact;
         if (DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt2))
             return dt2;
         return DateTime.Now;
