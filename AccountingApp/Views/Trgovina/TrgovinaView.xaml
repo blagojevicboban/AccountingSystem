@@ -450,6 +450,7 @@
                             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <Button x:Name="BtnOsveziBruto" Content="🔄 Osveži bilans" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,0,8,0" Click="BtnOsveziBruto_Click"/>
                                 <Button x:Name="BtnStampajRasporedArtikala" Content="📋 Raspored artikala (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,0,8,0" Click="BtnStampajRasporedArtikala_Click"/>
+                                <Button x:Name="BtnStampajStanjePoArtiklima" Content="📊 Stanje po artiklima (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,0,8,0" Click="BtnStampajStanjePoArtiklima_Click"/>
                                 <Button x:Name="BtnStampajRobniBruto" Content="🖨️ Štampaj PDF" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Click="BtnStampajRobniBruto_Click"/>
                             </StackPanel>
                         </Grid>

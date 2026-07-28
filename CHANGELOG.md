@@ -4,6 +4,20 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.20] - 2026-07-28
+
+### 🚀 Sintetički izveštaj "Stanje po artiklima" (Trgovina)
+- **Sintetički izveštaj Stanje po artiklima (`BtnStampajStanjePoArtiklima`)**: Novi sintetički PDF izveštaj (ekvivalent mat92 / MAT1.PRG) koji prikazuje objedinjeni ulaz, izlaz, stanje, duguje, potražuje i saldo po artiklima preko SVIH magacina preduzeća do zadatog datuma.
+
+### 🎨 UI / UX i Odzivnost
+- **Dugme za PDF štampu**: Dodata komanda `📊 Stanje po artiklima (PDF)` u zaglavlju sekcije Robni bruto bilans u Trgovini.
+- **Prikaz pakovanja u izveštajima**: Podatak o pakovanju artikla uključen u tabelarni prikaz i PDF izveštaje robnog bruto bilansa i stanja po artiklima.
+
+### ⚡ Optimizacija i Performanse
+- **RobniBrutoBilansService nadogradnja**: Proširen model `RobniBrutoBilansRed` sa poljem `Pakovanje` radi celovitog prikaza tehničkih i komercijalnih svojstava robe.
+
+---
+
 ## [1.0.19] - 2026-07-28
 
 ### 🚀 Višestruka štampa robnih kartica i analitika artikala (Trgovina)

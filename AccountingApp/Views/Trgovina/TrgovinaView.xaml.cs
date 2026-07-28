@@ -1657,4 +1657,39 @@ public partial class TrgovinaView : UserControl
             MessageBox.Show($"Greška pri štampi rasporeda artikala: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    /// <summary>Stanje po artiklima - sintetika (MAT1.PRG:mat92): uvek sumira preko SVIH magacina (bez obzira na filter magacina na ekranu), do zadatog datuma.</summary>
+    private async void BtnStampajStanjePoArtiklima_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+
+            DateTime? doDatuma = DpDoDatumaBruto?.SelectedDate;
+            var sviRedovi = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db, magacinId: null, doDatuma: doDatuma, pretraga: null);
+
+            if (sviRedovi.Count == 0)
+            {
+                MessageBox.Show("Nema podataka za stanje po artiklima.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
+            var pdfBytes = Services.PdfReportService.GenerisiStanjePoArtiklimaPdf(firma, sviRedovi, doDatuma);
+
+            string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Stanje_Po_Artiklima_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = tempFile,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri štampi stanja po artiklima: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 }

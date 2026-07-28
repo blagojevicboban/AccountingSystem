@@ -30,7 +30,7 @@
 - 📦 **Magacin i zalihe** — Materijalne kartice po ponderisanoj prosečnoj ceni (`M1`), Ulazi (`M2`), Trebovanja (`M3`) i **Primopredaje / Interni prenosi (`M4`)** (razlikuje Primopredaja/Zaduženje/Razduženje).
 - 🛒 **Trgovina i Fakture** — Veleprodajne (`MAT6`) i Maloprodajne (`MAT3`) kalkulacije (sa direktnom PDF štampom), **Računi-Otpremnice / Fakture (`MAT5`)** sa rokom dospelosti, rabatom i PDV-om (unos stavki po šifri artikla), i **Nivelacije cena (`MAT7`)** sa automatskom generacijom svođenjem na prosečnu nabavnu cenu, zbirnom PDF štampom i masovnim knjiženjem.
 - 🧾 **Poreske tarife** — samostalan šifarnik poreskih stopa (tarifni broj, porez %, poseban porez %) sa CRUD ekranom i PDF štampom.
-- 📊 **Robni bruto bilans i Analitika zaliha** — početno stanje/ulaz/izlaz/stanje po magacinu i artiklu, količinski i vrednosno, sa filterima, višestrukom štampom robnih kartica (više artikala ili svi magacini) i izveštajem „Raspored artikala (analitika MAT91)”.
+- 📊 **Robni bruto bilans i Analitika zaliha** — početno stanje/ulaz/izlaz/stanje po magacinu i artiklu, količinski i vrednosno, sa filterima, višestrukom štampom robnih kartica (više artikala ili svi magacini), izveštajem „Raspored artikala (analitika MAT91)” i sintetičkim izveštajem „Stanje po artiklima (sintetika MAT92)”.
 - 🏢 **Šifarnik artikala i Računopolagača** — samostalni CRUD ekrani (`MAT1`, `MAT2`) sa PDF štampom.
 
 ### Zajedničko

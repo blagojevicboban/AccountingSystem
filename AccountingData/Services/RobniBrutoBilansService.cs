@@ -14,6 +14,7 @@ public class RobniBrutoBilansRed
 
     public string SifraArtikla { get; set; } = string.Empty;
     public string NazivArtikla { get; set; } = string.Empty;
+    public string? Pakovanje { get; set; }
     public string JedinicaMere { get; set; } = "kom";
     public decimal Cena { get; set; }
 
@@ -88,6 +89,7 @@ public class RobniBrutoBilansService
                     NazivMagacina = nazivMag ?? g.Key.SifraMagacina,
                     SifraArtikla = g.Key.SifraArtikla,
                     NazivArtikla = art?.Naziv ?? g.Key.SifraArtikla,
+                    Pakovanje = art?.Pakovanje,
                     JedinicaMere = art?.JedinicaMere ?? "kom",
                     Cena = zadnjaCena,
 

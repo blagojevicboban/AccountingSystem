@@ -2216,6 +2216,119 @@ public class PdfReportService
         }).GeneratePdf();
     }
 
+    /// <summary>Stanje po artiklima - sintetika (MAT1.PRG:mat92) — jedan red po artiklu, sumirano preko svih magacina, do zadatog datuma. Artikli čiji su i stanje i saldo tačno 0 se izostavljaju (isto kao legacy), ali TOTAL red sabira baš svaku stavku, uključujući izostavljene.</summary>
+    public static byte[] GenerisiStanjePoArtiklimaPdf(Firma firma, List<RobniBrutoBilansRed> stavke, DateTime? doDatuma)
+    {
+        var poArtiklu = stavke
+            .GroupBy(s => new { s.SifraArtikla, s.NazivArtikla, s.Pakovanje, s.JedinicaMere })
+            .Select(g => new
+            {
+                g.Key.SifraArtikla,
+                g.Key.NazivArtikla,
+                g.Key.Pakovanje,
+                g.Key.JedinicaMere,
+                Ulaz = g.Sum(r => r.UlazKolicina),
+                Izlaz = g.Sum(r => r.IzlazKolicina),
+                Duguje = g.Sum(r => r.UlazVrednost),
+                Potrazuje = g.Sum(r => r.IzlazVrednost)
+            })
+            .OrderBy(a => a.SifraArtikla)
+            .ToList();
+
+        decimal tUlaz = poArtiklu.Sum(a => a.Ulaz);
+        decimal tIzlaz = poArtiklu.Sum(a => a.Izlaz);
+        decimal tDuguje = poArtiklu.Sum(a => a.Duguje);
+        decimal tPotrazuje = poArtiklu.Sum(a => a.Potrazuje);
+
+        var zaPrikaz = poArtiklu.Where(a => (a.Ulaz - a.Izlaz) != 0 || (a.Duguje - a.Potrazuje) != 0).ToList();
+
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4.Landscape());
+                page.Margin(25);
+                page.DefaultTextStyle(x => x.FontSize(8.5f).FontFamily("Calibri"));
+
+                page.Header().Row(row =>
+                {
+                    row.RelativeItem().Column(col =>
+                    {
+                        col.Item().Text(firma.Naziv).Bold().FontSize(12);
+                        col.Item().Text($"PIB: {firma.Pib} | MB: {firma.MaticniBroj}");
+                        col.Item().Text(firma.Adresa);
+                    });
+                    row.RelativeItem().AlignRight().Column(col =>
+                    {
+                        col.Item().Text("STANJE PO ARTIKLIMA").Bold().FontSize(14).FontColor(Colors.Blue.Darken2);
+                        col.Item().Text($"sa datumom: {(doDatuma.HasValue ? doDatuma.Value.ToString("dd.MM.yyyy") : DateTime.Now.ToString("dd.MM.yyyy"))}").Bold().FontSize(10);
+                    });
+                });
+
+                page.Content().PaddingVertical(10).Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.ConstantColumn(60);  // Šifra
+                        columns.RelativeColumn(2);   // Naziv
+                        columns.ConstantColumn(60);  // Pakovanje
+                        columns.ConstantColumn(40);  // J.M.
+                        columns.ConstantColumn(65);  // Ulaz
+                        columns.ConstantColumn(65);  // Izlaz
+                        columns.ConstantColumn(65);  // Stanje
+                        columns.ConstantColumn(75);  // Duguje
+                        columns.ConstantColumn(75);  // Potražuje
+                        columns.ConstantColumn(75);  // Saldo
+                    });
+
+                    table.Header(header =>
+                    {
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Šifra").Bold();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Artikal").Bold();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Pakovanje").Bold();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("J.M.").Bold();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Ulaz").Bold().AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Izlaz").Bold().AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Stanje").Bold().AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Duguje").Bold().AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Potražuje").Bold().AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Saldo").Bold().AlignRight();
+                    });
+
+                    foreach (var a in zaPrikaz)
+                    {
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text(a.SifraArtikla);
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text(a.NazivArtikla);
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text(a.Pakovanje ?? "");
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text(a.JedinicaMere);
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{a.Ulaz:N2}").AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{a.Izlaz:N2}").AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{(a.Ulaz - a.Izlaz):N2}").AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{a.Duguje:N2}").AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{a.Potrazuje:N2}").AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{(a.Duguje - a.Potrazuje):N2}").AlignRight();
+                    }
+
+                    table.Cell().ColumnSpan(4).PaddingVertical(5).PaddingHorizontal(2).Text("T O T A L :").Bold().AlignRight();
+                    table.Cell().PaddingVertical(5).PaddingHorizontal(2).Text($"{tUlaz:N2}").Bold().AlignRight();
+                    table.Cell().PaddingVertical(5).PaddingHorizontal(2).Text($"{tIzlaz:N2}").Bold().AlignRight();
+                    table.Cell().PaddingVertical(5).PaddingHorizontal(2).Text($"{(tUlaz - tIzlaz):N2}").Bold().AlignRight();
+                    table.Cell().PaddingVertical(5).PaddingHorizontal(2).Text($"{tDuguje:N2}").Bold().AlignRight();
+                    table.Cell().PaddingVertical(5).PaddingHorizontal(2).Text($"{tPotrazuje:N2}").Bold().AlignRight();
+                    table.Cell().PaddingVertical(5).PaddingHorizontal(2).Text($"{(tDuguje - tPotrazuje):N2}").Bold().AlignRight();
+                });
+
+                page.Footer().AlignRight().Text(x =>
+                {
+                    x.Span("Stranica ");
+                    x.CurrentPageNumber();
+                    x.Span(" od ");
+                    x.TotalPages();
+                });
+            });
+        }).GeneratePdf();
+    }
+
     public static byte[] GenerisiRobnuKarticuPdf(Firma firma, Magacin magacin, Artikal artikal, List<MaterijalnaKartica> kartice)
     {
         return Document.Create(container =>
