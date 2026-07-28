@@ -16,6 +16,11 @@ public partial class MagacinView : UserControl
     public MagacinView()
     {
         InitializeComponent();
+        LoadAllData();
+    }
+
+    private void LoadAllData()
+    {
         LoadMagaciniIArtikli();
         LoadUlazi();
         LoadTrebovanja();

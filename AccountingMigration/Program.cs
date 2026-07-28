@@ -125,6 +125,28 @@ class Program
             Console.WriteLine($"   --> Uvezeno {artikalCount} materijala/artikala!");
         }
 
+        // 5b. Import Poreskih tarifa (TARIFE.DBF)
+        string tarifeFile = Path.Combine(kor01Path, "TARIFE.DBF");
+        if (File.Exists(tarifeFile))
+        {
+            Console.WriteLine("🧾 Uvoz Poreskih tarifa (TARIFE.DBF)...");
+            var tarifeRows = DbfImportService.ReadRows(tarifeFile);
+            var existingTarife = db.PoreskeTarife.Select(t => t.TarifniBroj).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            int tarifaCount = 0;
+
+            foreach (var r in tarifeRows)
+            {
+                var tarifa = DbfImportService.MapPoreskaTarifa(r);
+                if (tarifa != null && existingTarife.Add(tarifa.TarifniBroj))
+                {
+                    db.PoreskeTarife.Add(tarifa);
+                    tarifaCount++;
+                }
+            }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"   --> Uvezeno {tarifaCount} poreskih tarifa!");
+        }
+
         // 6. Import Magacina (MAGACIN.DBF)
         string magFile = Path.Combine(kor01Path, "MAGACIN.DBF");
         if (File.Exists(magFile))

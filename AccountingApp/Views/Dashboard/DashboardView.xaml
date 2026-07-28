@@ -12,44 +12,101 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,24">
-                <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                    <StackPanel>
-                        <TextBlock Text="PROKNJIŽENI NALOZI" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
-                        <TextBlock x:Name="TxtUkupnoNaloga" Text="339" FontSize="28" FontWeight="Bold" Foreground="#2563EB" Margin="0,6,0,0"/>
-                        <TextBlock x:Name="TxtStavkiKnjizenja" Text="5.606 stavki knjiženja" FontSize="12" Foreground="#10B981" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </Border>
+            <!-- Finansijsko knjigovodstvo -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                <TextBlock Text="FINANSIJSKO KNJIGOVODSTVO" FontSize="12" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,10"/>
+                <UniformGrid Columns="3">
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="PROKNJIŽENI NALOZI" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtUkupnoNaloga" Text="339" FontSize="28" FontWeight="Bold" Foreground="#2563EB" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="TxtStavkiKnjizenja" Text="5.606 stavki knjiženja" FontSize="12" Foreground="#10B981" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
 
-                <Border Background="White" CornerRadius="12" Padding="20" Margin="6,0,6,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                    <StackPanel>
-                        <TextBlock Text="KONTNI PLAN" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
-                        <TextBlock x:Name="TxtUkupnoKonta" Text="42" FontSize="28" FontWeight="Bold" Foreground="#059669" Margin="0,6,0,0"/>
-                        <TextBlock Text="Aktivnih konta u bazi" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </Border>
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="6,0,6,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="KONTNI PLAN" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtUkupnoKonta" Text="42" FontSize="28" FontWeight="Bold" Foreground="#059669" Margin="0,6,0,0"/>
+                            <TextBlock Text="Aktivnih konta u bazi" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
 
-                <Border Background="White" CornerRadius="12" Padding="20" Margin="6,0,6,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                    <StackPanel>
-                        <TextBlock Text="ARTIKLI NA ZALIHAMA" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
-                        <TextBlock x:Name="TxtUkupnoMaterijala" Text="2.466" FontSize="28" FontWeight="Bold" Foreground="#D97706" Margin="0,6,0,0"/>
-                        <TextBlock Text="105 magacina" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </Border>
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="PARTNERI (ANALITIKA)" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtUkupnoPartnera" Text="4" FontSize="28" FontWeight="Bold" Foreground="#7C3AED" Margin="0,6,0,0"/>
+                            <TextBlock Text="Kupci i dobavljači" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+            </StackPanel>
 
-                <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                    <StackPanel>
-                        <TextBlock Text="PARTNERI (ANALITIKA)" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
-                        <TextBlock x:Name="TxtUkupnoPartnera" Text="4" FontSize="28" FontWeight="Bold" Foreground="#7C3AED" Margin="0,6,0,0"/>
-                        <TextBlock Text="Kupci i dobavljači" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
+            <!-- Robno knjigovodstvo (Trgovina - kalkulacije, racuni, primopredaje, nivelacije) -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,24">
+                <TextBlock Text="ROBNO KNJIGOVODSTVO" FontSize="12" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,10"/>
+                <UniformGrid Columns="3">
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="NEZAKNJIŽENI DOKUMENTI" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtNezaknjizeniDokumenti" Text="0" FontSize="28" FontWeight="Bold" Foreground="#D97706" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="TxtNezaknjizeniDetalji" Text=" " FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="6,0,6,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="FAKTURISANO (RAČUNI)" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtUkupnoFakturisano" Text="0 RSD" FontSize="28" FontWeight="Bold" Foreground="#2563EB" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="TxtBrojRacuna" Text="0 računa-otpremnica" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="KALKULACIJE" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtBrojKalkulacija" Text="0" FontSize="28" FontWeight="Bold" Foreground="#059669" Margin="0,6,0,0"/>
+                            <TextBlock Text="Ukupno u bazi" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+            </StackPanel>
+
+            <!-- Materijalno knjigovodstvo (Magacin - zalihe, robne kartice) -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,24">
+                <TextBlock Text="MATERIJALNO KNJIGOVODSTVO" FontSize="12" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,10"/>
+                <UniformGrid Columns="3">
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="ARTIKLI NA ZALIHAMA" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtUkupnoMaterijala" Text="2.466" FontSize="28" FontWeight="Bold" Foreground="#D97706" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="TxtBrojMagacina" Text="105 magacina" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="6,0,6,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="VREDNOST ZALIHA" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtVrednostZaliha" Text="0 RSD" FontSize="28" FontWeight="Bold" Foreground="#2563EB" Margin="0,6,0,0"/>
+                            <TextBlock Text="Saldo svih magacina" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="NEGATIVNA STANJA" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtNegativnaStanja" Text="0" FontSize="28" FontWeight="Bold" Foreground="#DC2626" Margin="0,6,0,0"/>
+                            <TextBlock Text="Artikala sa negativnom zalihom" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+            </StackPanel>
 
             <!-- Grafikoni -->
-            <Grid Grid.Row="2" Margin="0,0,0,24">
+            <Grid Grid.Row="3" Margin="0,0,0,24">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="320"/>
                     <RowDefinition Height="20"/>

@@ -31,6 +31,7 @@ public class AccountingDbContext : DbContext
     public DbSet<RacunOtpremnicaStavka> RacunOtpremnicaStavke => Set<RacunOtpremnicaStavka>();
     public DbSet<NivelacijaCena> NivelacijeCena => Set<NivelacijaCena>();
     public DbSet<NivelacijaStavka> NivelacijaStavke => Set<NivelacijaStavka>();
+    public DbSet<PoreskaTarifa> PoreskeTarife => Set<PoreskaTarifa>();
 
     public AccountingDbContext(DbContextOptions<AccountingDbContext> options) : base(options)
     {
@@ -46,6 +47,13 @@ public class AccountingDbContext : DbContext
         optionsBuilder.UseSqlite($"Data Source={dbPath}");
         var ctx = new AccountingDbContext(optionsBuilder.Options);
         ctx.Database.Migrate();
+
+        try
+        {
+            ctx.Database.ExecuteSqlRaw("ALTER TABLE PrimopredajaNalozi ADD COLUMN VrstaDokumenta TEXT DEFAULT 'Primopredaja';");
+        }
+        catch { }
+
         return ctx;
     }
 
@@ -113,6 +121,10 @@ public class AccountingDbContext : DbContext
 
         modelBuilder.Entity<Promena>()
             .HasIndex(p => p.Sifra);
+
+        modelBuilder.Entity<PoreskaTarifa>()
+            .HasIndex(t => t.TarifniBroj)
+            .IsUnique();
     }
 
     private const int PasswordSaltSize = 16;

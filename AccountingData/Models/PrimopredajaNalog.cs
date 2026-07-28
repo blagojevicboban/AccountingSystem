@@ -22,6 +22,10 @@ public class PrimopredajaNalog
     [MaxLength(20)]
     public string SifraMagacinaPrima { get; set; } = string.Empty;
 
+    [Required]
+    [MaxLength(30)]
+    public string VrstaDokumenta { get; set; } = "Primopredaja";
+
     public bool IsKnjizen { get; set; }
 
     public List<PrimopredajaStavka> Stavke { get; set; } = new();
@@ -50,4 +54,7 @@ public class PrimopredajaStavka
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal Iznos { get; set; }
+
+    [NotMapped]
+    public string? NazivArtikla { get; set; }
 }

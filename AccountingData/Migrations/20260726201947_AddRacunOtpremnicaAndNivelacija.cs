@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -51,7 +51,7 @@ namespace AccountingData.Migrations
                     DatumRacuna = table.Column<DateTime>(type: "TEXT", nullable: false),
                     RokPlacanja = table.Column<DateTime>(type: "TEXT", nullable: true),
                     PartnerId = table.Column<int>(type: "INTEGER", nullable: true),
-                    MagacinId = table.Column<int>(type: "INTEGER", nullable: false),
+                    MagacinId = table.Column<int>(type: "INTEGER", nullable: true),
                     Napomena = table.Column<string>(type: "TEXT", maxLength: 250, nullable: true),
                     UkupnoOsnovica = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
                     UkupnoRabat = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
@@ -121,7 +121,7 @@ namespace AccountingData.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     RacunOtpremnicaId = table.Column<int>(type: "INTEGER", nullable: false),
                     RedniBroj = table.Column<int>(type: "INTEGER", nullable: false),
-                    ArtikalId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ArtikalId = table.Column<int>(type: "INTEGER", nullable: true),
                     Kolicina = table.Column<decimal>(type: "decimal(18, 3)", nullable: false),
                     ProdajnaCena = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
                     RabatProcenat = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),

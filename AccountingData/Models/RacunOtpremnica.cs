@@ -19,7 +19,7 @@ public class RacunOtpremnica
     [ForeignKey(nameof(PartnerId))]
     public Partner? Partner { get; set; }
 
-    public int MagacinId { get; set; }
+    public int? MagacinId { get; set; }
     [ForeignKey(nameof(MagacinId))]
     public Magacin? Magacin { get; set; }
 
@@ -45,6 +45,23 @@ public class RacunOtpremnica
     public Nalog? Nalog { get; set; }
 
     public List<RacunOtpremnicaStavka> Stavke { get; set; } = new();
+
+    [NotMapped]
+    public string? BrojOtpremnice { get; set; }
+    [NotMapped]
+    public DateTime DatumOtpremnice { get => DatumRacuna; set => DatumRacuna = value; }
+    [NotMapped]
+    public string KontoKupca { get; set; } = string.Empty;
+    [NotMapped]
+    public int RokPlacanjaDana { get; set; } = 15;
+    [NotMapped]
+    public string? NacinPlacanja { get; set; }
+    [NotMapped]
+    public decimal IznosBezPdv { get => UkupnoOsnovica; set => UkupnoOsnovica = value; }
+    [NotMapped]
+    public decimal PdvIznos { get => UkupnoPdv; set => UkupnoPdv = value; }
+    [NotMapped]
+    public decimal UkupanIznos { get => UkupnoZaUplatu; set => UkupnoZaUplatu = value; }
 }
 
 public class RacunOtpremnicaStavka
@@ -58,7 +75,7 @@ public class RacunOtpremnicaStavka
 
     public int RedniBroj { get; set; }
 
-    public int ArtikalId { get; set; }
+    public int? ArtikalId { get; set; }
     [ForeignKey(nameof(ArtikalId))]
     public Artikal? Artikal { get; set; }
 
@@ -82,4 +99,25 @@ public class RacunOtpremnicaStavka
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal Ukupno { get; set; }
+
+    [NotMapped]
+    public string SifraArtikla { get; set; } = string.Empty;
+
+    [NotMapped]
+    public string? NazivArtikla { get; set; }
+
+    [NotMapped]
+    public decimal Cena { get => ProdajnaCena; set => ProdajnaCena = value; }
+
+    [NotMapped]
+    public decimal PdvProcenat { get => StopaPdv; set => StopaPdv = value; }
+
+    [NotMapped]
+    public decimal IznosBezPdv { get => Osnovica; set => Osnovica = value; }
+
+    [NotMapped]
+    public decimal PdvIznos { get => IznosPdv; set => IznosPdv = value; }
+
+    [NotMapped]
+    public decimal UkupanIznos { get => Ukupno; set => Ukupno = value; }
 }

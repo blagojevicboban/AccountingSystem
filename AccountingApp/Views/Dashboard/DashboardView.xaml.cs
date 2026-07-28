@@ -39,12 +39,40 @@ public partial class DashboardView : UserControl
             int kontaCount = await db.Konta.CountAsync();
             int matCount = await db.Artikli.CountAsync();
             int partneriCount = await db.Partneri.CountAsync();
+            int magacinaCount = await db.Magacini.CountAsync();
 
             TxtUkupnoNaloga.Text = proknjizenoCount.ToString("N0");
             TxtStavkiKnjizenja.Text = $"{stavkiCount:N0} stavki knjiženja";
             TxtUkupnoKonta.Text = kontaCount.ToString("N0");
             TxtUkupnoMaterijala.Text = matCount.ToString("N0");
+            TxtBrojMagacina.Text = $"{magacinaCount:N0} magacina";
             TxtUkupnoPartnera.Text = partneriCount.ToString("N0");
+
+            // ===== ROBNO KNJIGOVODSTVO =====
+            int nezaknjizenoKalk = await db.Kalkulacije.CountAsync(k => !k.IsKnjizen);
+            int nezaknjizenoRacuni = await db.RacuniOtpremnice.CountAsync(r => !r.IsKnjizen);
+            int nezaknjizenoPrimopredaje = await db.PrimopredajaNalozi.CountAsync(p => !p.IsKnjizen);
+            int nezaknjizenoNivelacije = await db.NivelacijeCena.CountAsync(n => !n.IsKnjizen);
+            int ukupnoNezaknjizeno = nezaknjizenoKalk + nezaknjizenoRacuni + nezaknjizenoPrimopredaje + nezaknjizenoNivelacije;
+
+            TxtNezaknjizeniDokumenti.Text = ukupnoNezaknjizeno.ToString("N0");
+            TxtNezaknjizeniDetalji.Text = $"Kalk: {nezaknjizenoKalk}, Rač: {nezaknjizenoRacuni}, Prim: {nezaknjizenoPrimopredaje}, Niv: {nezaknjizenoNivelacije}";
+
+            decimal ukupnoFakturisano = await db.RacuniOtpremnice.SumAsync(r => (decimal?)r.UkupanIznos) ?? 0m;
+            int brojRacuna = await db.RacuniOtpremnice.CountAsync();
+            int brojKalkulacija = await db.Kalkulacije.CountAsync();
+
+            TxtUkupnoFakturisano.Text = $"{ukupnoFakturisano:N0} RSD";
+            TxtBrojRacuna.Text = $"{brojRacuna:N0} računa-otpremnica";
+            TxtBrojKalkulacija.Text = brojKalkulacija.ToString("N0");
+
+            // ===== MATERIJALNO KNJIGOVODSTVO =====
+            var brutoBilans = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db);
+            decimal vrednostZaliha = brutoBilans.Sum(r => r.SaldoVrednosni);
+            int negativnaStanja = brutoBilans.Count(r => r.SaldoKolicinski < 0);
+
+            TxtVrednostZaliha.Text = $"{vrednostZaliha:N0} RSD";
+            TxtNegativnaStanja.Text = negativnaStanja.ToString("N0");
 
             var recentNalozi = await db.Nalozi
                 .OrderByDescending(n => n.NalogId)

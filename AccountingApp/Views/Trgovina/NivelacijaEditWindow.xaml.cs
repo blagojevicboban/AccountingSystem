@@ -1,133 +1,124 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
+using Microsoft.EntityFrameworkCore;
 using AccountingData;
 using AccountingData.Models;
-using AccountingData.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace AccountingApp.Views.Trgovina;
 
 public partial class NivelacijaEditWindow : Window
 {
-    private readonly ObservableCollection<NivelacijaStavka> _stavke = new();
-    private int _existingId = 0;
-    private List<Artikal> _sviArtikli = new();
+    private readonly AccountingDbContext _db;
+    public NivelacijaCena Nivelacija { get; private set; }
+    public ObservableCollection<NivelacijaStavka> StavkeCollection { get; set; }
 
-    public NivelacijaEditWindow(NivelacijaCena? existing = null)
+    public NivelacijaEditWindow(AccountingDbContext db, NivelacijaCena? nivelacija = null)
     {
         InitializeComponent();
-        DgStavke.ItemsSource = _stavke;
-        _stavke.CollectionChanged += (s, e) => Preračunaj();
+        _db = db;
 
-        if (existing != null)
+        Nivelacija = nivelacija ?? new NivelacijaCena
         {
-            _existingId = existing.NivelacijaCenaId;
-            TxtBrojNivelacije.Text = existing.BrojNivelacije;
-            DpDatum.SelectedDate = existing.DatumNivelacije;
-            CmbMagacin.SelectedValue = existing.MagacinId;
+            BrojNivelacije = (db.NivelacijeCena.Count() + 1).ToString(),
+            DatumNivelacije = DateTime.Now
+        };
 
-            foreach (var st in existing.Stavke)
-            {
-                _stavke.Add(new NivelacijaStavka
-                {
-                    RedniBroj = st.RedniBroj,
-                    ArtikalId = st.ArtikalId,
-                    KolicinaZaliha = st.KolicinaZaliha,
-                    StaraCena = st.StaraCena,
-                    NovaCena = st.NovaCena,
-                    RazlikaPoJedinici = st.RazlikaPoJedinici,
-                    UkupnaRazlika = st.UkupnaRazlika
-                });
-            }
-            Title = $"Izmena nivelacije #{existing.BrojNivelacije}";
-        }
-        else
-        {
-            DpDatum.SelectedDate = DateTime.Now;
-            Title = "Nova nivelacija cena";
-            _ = PredloziBrojAsync();
-        }
+        StavkeCollection = new ObservableCollection<NivelacijaStavka>(Nivelacija.Stavke);
+        DgStavke.ItemsSource = StavkeCollection;
 
-        _ = UcitajSifarnikeAsync();
+        UcitajMagacine();
+        PopuniPolja();
+        PracunajUkupno();
     }
 
-    private async Task PredloziBrojAsync()
+    private void UcitajMagacine()
     {
-        try
+        var magacini = _db.Magacini.ToList();
+        CmbMagacin.ItemsSource = magacini;
+        if (Nivelacija.MagacinId.HasValue)
         {
-            var options = new DbContextOptionsBuilder<AccountingDbContext>()
-                .UseSqlite($"Data Source={AppConfig.DbPath}")
-                .Options;
-            using var db = new AccountingDbContext(options);
-
-            var brojevi = await db.NivelacijeCena.Select(n => n.BrojNivelacije).ToListAsync();
-            int max = 0;
-            foreach (var b in brojevi)
-            {
-                if (int.TryParse(b, out var num) && num > max) max = num;
-            }
-            TxtBrojNivelacije.Text = (max + 1).ToString();
+            CmbMagacin.SelectedValue = Nivelacija.MagacinId.Value;
         }
-        catch { }
+        else if (magacini.Count > 0)
+        {
+            CmbMagacin.SelectedIndex = 0;
+        }
     }
 
-    private async Task UcitajSifarnikeAsync()
+    private void PopuniPolja()
     {
-        try
-        {
-            var options = new DbContextOptionsBuilder<AccountingDbContext>()
-                .UseSqlite($"Data Source={AppConfig.DbPath}")
-                .Options;
-            using var db = new AccountingDbContext(options);
-
-            var magacini = await db.Magacini.OrderBy(m => m.SifraMagacina).ToListAsync();
-            CmbMagacin.ItemsSource = magacini;
-            if (CmbMagacin.SelectedIndex < 0 && magacini.Count > 0) CmbMagacin.SelectedIndex = 0;
-
-            _sviArtikli = await db.Artikli.OrderBy(a => a.Naziv).ToListAsync();
-            ColArtikli.ItemsSource = _sviArtikli;
-            ColArtikli.DisplayMemberPath = "Naziv";
-            ColArtikli.SelectedValuePath = "ArtikalId";
-        }
-        catch { }
-    }
-
-    private void Preračunaj()
-    {
-        decimal tot = 0m;
-        foreach (var s in _stavke)
-        {
-            s.RazlikaPoJedinici = s.NovaCena - s.StaraCena;
-            s.UkupnaRazlika = s.KolicinaZaliha * s.RazlikaPoJedinici;
-            tot += s.UkupnaRazlika;
-        }
-
-        TxtUkupnaRazlika.Text = $"{tot:N2} RSD";
+        TxtBrojNivelacije.Text = Nivelacija.BrojNivelacije;
+        DpDatum.SelectedDate = Nivelacija.DatumNivelacije;
+        TxtOpis.Text = Nivelacija.Opis;
     }
 
     private void BtnDodajStavku_Click(object sender, RoutedEventArgs e)
     {
-        _stavke.Add(new NivelacijaStavka { RedniBroj = _stavke.Count + 1, KolicinaZaliha = 1m });
+        var nova = new NivelacijaStavka
+        {
+            RedniBroj = StavkeCollection.Count + 1,
+            KolicinaZaliha = 1,
+            StaraCena = 0,
+            NovaCena = 0
+        };
+        StavkeCollection.Add(nova);
+        PracunajUkupno();
     }
 
-    private void BtnObrisiStavku_Click(object sender, RoutedEventArgs e)
+    private void BtnUkloniStavku_Click(object sender, RoutedEventArgs e)
     {
-        if (DgStavke.SelectedItem is NivelacijaStavka st)
+        if (DgStavke.SelectedItem is NivelacijaStavka selected)
         {
-            _stavke.Remove(st);
-            int rb = 1;
-            foreach (var item in _stavke) item.RedniBroj = rb++;
+            StavkeCollection.Remove(selected);
+            RenumerisiStavke();
+            PracunajUkupno();
+        }
+    }
+
+    private void RenumerisiStavke()
+    {
+        int rbr = 1;
+        foreach (var st in StavkeCollection)
+        {
+            st.RedniBroj = rbr++;
         }
     }
 
     private void DgStavke_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
     {
-        Dispatcher.BeginInvoke(new Action(Preračunaj), System.Windows.Threading.DispatcherPriority.Background);
+        if (e.Row.Item is NivelacijaStavka st)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (!string.IsNullOrWhiteSpace(st.SifraArtikla))
+                {
+                    var art = _db.Artikli.FirstOrDefault(a => a.SifraArtikla == st.SifraArtikla);
+                    if (art != null)
+                    {
+                        st.ArtikalId = art.ArtikalId;
+                        st.NazivArtikla = art.Naziv;
+                        st.JedinicaMere = art.JedinicaMere;
+                        if (st.StaraCena == 0) st.StaraCena = art.ProdajnaCena;
+                    }
+                }
+
+                st.RazlikaPoJedinici = st.NovaCena - st.StaraCena;
+                st.UkupnaRazlika = st.KolicinaZaliha * st.RazlikaPoJedinici;
+                PracunajUkupno();
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
     }
 
-    private async void BtnSačuvaj_Click(object sender, RoutedEventArgs e)
+    private void PracunajUkupno()
+    {
+        decimal ukupno = StavkeCollection.Sum(s => s.UkupnaRazlika);
+        TxtUkupno.Text = $"Ukupna razlika: {ukupno:N2} RSD";
+    }
+
+    private void BtnSacuvaj_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(TxtBrojNivelacije.Text))
         {
@@ -135,58 +126,24 @@ public partial class NivelacijaEditWindow : Window
             return;
         }
 
-        if (CmbMagacin.SelectedValue == null)
+        Nivelacija.BrojNivelacije = TxtBrojNivelacije.Text.Trim();
+        Nivelacija.DatumNivelacije = DpDatum.SelectedDate ?? DateTime.Now;
+        Nivelacija.Opis = TxtOpis.Text.Trim();
+        if (CmbMagacin.SelectedValue != null)
         {
-            MessageBox.Show("Molimo izaberite magacin.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
+            Nivelacija.MagacinId = (int)CmbMagacin.SelectedValue;
         }
 
-        if (_stavke.Count == 0)
-        {
-            MessageBox.Show("Nivelacija mora sadržati bar jednu stavku.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
+        Nivelacija.Stavke = StavkeCollection.ToList();
+        Nivelacija.UkupnoRazlika = StavkeCollection.Sum(s => s.UkupnaRazlika);
 
-        var nivelacija = new NivelacijaCena
-        {
-            NivelacijaCenaId = _existingId,
-            BrojNivelacije = TxtBrojNivelacije.Text.Trim(),
-            DatumNivelacije = DpDatum.SelectedDate ?? DateTime.Now,
-            MagacinId = (int)CmbMagacin.SelectedValue,
-            Stavke = _stavke.ToList()
-        };
-
-        try
-        {
-            var options = new DbContextOptionsBuilder<AccountingDbContext>()
-                .UseSqlite($"Data Source={AppConfig.DbPath}")
-                .Options;
-            using var db = new AccountingDbContext(options);
-
-            var service = new NivelacijaService(db);
-            await service.SaveNivelacijuAsync(nivelacija);
-
-            DialogResult = true;
-            Close();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Greška pri čuvanju nivelacije: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private void BtnOtkazi_Click(object sender, RoutedEventArgs e)
-    {
-        DialogResult = false;
+        DialogResult = true;
         Close();
     }
 
-    private void Window_KeyDown(object sender, KeyEventArgs e)
+    private void BtnOdustani_Click(object sender, RoutedEventArgs e)
     {
-        if (e.Key == Key.Escape)
-        {
-            DialogResult = false;
-            Close();
-        }
+        DialogResult = false;
+        Close();
     }
 }

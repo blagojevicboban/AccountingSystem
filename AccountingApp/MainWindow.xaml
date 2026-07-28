@@ -74,10 +74,10 @@
                         <RadioButton x:Name="BtnPartneri" Content="👥 Partneri (Analitika)" Style="{StaticResource NavButtonStyle}" Click="NavPartneri_Click"/>
 
                         <Separator Background="#334155" Margin="16,8"/>
-                        <TextBlock Text="MAGACIN I TRGOVINA" FontSize="10" FontWeight="SemiBold"
+                        <TextBlock Text="ROBNO KNJIGOVODSTVO I MAGACINI" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
-                        <RadioButton x:Name="BtnMagacin" Content="📦 Magacin i zalihe" Style="{StaticResource NavButtonStyle}" Click="NavMagacin_Click"/>
-                        <RadioButton x:Name="BtnKalkulacije" Content="🛒 Trgovina i fakture" Style="{StaticResource NavButtonStyle}" Click="NavKalkulacije_Click"/>
+                        <RadioButton x:Name="BtnKalkulacije" Content="📦 Robno knjigovodstvo" Style="{StaticResource NavButtonStyle}" Click="NavKalkulacije_Click"/>
+                        <RadioButton x:Name="BtnMagacin" Content="🏭 Ulazi i zalihe magacina" Style="{StaticResource NavButtonStyle}" Click="NavMagacin_Click"/>
 
                         <Separator Background="#334155" Margin="16,8"/>
                         <TextBlock Text="IZVEŠTAJI" FontSize="10" FontWeight="SemiBold"

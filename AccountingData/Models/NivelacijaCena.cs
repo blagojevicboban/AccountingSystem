@@ -14,7 +14,7 @@ public class NivelacijaCena
 
     public DateTime DatumNivelacije { get; set; } = DateTime.Now;
 
-    public int MagacinId { get; set; }
+    public int? MagacinId { get; set; }
     [ForeignKey(nameof(MagacinId))]
     public Magacin? Magacin { get; set; }
 
@@ -31,6 +31,12 @@ public class NivelacijaCena
     public Nalog? Nalog { get; set; }
 
     public List<NivelacijaStavka> Stavke { get; set; } = new();
+
+    [NotMapped]
+    public string SifraMagacina { get; set; } = string.Empty;
+
+    [NotMapped]
+    public string NazivMagacina { get; set; } = string.Empty;
 }
 
 public class NivelacijaStavka
@@ -44,7 +50,7 @@ public class NivelacijaStavka
 
     public int RedniBroj { get; set; }
 
-    public int ArtikalId { get; set; }
+    public int? ArtikalId { get; set; }
     [ForeignKey(nameof(ArtikalId))]
     public Artikal? Artikal { get; set; }
 
@@ -62,4 +68,13 @@ public class NivelacijaStavka
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal UkupnaRazlika { get; set; }
+
+    [NotMapped]
+    public string SifraArtikla { get; set; } = string.Empty;
+
+    [NotMapped]
+    public string NazivArtikla { get; set; } = string.Empty;
+
+    [NotMapped]
+    public string JedinicaMere { get; set; } = "kom";
 }

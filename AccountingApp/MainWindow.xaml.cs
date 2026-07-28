@@ -126,7 +126,7 @@ public partial class MainWindow : Window
 
     private void NavKalkulacije_Click(object sender, RoutedEventArgs e)
     {
-        TxtHeaderTitle.Text = "🛒 Trgovina i fakture";
+        TxtHeaderTitle.Text = "📦 Robno knjigovodstvo (Kalkulacije, Otpremnice, Nivelacije, Robne kartice, Računopolagači)";
         MainContentHost.Content = new TrgovinaView();
     }
 
