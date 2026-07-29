@@ -137,7 +137,7 @@ public partial class IzvestajiView : UserControl
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new AccountingData.Models.Firma { Naziv = "ARHIBEL - 2026" };
 
-            byte[] pdfBytes = PdfReportService.GenerisiBrutoBilansPdf(firma, redovi, "ZAKLJUČNI LIST", odDatuma, doDatuma);
+            byte[] pdfBytes = PdfReportService.GenerisiZakljucniListPdf(firma, redovi, "ZAKLJUČNI LIST", odDatuma, doDatuma);
 
             string pdfPath = Path.Combine(Path.GetTempPath(), $"ZakljucniList_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await File.WriteAllBytesAsync(pdfPath, pdfBytes);

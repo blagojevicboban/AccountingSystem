@@ -4,6 +4,15 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.27] - 2026-07-29
+
+### 🚀 Nove Funkcionalnosti & Rekapitulacija
+- **Rekapitulacija po klasama na Zaključnom listu (`GetZakljucniListAsync`)**:
+  - Implementirana sekcija **R E K A P I T U L A C I J A** na dnu Zaključnog lista sa potpunim pregledom po svim klasama (`K L A S A : 0` do `K L A S A : 7`) i ukupnim zbirom `K L A S A : U` (identično proceduri `gk5()` iz `FIN1.PRG` i legacy ispisu).
+  - Dodate linije za potpis u PDF-u: **`OBRAČUNAO`**, **`ŠEF RAČUNOVODSTVA`** i **`RUKOVODILAC`**.
+
+---
+
 ## [1.0.26] - 2026-07-29
 
 ### 🚀 Nove Funkcionalnosti & Prikazi

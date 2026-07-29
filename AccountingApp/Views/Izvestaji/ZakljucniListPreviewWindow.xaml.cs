@@ -9,7 +9,7 @@ namespace AccountingApp.Views.Izvestaji;
 
 public partial class ZakljucniListPreviewWindow : Window
 {
-    public ZakljucniListPreviewWindow(string naslov, List<BrutoBilansRed> redovi, DateTime? odDatuma, DateTime? doDatuma)
+    public ZakljucniListPreviewWindow(string naslov, List<ZakljucniListRed> redovi, DateTime? odDatuma, DateTime? doDatuma)
     {
         InitializeComponent();
 
@@ -21,10 +21,17 @@ public partial class ZakljucniListPreviewWindow : Window
         DgZakljucniList.ItemsSource = redovi;
 
         var detalji = redovi.Where(r => r.Tip == BrutoBilansRedTip.Detalj).ToList();
-        TxtUkupnoDuguje.Text = detalji.Sum(r => r.Duguje).ToString("N2");
-        TxtUkupnoPotrazuje.Text = detalji.Sum(r => r.Potrazuje).ToString("N2");
-        TxtUkupnoSaldoDuguje.Text = detalji.Sum(r => r.SaldoDuguje).ToString("N2");
-        TxtUkupnoSaldoPotrazuje.Text = detalji.Sum(r => r.SaldoPotrazuje).ToString("N2");
+        TxtPocDug.Text = detalji.Sum(r => r.PocetnoDuguje).ToString("N2");
+        TxtPocPot.Text = detalji.Sum(r => r.PocetnoPotrazuje).ToString("N2");
+
+        TxtPromDug.Text = detalji.Sum(r => r.PrometDuguje).ToString("N2");
+        TxtPromPot.Text = detalji.Sum(r => r.PrometPotrazuje).ToString("N2");
+
+        TxtUkDug.Text = detalji.Sum(r => r.UkupnoDuguje).ToString("N2");
+        TxtUkPot.Text = detalji.Sum(r => r.UkupnoPotrazuje).ToString("N2");
+
+        TxtSalDug.Text = detalji.Sum(r => r.SaldoDuguje).ToString("N2");
+        TxtSalPot.Text = detalji.Sum(r => r.SaldoPotrazuje).ToString("N2");
     }
 
     private void BtnExportExcelZakljucniList_Click(object sender, RoutedEventArgs e)
@@ -32,13 +39,12 @@ public partial class ZakljucniListPreviewWindow : Window
             DgZakljucniList,
             TxtNaslov.Text,
             "Zakljucni_List",
-            jeStavkaZaZbir: item => item is BrutoBilansRed red && red.Tip == BrutoBilansRedTip.Detalj,
-            rowStyler: item => item is BrutoBilansRed red
+            jeStavkaZaZbir: item => item is ZakljucniListRed red && red.Tip == BrutoBilansRedTip.Detalj,
+            rowStyler: item => item is ZakljucniListRed red
                 ? red.Tip switch
                 {
-                    BrutoBilansRedTip.SintetikaTotal => ("#F8FAFC", true),
-                    BrutoBilansRedTip.KlasaTotal     => ("#E2E8F0", true),
-                    _                                 => (null, false)
+                    BrutoBilansRedTip.KlasaTotal => ("#E2E8F0", true),
+                    _                             => (null, false)
                 }
                 : (null, false));
 }

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using AccountingData.Models;
 
 namespace AccountingData.Services;
+
 
 public enum BrutoBilansRedTip
 {
@@ -177,59 +179,104 @@ public class BrutoBilansService
     }
 
     /// <summary>
-    /// Zaključni list — totali po sintetičkim (3-cifrenim) kontima za period, analogno
-    /// legacy "T O T A L sintetickog konta" sabircima iz brut_bil (FIN2.PRG:1661-1674,
-    /// sint_konto:=left(kartica->konto,3)). Softek isto zove ovaj izveštaj "transaction
-    /// totals for basic accounts (three-digit) for a specific period". Računa se iz istih
-    /// po-konto redova kao <see cref="GetBrutoBilansAsync"/> da bi SaldoDuguje/SaldoPotrazuje
-    /// totali bili sabirci već predznak-razdvojenih saldi pojedinačnih konta, a ne neto
-    /// razlika bruto prometa grupe (vidi napomenu na <see cref="GetBrutoBilansSaTotalimaAsync"/>).
+    /// <summary>
+    /// Zaključni list — tačno prema proceduri gk5() iz FIN1.PRG i 3-Zakljucni list.txt.
+    /// Obračunava po sintetičkim kontima (3-cifrenim) sa 8 finansijskih kolona:
+    /// Početno stanje (Duguje/Potražuje), Promet bez početnog stanja (Duguje/Potražuje),
+    /// Ukupni promet (Duguje/Potražuje) i Saldo (Duguje/Potražuje), uz subtotale po klasama.
     /// </summary>
-    public async Task<List<BrutoBilansRed>> GetZakljucniListAsync(DateTime? odDatuma = null, DateTime? doDatuma = null)
+    public async Task<List<ZakljucniListRed>> GetZakljucniListAsync(DateTime? odDatuma = null, DateTime? doDatuma = null)
     {
-        var detalji = await GetBrutoBilansAsync(odDatuma, doDatuma);
+        var query = _db.StavkeNaloga
+            .Include(s => s.Nalog)
+            .Where(s => s.Nalog != null && s.Nalog.IsKnjizen);
+
+        if (odDatuma.HasValue)
+            query = query.Where(s => s.Nalog!.DatumNaloga >= odDatuma.Value.Date);
+        if (doDatuma.HasValue)
+            query = query.Where(s => s.Nalog!.DatumNaloga <= doDatuma.Value.Date.AddDays(1).AddTicks(-1));
+
+        var stavke = await query.ToListAsync();
 
         var sintetikaMap = await _db.Konta
             .Where(k => k.IsSintetika)
             .ToDictionaryAsync(k => k.BrojKonta, k => k.NazivKonta);
 
-        var sintetickiRedovi = detalji
-            .GroupBy(r => r.BrojKonta.Length >= 3 ? r.BrojKonta.Substring(0, 3) : r.BrojKonta)
-            .Select(g => new BrutoBilansRed
+        var kontaMap = await _db.Konta
+            .ToDictionaryAsync(k => k.BrojKonta, k => k.NazivKonta);
+
+        var grupisano = stavke
+            .GroupBy(s => s.BrojKonta.Length >= 3 ? s.BrojKonta.Substring(0, 3) : s.BrojKonta)
+            .Select(g =>
             {
-                BrojKonta = g.Key,
-                NazivKonta = sintetikaMap.TryGetValue(g.Key, out var naziv) ? naziv : (g.FirstOrDefault(x => !string.IsNullOrEmpty(x.NazivKonta))?.NazivKonta ?? g.Key),
-                Duguje = g.Sum(x => x.Duguje),
-                Potrazuje = g.Sum(x => x.Potrazuje),
-                SaldoDuguje = g.Sum(x => x.SaldoDuguje),
-                SaldoPotrazuje = g.Sum(x => x.SaldoPotrazuje),
-                Tip = BrutoBilansRedTip.Detalj
+                var sintKonto = g.Key;
+                string naziv = sintetikaMap.TryGetValue(sintKonto, out var n)
+                    ? n
+                    : (g.Select(x => kontaMap.TryGetValue(x.BrojKonta, out var kn) ? kn : null)
+                         .FirstOrDefault(x => !string.IsNullOrEmpty(x)) ?? sintKonto);
+
+                decimal pocDug = g.Where(s => IsPocetnoStanje(s.Nalog!)).Sum(s => s.Duguje);
+                decimal pocPot = g.Where(s => IsPocetnoStanje(s.Nalog!)).Sum(s => s.Potrazuje);
+
+                decimal promDug = g.Where(s => !IsPocetnoStanje(s.Nalog!)).Sum(s => s.Duguje);
+                decimal promPot = g.Where(s => !IsPocetnoStanje(s.Nalog!)).Sum(s => s.Potrazuje);
+
+                decimal ukDug = pocDug + promDug;
+                decimal ukPot = pocPot + promPot;
+
+                decimal razlika = ukDug - ukPot;
+                decimal salDug = razlika > 0 ? razlika : 0m;
+                decimal salPot = razlika < 0 ? -razlika : 0m;
+
+                return new ZakljucniListRed
+                {
+                    BrojKonta = sintKonto,
+                    NazivKonta = naziv,
+                    PocetnoDuguje = pocDug,
+                    PocetnoPotrazuje = pocPot,
+                    PrometDuguje = promDug,
+                    PrometPotrazuje = promPot,
+                    UkupnoDuguje = ukDug,
+                    UkupnoPotrazuje = ukPot,
+                    SaldoDuguje = salDug,
+                    SaldoPotrazuje = salPot,
+                    Tip = BrutoBilansRedTip.Detalj
+                };
             })
             .OrderBy(r => r.BrojKonta)
             .ToList();
 
-        var rezultat = new List<BrutoBilansRed>();
+        var rezultat = new List<ZakljucniListRed>();
         string? tekucaKlasa = null;
-        decimal klasaDuguje = 0, klasaPotrazuje = 0, klasaSaldoDuguje = 0, klasaSaldoPotrazuje = 0;
+
+        decimal klasaPocDug = 0, klasaPocPot = 0;
+        decimal klasaPromDug = 0, klasaPromPot = 0;
+        decimal klasaUkDug = 0, klasaUkPot = 0;
 
         void ZatvoriKlasu(string klasaOznaka)
         {
-            rezultat.Add(new BrutoBilansRed
+            decimal razlika = klasaUkDug - klasaUkPot;
+            rezultat.Add(new ZakljucniListRed
             {
-                NazivKonta = $"KLASA: {klasaOznaka}",
-                Duguje = klasaDuguje,
-                Potrazuje = klasaPotrazuje,
-                SaldoDuguje = klasaSaldoDuguje,
-                SaldoPotrazuje = klasaSaldoPotrazuje,
+                BrojKonta = "",
+                NazivKonta = $"KLASA : {klasaOznaka}",
+                PocetnoDuguje = klasaPocDug,
+                PocetnoPotrazuje = klasaPocPot,
+                PrometDuguje = klasaPromDug,
+                PrometPotrazuje = klasaPromPot,
+                UkupnoDuguje = klasaUkDug,
+                UkupnoPotrazuje = klasaUkPot,
+                SaldoDuguje = razlika > 0 ? razlika : 0m,
+                SaldoPotrazuje = razlika < 0 ? -razlika : 0m,
                 Tip = BrutoBilansRedTip.KlasaTotal
             });
-            klasaDuguje = 0;
-            klasaPotrazuje = 0;
-            klasaSaldoDuguje = 0;
-            klasaSaldoPotrazuje = 0;
+
+            klasaPocDug = klasaPocPot = 0;
+            klasaPromDug = klasaPromPot = 0;
+            klasaUkDug = klasaUkPot = 0;
         }
 
-        foreach (var red in sintetickiRedovi)
+        foreach (var red in grupisano)
         {
             var klasaOznaka = red.BrojKonta.Length > 0 ? red.BrojKonta[0].ToString() : "";
             if (tekucaKlasa != null && klasaOznaka != tekucaKlasa)
@@ -238,16 +285,117 @@ public class BrutoBilansService
             }
 
             rezultat.Add(red);
-            klasaDuguje += red.Duguje;
-            klasaPotrazuje += red.Potrazuje;
-            klasaSaldoDuguje += red.SaldoDuguje;
-            klasaSaldoPotrazuje += red.SaldoPotrazuje;
+            klasaPocDug += red.PocetnoDuguje;
+            klasaPocPot += red.PocetnoPotrazuje;
+            klasaPromDug += red.PrometDuguje;
+            klasaPromPot += red.PrometPotrazuje;
+            klasaUkDug += red.UkupnoDuguje;
+            klasaUkPot += red.UkupnoPotrazuje;
             tekucaKlasa = klasaOznaka;
         }
 
         if (tekucaKlasa != null) ZatvoriKlasu(tekucaKlasa);
 
+        // Rekapitulacija po klasama na dnu (K L A S A : 0..7 i K L A S A : U)
+        rezultat.Add(new ZakljucniListRed
+        {
+            BrojKonta = "",
+            NazivKonta = "R E K A P I T U L A C I J A",
+            Tip = BrutoBilansRedTip.SintetikaTotal
+        });
+
+        var klaseTotali = rezultat
+            .Where(r => r.Tip == BrutoBilansRedTip.KlasaTotal)
+            .ToList();
+
+        decimal rekapUkPocDug = 0, rekapUkPocPot = 0;
+        decimal rekapUkPromDug = 0, rekapUkPromPot = 0;
+        decimal rekapUkUkDug = 0, rekapUkUkPot = 0;
+        decimal rekapUkSalDug = 0, rekapUkSalPot = 0;
+
+        foreach (var kt in klaseTotali)
+        {
+            var rKlasa = new ZakljucniListRed
+            {
+                BrojKonta = "",
+                NazivKonta = kt.NazivKonta.Replace("KLASA :", "K L A S A : "),
+                PocetnoDuguje = kt.PocetnoDuguje,
+                PocetnoPotrazuje = kt.PocetnoPotrazuje,
+                PrometDuguje = kt.PrometDuguje,
+                PrometPotrazuje = kt.PrometPotrazuje,
+                UkupnoDuguje = kt.UkupnoDuguje,
+                UkupnoPotrazuje = kt.UkupnoPotrazuje,
+                SaldoDuguje = kt.SaldoDuguje,
+                SaldoPotrazuje = kt.SaldoPotrazuje,
+                Tip = BrutoBilansRedTip.KlasaTotal
+            };
+            rezultat.Add(rKlasa);
+
+            rekapUkPocDug += kt.PocetnoDuguje;
+            rekapUkPocPot += kt.PocetnoPotrazuje;
+            rekapUkPromDug += kt.PrometDuguje;
+            rekapUkPromPot += kt.PrometPotrazuje;
+            rekapUkUkDug += kt.UkupnoDuguje;
+            rekapUkUkPot += kt.UkupnoPotrazuje;
+            rekapUkSalDug += kt.SaldoDuguje;
+            rekapUkSalPot += kt.SaldoPotrazuje;
+        }
+
+        rezultat.Add(new ZakljucniListRed
+        {
+            BrojKonta = "",
+            NazivKonta = "K L A S A :  U",
+            PocetnoDuguje = rekapUkPocDug,
+            PocetnoPotrazuje = rekapUkPocPot,
+            PrometDuguje = rekapUkPromDug,
+            PrometPotrazuje = rekapUkPromPot,
+            UkupnoDuguje = rekapUkUkDug,
+            UkupnoPotrazuje = rekapUkUkPot,
+            SaldoDuguje = rekapUkSalDug,
+            SaldoPotrazuje = rekapUkSalPot,
+            Tip = BrutoBilansRedTip.KlasaTotal
+        });
+
         return rezultat;
     }
 
+
+    private static bool IsPocetnoStanje(Nalog nalog)
+    {
+        if (nalog == null) return false;
+        if (nalog.BrojNaloga == 0) return true;
+        if (!string.IsNullOrEmpty(nalog.VrstaNaloga) &&
+            (nalog.VrstaNaloga.Equals("PrenosPocetnogStanja", StringComparison.OrdinalIgnoreCase) ||
+             nalog.VrstaNaloga.Equals("PocetnoStanje", StringComparison.OrdinalIgnoreCase) ||
+             nalog.VrstaNaloga.Equals("Početno stanje", StringComparison.OrdinalIgnoreCase)))
+            return true;
+        if (!string.IsNullOrEmpty(nalog.Opis) &&
+            (nalog.Opis.StartsWith("Pocetn", StringComparison.OrdinalIgnoreCase) ||
+             nalog.Opis.StartsWith("Početn", StringComparison.OrdinalIgnoreCase) ||
+             nalog.Opis.StartsWith("Prenos poč", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        return false;
+    }
 }
+
+public class ZakljucniListRed
+{
+    public string BrojKonta { get; set; } = string.Empty;
+    public string NazivKonta { get; set; } = string.Empty;
+
+    public decimal PocetnoDuguje { get; set; }
+    public decimal PocetnoPotrazuje { get; set; }
+
+    public decimal PrometDuguje { get; set; }
+    public decimal PrometPotrazuje { get; set; }
+
+    public decimal UkupnoDuguje { get; set; }
+    public decimal UkupnoPotrazuje { get; set; }
+
+    public decimal SaldoDuguje { get; set; }
+    public decimal SaldoPotrazuje { get; set; }
+
+    public BrutoBilansRedTip Tip { get; set; } = BrutoBilansRedTip.Detalj;
+}
+
