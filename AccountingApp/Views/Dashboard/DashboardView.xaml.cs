@@ -36,15 +36,16 @@ public partial class DashboardView : UserControl
             int proknjizenoCount = await db.Nalozi.CountAsync(n => n.IsKnjizen);
             int stavkiCount = await db.StavkeNaloga.CountAsync(s => s.Nalog != null && s.Nalog.IsKnjizen);
             int neproknjizenoCount = await db.Nalozi.CountAsync(n => !n.IsKnjizen);
+            int stavkiNeproknjizenoCount = await db.StavkeNaloga.CountAsync(s => s.Nalog != null && !s.Nalog.IsKnjizen);
             int kontaCount = await db.Konta.CountAsync();
-            int matCount = await db.Artikli.CountAsync();
             int partneriCount = await db.Partneri.CountAsync();
             int magacinaCount = await db.Magacini.CountAsync();
 
             TxtUkupnoNaloga.Text = proknjizenoCount.ToString("N0");
             TxtStavkiKnjizenja.Text = $"{stavkiCount:N0} stavki knjiženja";
+            TxtNeproknjizenoNaloga.Text = neproknjizenoCount.ToString("N0");
+            TxtStavkiNeproknjizeno.Text = $"{stavkiNeproknjizenoCount:N0} stavki knjiženja";
             TxtUkupnoKonta.Text = kontaCount.ToString("N0");
-            TxtUkupnoMaterijala.Text = matCount.ToString("N0");
             TxtBrojMagacina.Text = $"{magacinaCount:N0} magacina";
             TxtUkupnoPartnera.Text = partneriCount.ToString("N0");
 
@@ -69,8 +70,10 @@ public partial class DashboardView : UserControl
             // ===== MATERIJALNO KNJIGOVODSTVO =====
             var brutoBilans = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db);
             decimal vrednostZaliha = brutoBilans.Sum(r => r.SaldoVrednosni);
-            int negativnaStanja = brutoBilans.Count(r => r.SaldoKolicinski < 0);
+            int artikalaNaZalihama = brutoBilans.Where(r => r.SaldoKolicinski > 0).Select(r => r.SifraArtikla).Distinct().Count();
+            int negativnaStanja = brutoBilans.Where(r => r.SaldoKolicinski < 0).Select(r => r.SifraArtikla).Distinct().Count();
 
+            TxtUkupnoMaterijala.Text = artikalaNaZalihama.ToString("N0");
             TxtVrednostZaliha.Text = $"{vrednostZaliha:N0} RSD";
             TxtNegativnaStanja.Text = negativnaStanja.ToString("N0");
 

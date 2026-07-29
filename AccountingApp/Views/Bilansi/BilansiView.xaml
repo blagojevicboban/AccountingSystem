@@ -71,6 +71,13 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
+                        <Button DockPanel.Dock="Right" Content="📊 Excel" Click="BtnExportExcelBilansStanja_Click" Padding="10,5" Margin="0,0,8,0" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
                     </DockPanel>
 
                     <DataGrid Grid.Row="1" x:Name="DgBilansStanja" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="White">
@@ -125,6 +132,13 @@
                             <TextBlock x:Name="TxtNetoRezultat" Text="📊 Obračun rezultata..." FontWeight="Bold" FontSize="13" Foreground="#2563EB"/>
                         </StackPanel>
                         <Button DockPanel.Dock="Right" Content="📥 Štampaj Bilans Uspeha (PDF)" Click="BtnStampajUspehPdf_Click" Padding="10,5" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button DockPanel.Dock="Right" Content="📊 Excel" Click="BtnExportExcelBilansUspeha_Click" Padding="10,5" Margin="0,0,8,0" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="4"/>

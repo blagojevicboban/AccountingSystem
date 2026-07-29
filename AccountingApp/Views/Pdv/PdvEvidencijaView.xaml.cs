@@ -145,4 +145,10 @@ public partial class PdvEvidencijaView : UserControl
             MessageBox.Show($"Greška pri generisanju PDF KPR-a: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    private void BtnExportExcelKir_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgKir, "KIR - Knjiga izdatih računa", "KIR_Knjiga_Izdatih_Racuna");
+
+    private void BtnExportExcelKpr_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgKpr, "KPR - Knjiga primljenih računa", "KPR_Knjiga_Primljenih_Racuna");
 }

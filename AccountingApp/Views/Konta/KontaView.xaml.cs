@@ -202,4 +202,7 @@ public partial class KontaView : UserControl
             MessageBox.Show($"Greška pri generisanju PDF kontnog plana: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    private void BtnExportExcelKonta_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgKonta, "Kontni plan", "Kontni_Plan");
 }

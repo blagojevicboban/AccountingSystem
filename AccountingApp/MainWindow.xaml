@@ -92,6 +92,12 @@
                     </Grid>
                 </Border>
 
+                <!-- Help dugme na dnu -->
+                <Button x:Name="BtnPomoc" DockPanel.Dock="Bottom" Content="❓ Pomoć" Click="NavPomoc_Click"
+                        ToolTip="Korisničko uputstvo i tehnička podrška"
+                        Height="42" Margin="10,2" Padding="16,0" HorizontalContentAlignment="Left"
+                        Background="Transparent" BorderThickness="0" Foreground="#94A3B8" FontSize="14" Cursor="Hand"/>
+
                 <!-- Verzija dole -->
                 <TextBlock DockPanel.Dock="Bottom" x:Name="VersionText" Text="v1.0.0  •  2026"
                            FontSize="11" Foreground="#38BDF8" TextAlignment="Center" Margin="0,0,0,12"
@@ -103,7 +109,6 @@
                         <TextBlock x:Name="HeaderFinansije" Text="FINANSIJSKO KNJIGOVODSTVO" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
                         <RadioButton x:Name="BtnDashboard" Content="📊 Radna tabla" Style="{StaticResource NavButtonStyle}" IsChecked="True" Click="NavDashboard_Click" ToolTip="Radna tabla sa indikatorima i brzim akcijama"/>
-                        <RadioButton x:Name="BtnFirme" Content="🏢 Upravljanje firmama" Style="{StaticResource NavButtonStyle}" Click="NavFirme_Click" ToolTip="Spisak firmi, izbor aktivne firme i kreiranje nove"/>
                         <RadioButton x:Name="BtnKonta" Content="📋 Kontni plan" Style="{StaticResource NavButtonStyle}" Click="NavKonta_Click" ToolTip="Šifarnik sintetike i analitike sa kontnim planom"/>
                         <RadioButton x:Name="BtnNalozi" Content="📖 Glavna knjiga" Style="{StaticResource NavButtonStyle}" Click="NavNalozi_Click" ToolTip="Evidencija i knjiženje naloga glavne knjige"/>
                         <RadioButton x:Name="BtnKartice" Content="📋 Kartice konta" Style="{StaticResource NavButtonStyle}" Click="NavKartice_Click" ToolTip="Pregled hronoloških kartica po kontima"/>
@@ -125,6 +130,7 @@
                         <Separator x:Name="SepPodesavanja" Background="#334155" Margin="16,8"/>
                         <TextBlock x:Name="HeaderPodesavanja" Text="PODEŠAVANJA I SISTEM" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
+                        <RadioButton x:Name="BtnFirme" Content="🏢 Upravljanje firmama" Style="{StaticResource NavButtonStyle}" Click="NavFirme_Click" ToolTip="Spisak firmi, izbor aktivne firme i kreiranje nove"/>
                         <RadioButton x:Name="BtnPodesavanja" Content="⚙️ Podešavanja" Style="{StaticResource NavButtonStyle}" Click="NavPodesavanja_Click" ToolTip="Osnovna podešavanja aplikacije, putanje i parametri"/>
                         <RadioButton x:Name="BtnBackup" Content="💾 Rezervne kopije (Backup)" Style="{StaticResource NavButtonStyle}" Click="NavBackup_Click" ToolTip="Izrada ručnih i automatskih kopija i restauracija baze"/>
                         <RadioButton x:Name="BtnKorisnici" Content="👤 Korisnici i Uloge" Style="{StaticResource NavButtonStyle}" Click="NavKorisnici_Click" ToolTip="Administracija korisnika, lozinki i uloga (RBAC)"/>
@@ -132,7 +138,6 @@
                         <Separator x:Name="SepDokumentacija" Background="#334155" Margin="16,8"/>
                         <TextBlock x:Name="HeaderDokumentacija" Text="DOKUMENTACIJA" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
-                        <RadioButton x:Name="BtnPomoc" Content="❓ Pomoć" Style="{StaticResource NavButtonStyle}" Click="NavPomoc_Click" ToolTip="Korisničko uputstvo i tehnička podrška"/>
                         <Button x:Name="BtnChangelog" Content="📋 Istorija izmena" Click="BtnChangelog_Click" ToolTip="Prikaz verzija i ažuriranja aplikacije"
                                 Height="42" Margin="10,2" Padding="16,0" HorizontalContentAlignment="Left"
                                 Background="Transparent" BorderThickness="0" Foreground="#94A3B8" FontSize="14" Cursor="Hand"/>

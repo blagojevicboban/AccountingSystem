@@ -76,7 +76,7 @@ public class KontaService
         bool canDelete = await CanDeleteKontoAsync(konto.BrojKonta);
         if (!canDelete)
         {
-            throw new InvalidOperationException($"Konto {konto.BrojKonta} se ne može obrisati jer postoje proknjiženi nalozi koji ga koriste.");
+            throw new InvalidOperationException($"Konto {konto.BrojKonta} se ne može obrisati jer postoje knjiženja koja ga koriste.");
         }
 
         _db.Konta.Remove(konto);

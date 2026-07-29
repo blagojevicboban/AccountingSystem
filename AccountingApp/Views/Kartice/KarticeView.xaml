@@ -16,16 +16,20 @@
                 <TextBlock Text="📋 Kontni plan" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
                 <TextBox x:Name="TxtPretragaKonta" DockPanel.Dock="Top" Height="34" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,8" TextChanged="TxtPretragaKonta_TextChanged"/>
                 <CheckBox x:Name="ChkSamoSaPrometom" Content="Samo konta sa knjiženjima" DockPanel.Dock="Top" Margin="0,0,0,12" IsChecked="True" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
-                <ListBox x:Name="LstKonta" BorderThickness="0" SelectionChanged="LstKonta_SelectionChanged">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="4,6">
-                                <TextBlock Text="{Binding BrojKonta}" FontWeight="SemiBold"/>
-                                <TextBlock Text="{Binding NazivKonta}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <DataGrid x:Name="LstKonta" AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="FullRow" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="LstKonta_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="30">
+                            <DataGridCheckBoxColumn.ElementStyle>
+                                <Style TargetType="CheckBox">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridCheckBoxColumn.ElementStyle>
+                        </DataGridCheckBoxColumn>
+                        <DataGridTextColumn Header="Konto" Binding="{Binding BrojKonta}" Width="70" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Naziv" Binding="{Binding NazivKonta}" Width="*" IsReadOnly="True"/>
+                    </DataGrid.Columns>
+                </DataGrid>
             </DockPanel>
         </Border>
 
@@ -48,7 +52,9 @@
                             <TextBlock Text="Saldo: " VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,4,0"/>
                             <TextBlock x:Name="TxtSaldoKonta" Text="0,00" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#2563EB"/>
                         </StackPanel>
-                        <Button x:Name="BtnStampaj" Content="📥 Štampaj karticu (PDF)" Style="{StaticResource ActionButtonStyle}" VerticalAlignment="Center" Margin="0,2,0,2" Click="BtnStampaj_Click"/>
+                        <Button x:Name="BtnStampaj" Content="📥 Štampaj karticu (PDF)" Style="{StaticResource ActionButtonStyle}" VerticalAlignment="Center" Margin="0,2,8,2" Click="BtnStampaj_Click" IsEnabled="False"/>
+                        <Button x:Name="BtnStampajIzabrane" Content="🖨️ Štampaj izabrane (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" VerticalAlignment="Center" Margin="0,2,8,2" Click="BtnStampajIzabrane_Click" IsEnabled="False"/>
+                        <Button x:Name="BtnExportExcelKartica" Content="📊 Excel" Style="{StaticResource ActionButtonStyle}" Background="#059669" VerticalAlignment="Center" Margin="0,2,0,2" Click="BtnExportExcelKartica_Click"/>
                     </WrapPanel>
 
                     <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">

@@ -24,7 +24,8 @@
                     <Button x:Name="BtnIzmeniKonto" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,0,8,0" Click="BtnIzmeniKonto_Click" IsEnabled="False"/>
                     <Button x:Name="BtnObrisiKonto" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Margin="0,0,8,0" Click="BtnObrisiKonto_Click" IsEnabled="False"/>
                     <Separator Width="1" Background="{StaticResource BorderBrush}" Margin="0,4,8,4"/>
-                    <Button x:Name="BtnStampaj" Content="🖨️ Štampaj Kontni plan (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Click="BtnStampaj_Click"/>
+                    <Button x:Name="BtnStampaj" Content="🖨️ Štampaj Kontni plan (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,0,8,0" Click="BtnStampaj_Click"/>
+                    <Button x:Name="BtnExportExcelKonta" Content="📊 Excel" Style="{StaticResource ActionButtonStyle}" Background="#059669" Click="BtnExportExcelKonta_Click"/>
                 </StackPanel>
             </WrapPanel>
         </Border>

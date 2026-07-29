@@ -148,4 +148,10 @@ public partial class BilansiView : UserControl
             MessageBox.Show($"Greška pri generisanju PDF bilansa uspeha: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    private void BtnExportExcelBilansStanja_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgBilansStanja, "Bilans Stanja", "Bilans_Stanja");
+
+    private void BtnExportExcelBilansUspeha_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgBilansUspeha, "Bilans Uspeha", "Bilans_Uspeha");
 }

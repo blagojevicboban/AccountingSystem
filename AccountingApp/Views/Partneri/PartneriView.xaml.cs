@@ -120,4 +120,7 @@ public partial class PartneriView : UserControl
         var dijalog = new KamataWindow(partner) { Owner = Window.GetWindow(this) };
         dijalog.ShowDialog();
     }
+
+    private void BtnExportExcelPartneri_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgOtvoreneStavke, TxtNaslovPartnera.Text, "Partneri_Otvorene_Stavke");
 }

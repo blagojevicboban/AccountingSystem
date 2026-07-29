@@ -59,9 +59,10 @@ public partial class NaloziView : UserControl
             (string.IsNullOrEmpty(search) || n.BrojNaloga.ToString().Contains(search) || (n.Opis != null && n.Opis.ToLower().Contains(search))) &&
             (!samoProknjizeni || n.IsKnjizen) &&
             (!samoNeproknjizeni || !n.IsKnjizen)
-        ).ToList();
+        ).OrderByDescending(n => n.BrojNaloga).ToList();
 
         DgNalozi.ItemsSource = filtered;
+        ColBrojNaloga.SortDirection = ListSortDirection.Descending;
         if (filtered.Any())
         {
             DgNalozi.SelectedIndex = 0;
@@ -483,4 +484,7 @@ public partial class NaloziView : UserControl
             LoadNalozi();
         }
     }
+
+    private void BtnExportExcelNalozi_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgNalozi, "Nalozi za knjiženje", "Nalozi_Glavna_Knjiga");
 }
