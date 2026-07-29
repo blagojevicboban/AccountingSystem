@@ -4,6 +4,17 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.25] - 2026-07-29
+
+### 🐛 Ispravke i Validacije (Bug Fixes)
+- **Excel "Repair" greška u Bruto bilansu**: Otklonjena korupcija `calcChain.xml` fajla uzrokovana ClosedXML `FormulaA1` — TOTAL red sada koristi vrednosti izračunate u C# umesto Excel formula, eliminišući Excelovu "Removed Records" poruku pri otvaranju fajla.
+- **Pogrešan TOTAL u Excel izvozu**: TOTAL red je pogrešno sabirao i subtotale klasa (`KLASA: 5`) i subtotale sintetičkih konta (`TOTAL sintetičkog konta 563`). Sada se sabiraju isključivo analitički (Detalj) redovi, identično prikazu u aplikaciji.
+
+### 🎨 UI / UX i Odzivnost
+- **Senčenje redova u Excel izvozu Bruto bilansa**: Excel fajl sada vizualno odražava prikaz u aplikaciji — `TOTAL sintetičkog konta` redovi su senčeni svetlo sivom (`#F8FAFC`, bold), a `KLASA:` redovi tamnijom sivom (`#E2E8F0`, bold), identično XAML `DataTrigger` stilizaciji u prozoru za pregled.
+
+---
+
 ## [1.0.24] - 2026-07-29
 
 ### 🚀 ErpHub Integracija & Pokretanje sa Konkretnom Bazom (CLI Integration)

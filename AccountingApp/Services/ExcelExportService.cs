@@ -18,7 +18,12 @@ public static class ExcelExportService
     /// Izvozi sadržaj iz zadatog WPF DataGrid-a u Excel (.xlsx) fajl i automatski ga otvara.
     /// Formatira naslove, brojeve, ivice i auto-fituje kolone.
     /// </summary>
-    public static void ExportDataGridToExcel(DataGrid dataGrid, string title, string defaultFileName)
+    public static void ExportDataGridToExcel(
+        DataGrid dataGrid,
+        string title,
+        string defaultFileName,
+        Func<object, bool>? jeStavkaZaZbir = null,
+        Func<object, (string? hexBoja, bool bold)>? rowStyler = null)
     {
         if (dataGrid == null || dataGrid.ItemsSource == null)
         {
@@ -72,10 +77,14 @@ public static class ExcelExportService
             cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
         }
 
-        // 3. Popunjavanje redova
+        // 3. Popunjavanje redova + praćenje suma po kolonama
         int currentRow = startRow + 1;
+        var columnSums = new decimal[columns.Count]; // akumulatori za TOTAL red
         foreach (var item in items)
         {
+            // Sabira se samo ako red prolazi filter (npr. samo Detalj redovi, ne TOTAL klase)
+            bool saberi = jeStavkaZaZbir == null || jeStavkaZaZbir(item);
+
             for (int c = 0; c < columns.Count; c++)
             {
                 var col = columns[c];
@@ -91,18 +100,21 @@ public static class ExcelExportService
                     cell.Value = decVal;
                     cell.Style.NumberFormat.Format = "#,##0.00";
                     cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                    if (saberi) columnSums[c] += decVal;
                 }
                 else if (val is double dblVal)
                 {
                     cell.Value = dblVal;
                     cell.Style.NumberFormat.Format = "#,##0.00";
                     cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                    if (saberi) columnSums[c] += (decimal)dblVal;
                 }
                 else if (val is int intVal)
                 {
                     cell.Value = intVal;
                     cell.Style.NumberFormat.Format = "#,##0";
                     cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    if (saberi) columnSums[c] += intVal;
                 }
                 else if (val is DateTime dtVal)
                 {
@@ -123,6 +135,7 @@ public static class ExcelExportService
                         cell.Value = parsedDec;
                         cell.Style.NumberFormat.Format = "#,##0.00";
                         cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                        if (saberi) columnSums[c] += parsedDec;
                     }
                     else
                     {
@@ -132,26 +145,23 @@ public static class ExcelExportService
 
                 cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                 cell.Style.Border.OutsideBorderColor = XLColor.FromHtml("#E2E8F0");
+
+                // Primeni stil reda (boja pozadine, bold) ako je definisan rowStyler
+                if (rowStyler != null)
+                {
+                    var (hexBoja, bold) = rowStyler(item);
+                    if (hexBoja != null)
+                        cell.Style.Fill.BackgroundColor = XLColor.FromHtml(hexBoja);
+                    if (bold)
+                        cell.Style.Font.Bold = true;
+                }
             }
             currentRow++;
         }
 
-        // 4. Zbirni red (Total) ako postoje numeričke kolone
-        var totalRow = worksheet.Cell(currentRow, 1);
+        // 4. Zbirni red — vrednosti iz C# suma, bez Excel formula (nema calcChain korupcije)
         for (int c = 0; c < columns.Count; c++)
         {
-            var headerName = columns[c].Header?.ToString() ?? "";
-            bool isNumericHeader = headerName.Contains("iznos", StringComparison.OrdinalIgnoreCase) ||
-                                  headerName.Contains("duguje", StringComparison.OrdinalIgnoreCase) ||
-                                  headerName.Contains("potražuje", StringComparison.OrdinalIgnoreCase) ||
-                                  headerName.Contains("potrazuje", StringComparison.OrdinalIgnoreCase) ||
-                                  headerName.Contains("saldo", StringComparison.OrdinalIgnoreCase) ||
-                                  headerName.Contains("količina", StringComparison.OrdinalIgnoreCase) ||
-                                  headerName.Contains("kolicina", StringComparison.OrdinalIgnoreCase) ||
-                                  headerName.Contains("ulaz", StringComparison.OrdinalIgnoreCase) ||
-                                  headerName.Contains("izlaz", StringComparison.OrdinalIgnoreCase) ||
-                                  headerName.Contains("vrednost", StringComparison.OrdinalIgnoreCase);
-
             var cell = worksheet.Cell(currentRow, c + 1);
             cell.Style.Font.Bold = true;
             cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#F1F5F9");
@@ -162,10 +172,9 @@ public static class ExcelExportService
             {
                 cell.Value = "TOTAL:";
             }
-            else if (isNumericHeader)
+            else if (columnSums[c] != 0)
             {
-                string colLetter = XLHelper.GetColumnLetterFromNumber(c + 1);
-                cell.FormulaA1 = $"SUM({colLetter}{startRow + 1}:{colLetter}{currentRow - 1})";
+                cell.Value = columnSums[c];
                 cell.Style.NumberFormat.Format = "#,##0.00";
                 cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
             }

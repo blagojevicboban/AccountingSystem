@@ -1,4 +1,5 @@
 using System.Windows;
+using AccountingApp.Services;
 using AccountingData.Services;
 
 namespace AccountingApp.Views.Izvestaji;
@@ -22,4 +23,19 @@ public partial class BrutoBilansPreviewWindow : Window
         TxtUkupnoSaldoDuguje.Text = detalji.Sum(r => r.SaldoDuguje).ToString("N2");
         TxtUkupnoSaldoPotrazuje.Text = detalji.Sum(r => r.SaldoPotrazuje).ToString("N2");
     }
+
+    private void BtnExportExcelBrutoBilans_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(
+            DgBrutoBilans,
+            TxtNaslov.Text,
+            "Bruto_Bilans",
+            jeStavkaZaZbir: item => item is BrutoBilansRed red && red.Tip == BrutoBilansRedTip.Detalj,
+            rowStyler: item => item is BrutoBilansRed red
+                ? red.Tip switch
+                {
+                    BrutoBilansRedTip.SintetikaTotal => ("#F8FAFC", true),
+                    BrutoBilansRedTip.KlasaTotal     => ("#E2E8F0", true),
+                    _                                 => (null, false)
+                }
+                : (null, false));
 }

@@ -13,10 +13,13 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-            <StackPanel>
-                <TextBlock x:Name="TxtNaslov" Text="BRUTO BILANS" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
-                <TextBlock x:Name="TxtPodnaslov" Text="" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
-            </StackPanel>
+            <DockPanel>
+                <Button x:Name="BtnExportExcelBrutoBilans" DockPanel.Dock="Right" Content="📊 Excel" Style="{StaticResource ActionButtonStyle}" Background="#059669" VerticalAlignment="Center" Click="BtnExportExcelBrutoBilans_Click"/>
+                <StackPanel>
+                    <TextBlock x:Name="TxtNaslov" Text="BRUTO BILANS" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+                    <TextBlock x:Name="TxtPodnaslov" Text="" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
+                </StackPanel>
+            </DockPanel>
         </Border>
 
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
