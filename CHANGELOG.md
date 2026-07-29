@@ -4,6 +4,13 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.24] - 2026-07-29
+
+### 🚀 ErpHub Integracija & Pokretanje sa Konkretnom Bazom (CLI Integration)
+- **Ugrađena podrška za `--db-path` CLI argument**: Omogućeno direktno pokretanje `AccountingApp.exe` iz ErpHub centralnog kontrolnog panela sa automatskim prosleđivanjem putanje do izabrane SQLite baze/firme (`--db-path "<path>"`).
+
+---
+
 ## [1.0.23] - 2026-07-29
 
 ### 🚀 Izvoz Finansijskih i Robnih Podataka u Excel (XLSX)

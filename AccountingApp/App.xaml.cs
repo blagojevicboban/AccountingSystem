@@ -38,6 +38,18 @@ public partial class App : Application
             File.AppendAllText(logPath, $"[{DateTime.Now}] FATAL: {ex.ExceptionObject}\n\n");
         };
 
+        for (int i = 0; i < e.Args.Length; i++)
+        {
+            if (e.Args[i] == "--db-path" && i + 1 < e.Args.Length)
+            {
+                var customPath = e.Args[i + 1];
+                if (File.Exists(customPath))
+                {
+                    UserSettings.Instance.ActiveDbPath = customPath;
+                }
+            }
+        }
+
         var db = AccountingDbContext.Create(AppConfig.DbPath);
         var loginWindow = new Views.Korisnici.LoginWindow(db);
         loginWindow.Show();
