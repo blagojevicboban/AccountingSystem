@@ -205,21 +205,19 @@ public class BrutoBilansService
         var kontaMap = await _db.Konta
             .ToDictionaryAsync(k => k.BrojKonta, k => k.NazivKonta);
 
-        var grupisano = stavke
-            .GroupBy(s => s.BrojKonta.Length >= 3 ? s.BrojKonta.Substring(0, 3) : s.BrojKonta)
+        // 1. Grupiranje najpre po punom (analitičkom) kontu (identično kao u gk5 loop dokum_opis & tot_uk_dug - tot_uk_pot)
+        var analitikaGrupisano = stavke
+            .GroupBy(s => s.BrojKonta)
             .Select(g =>
             {
-                var sintKonto = g.Key;
-                string naziv = sintetikaMap.TryGetValue(sintKonto, out var n)
-                    ? n
-                    : (g.Select(x => kontaMap.TryGetValue(x.BrojKonta, out var kn) ? kn : null)
-                         .FirstOrDefault(x => !string.IsNullOrEmpty(x)) ?? sintKonto);
+                var analKonto = g.Key;
+                var sintKonto = analKonto.Length >= 3 ? analKonto.Substring(0, 3) : analKonto;
 
-                decimal pocDug = g.Where(s => IsPocetnoStanje(s.Nalog!)).Sum(s => s.Duguje);
-                decimal pocPot = g.Where(s => IsPocetnoStanje(s.Nalog!)).Sum(s => s.Potrazuje);
+                decimal pocDug = g.Where(s => IsPocetnoStanje(s)).Sum(s => s.Duguje);
+                decimal pocPot = g.Where(s => IsPocetnoStanje(s)).Sum(s => s.Potrazuje);
 
-                decimal promDug = g.Where(s => !IsPocetnoStanje(s.Nalog!)).Sum(s => s.Duguje);
-                decimal promPot = g.Where(s => !IsPocetnoStanje(s.Nalog!)).Sum(s => s.Potrazuje);
+                decimal promDug = g.Where(s => !IsPocetnoStanje(s)).Sum(s => s.Duguje);
+                decimal promPot = g.Where(s => !IsPocetnoStanje(s)).Sum(s => s.Potrazuje);
 
                 decimal ukDug = pocDug + promDug;
                 decimal ukPot = pocPot + promPot;
@@ -227,6 +225,55 @@ public class BrutoBilansService
                 decimal razlika = ukDug - ukPot;
                 decimal salDug = razlika > 0 ? razlika : 0m;
                 decimal salPot = razlika < 0 ? -razlika : 0m;
+
+                return new
+                {
+                    AnalitickiKonto = analKonto,
+                    SintetickiKonto = sintKonto,
+                    PocetnoDuguje = pocDug,
+                    PocetnoPotrazuje = pocPot,
+                    PrometDuguje = promDug,
+                    PrometPotrazuje = promPot,
+                    UkupnoDuguje = ukDug,
+                    UkupnoPotrazuje = ukPot,
+                    SaldoDuguje = salDug,
+                    SaldoPotrazuje = salPot
+                };
+            })
+            .ToList();
+
+        // 2. Grupiranje po sintetičkom kontu (3-cifrenom) sa prebijanjem na nivou sintetike (lines 1195-1203 u gk5)
+        var grupisano = analitikaGrupisano
+            .GroupBy(a => a.SintetickiKonto)
+            .Select(g =>
+            {
+                var sintKonto = g.Key;
+                string naziv = sintetikaMap.TryGetValue(sintKonto, out var n)
+                    ? n
+                    : (g.Select(x => kontaMap.TryGetValue(x.AnalitickiKonto, out var kn) ? kn : null)
+                         .FirstOrDefault(x => !string.IsNullOrEmpty(x)) ?? sintKonto);
+
+                decimal pocDug = g.Sum(x => x.PocetnoDuguje);
+                decimal pocPot = g.Sum(x => x.PocetnoPotrazuje);
+                decimal promDug = g.Sum(x => x.PrometDuguje);
+                decimal promPot = g.Sum(x => x.PrometPotrazuje);
+                decimal ukDug = g.Sum(x => x.UkupnoDuguje);
+                decimal ukPot = g.Sum(x => x.UkupnoPotrazuje);
+
+                // Zbir salda analitičkih konta (tot_sald_dug / tot_sald_pot pre prebijanja sintetike)
+                decimal sirovSalDug = g.Sum(x => x.SaldoDuguje);
+                decimal sirovSalPot = g.Sum(x => x.SaldoPotrazuje);
+
+                // Prebijanje salda na sintetičkom kontu (lines 1195-1203 u gk5)
+                decimal salDug = 0m, salPot = 0m;
+                if (sirovSalDug > sirovSalPot)
+                {
+                    salDug = sirovSalDug - sirovSalPot;
+                }
+                else
+                {
+                    salPot = sirovSalPot - sirovSalDug;
+                }
 
                 return new ZakljucniListRed
                 {
@@ -246,16 +293,17 @@ public class BrutoBilansService
             .OrderBy(r => r.BrojKonta)
             .ToList();
 
+
         var rezultat = new List<ZakljucniListRed>();
         string? tekucaKlasa = null;
 
         decimal klasaPocDug = 0, klasaPocPot = 0;
         decimal klasaPromDug = 0, klasaPromPot = 0;
         decimal klasaUkDug = 0, klasaUkPot = 0;
+        decimal klasaSalDug = 0, klasaSalPot = 0;
 
         void ZatvoriKlasu(string klasaOznaka)
         {
-            decimal razlika = klasaUkDug - klasaUkPot;
             rezultat.Add(new ZakljucniListRed
             {
                 BrojKonta = "",
@@ -266,14 +314,15 @@ public class BrutoBilansService
                 PrometPotrazuje = klasaPromPot,
                 UkupnoDuguje = klasaUkDug,
                 UkupnoPotrazuje = klasaUkPot,
-                SaldoDuguje = razlika > 0 ? razlika : 0m,
-                SaldoPotrazuje = razlika < 0 ? -razlika : 0m,
+                SaldoDuguje = klasaSalDug,
+                SaldoPotrazuje = klasaSalPot,
                 Tip = BrutoBilansRedTip.KlasaTotal
             });
 
             klasaPocDug = klasaPocPot = 0;
             klasaPromDug = klasaPromPot = 0;
             klasaUkDug = klasaUkPot = 0;
+            klasaSalDug = klasaSalPot = 0;
         }
 
         foreach (var red in grupisano)
@@ -291,8 +340,11 @@ public class BrutoBilansService
             klasaPromPot += red.PrometPotrazuje;
             klasaUkDug += red.UkupnoDuguje;
             klasaUkPot += red.UkupnoPotrazuje;
+            klasaSalDug += red.SaldoDuguje;
+            klasaSalPot += red.SaldoPotrazuje;
             tekucaKlasa = klasaOznaka;
         }
+
 
         if (tekucaKlasa != null) ZatvoriKlasu(tekucaKlasa);
 
@@ -360,8 +412,12 @@ public class BrutoBilansService
     }
 
 
-    private static bool IsPocetnoStanje(Nalog nalog)
+    private static bool IsPocetnoStanje(StavkaNaloga stavka)
     {
+        if (stavka == null) return false;
+        if (stavka.PromenaKod == 1) return true;
+
+        var nalog = stavka.Nalog;
         if (nalog == null) return false;
         if (nalog.BrojNaloga == 0) return true;
         if (!string.IsNullOrEmpty(nalog.VrstaNaloga) &&
@@ -377,6 +433,7 @@ public class BrutoBilansService
 
         return false;
     }
+
 }
 
 public class ZakljucniListRed

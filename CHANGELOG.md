@@ -4,7 +4,20 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.28] - 2026-07-29
+
+### 🚀 Poboljšanja & Precizno Usklađivanje Zaključnog Lista (`FIN1.PRG` / `gk5()`)
+- **Dvostruko grupiranje i prebijanje po nivoima (Analitika -> Sintetika -> Klasa -> Rekapitulacija)**:
+  - Usklađeno saldiranje i grupiranje na sintetičkim kontima prema proceduri `gk5()` iz DOS programa `FIN1.PRG`.
+  - Prvo se računa saldo svakog analitičkog konta (`uk_dug - uk_pot`), zatim se vrši prebijanje na nivou 3-cifrenog sintetičkog konta (`tot_sald_dug - tot_sald_pot`), dok se za zbirove po klasama i Rekapitulaciju (`K L A S A : 0..7` i `K L A S A : U`) sabiraju pojedinačni saldi sintetičkih konta.
+  - Svi iznosi (Početno stanje, Promet bez početnog stanja, Ukupni promet i Saldo) se sada 100% u cent poklapaju sa starim DOS sistemom.
+- **Detekcija početnog stanja (`PromenaKod == 1`)**:
+  - Unapređena funkcija `IsPocetnoStanje` da prepoznaje sve stavke sa `PromenaKod == 1` (`PROMENA = 1`), čime se iznosi početnog stanja i tekućeg prometa tačno razdvajaju u odgovarajuće kolone.
+
+---
+
 ## [1.0.27] - 2026-07-29
+
 
 ### 🚀 Nove Funkcionalnosti & Rekapitulacija
 - **Rekapitulacija po klasama na Zaključnom listu (`GetZakljucniListAsync`)**:
