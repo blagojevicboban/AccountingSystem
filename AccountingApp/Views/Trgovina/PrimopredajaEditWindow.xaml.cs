@@ -44,7 +44,7 @@ public partial class PrimopredajaEditWindow : Window
             if (_existingNalog != null)
             {
                 TxtNaslov.Text = $"✏️ Izmena naloga primopredaje #{_existingNalog.BrojNaloga}";
-                TxtBrojNaloga.Text = _existingNalog.BrojNaloga;
+                TxtBrojNaloga.Text = _existingNalog.BrojNaloga.ToString();
                 TxtBrojNaloga.IsReadOnly = true;
                 DpDatum.SelectedDate = _existingNalog.Datum;
 
@@ -70,7 +70,7 @@ public partial class PrimopredajaEditWindow : Window
                 DpDatum.SelectedDate = DateTime.Now;
 
                 // Generiši sledeći broj naloga
-                int maxBr = await db.PrimopredajaNalozi.CountAsync() + 1;
+                int maxBr = await db.PrimopredajaNalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync() + 1;
                 TxtBrojNaloga.Text = maxBr.ToString("D5");
 
                 if (_magacini.Count > 0) CmbMagacinDaje.SelectedIndex = 0;
@@ -105,10 +105,9 @@ public partial class PrimopredajaEditWindow : Window
 
     private async void BtnSacuvaj_Click(object sender, RoutedEventArgs e)
     {
-        string brNaloga = TxtBrojNaloga.Text.Trim();
-        if (string.IsNullOrWhiteSpace(brNaloga))
+        if (!int.TryParse(TxtBrojNaloga.Text.Trim(), out int brNaloga))
         {
-            MessageBox.Show("Molimo unesite broj naloga.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Molimo unesite ispravan broj naloga.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 

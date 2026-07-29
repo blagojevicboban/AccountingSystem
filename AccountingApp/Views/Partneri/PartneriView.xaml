@@ -35,18 +35,18 @@
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <Grid>
-                    <StackPanel>
+                <DockPanel LastChildFill="True">
+                    <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <TextBlock Text="Saldo: " VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                        <TextBlock x:Name="TxtSaldoPartnera" Text="0,00" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#7C3AED" Margin="0,0,16,0"/>
+                        <Button x:Name="BtnStampajIOS" Content="📥 Izvezi IOS (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,2,10,2" Click="BtnStampajIOS_Click"/>
+                        <Button x:Name="BtnObracunKamate" Content="💰 Obračun kamate" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,0,2" Click="BtnObracunKamate_Click"/>
+                    </WrapPanel>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
                         <TextBlock x:Name="TxtNaslovPartnera" Text="Izaberite partnera sa leve strane" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
                         <TextBlock x:Name="TxtPodnaslovPartnera" Text=" " FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                        <TextBlock Text="Saldo: " VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                        <TextBlock x:Name="TxtSaldoPartnera" Text="0,00" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#7C3AED" Margin="0,0,16,0"/>
-                        <Button x:Name="BtnStampajIOS" Content="📥 Izvezi IOS (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,0,10,0" Click="BtnStampajIOS_Click"/>
-                        <Button x:Name="BtnObracunKamate" Content="💰 Obračun kamate" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Click="BtnObracunKamate_Click"/>
-                    </StackPanel>
-                </Grid>
+                </DockPanel>
             </Border>
 
             <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">

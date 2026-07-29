@@ -10,9 +10,7 @@ public class MaloprodajnaKalkulacija
 
     public int SifraProdavnice { get; set; }
 
-    [Required]
-    [MaxLength(20)]
-    public string BrojKalkulacije { get; set; } = string.Empty;
+    public int BrojKalkulacije { get; set; }
 
     public DateTime Datum { get; set; } = DateTime.Now;
 

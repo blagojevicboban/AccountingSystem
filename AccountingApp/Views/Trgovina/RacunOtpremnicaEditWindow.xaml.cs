@@ -40,9 +40,9 @@ public partial class RacunOtpremnicaEditWindow : Window
             if (_existingRacun != null)
             {
                 TxtNaslov.Text = $"✏️ Izmena računa-otpremnice #{_existingRacun.BrojRacuna}";
-                TxtBrojRacuna.Text = _existingRacun.BrojRacuna;
+                TxtBrojRacuna.Text = _existingRacun.BrojRacuna.ToString();
                 TxtBrojRacuna.IsReadOnly = true;
-                TxtBrojOtpremnice.Text = _existingRacun.BrojOtpremnice ?? _existingRacun.BrojRacuna;
+                TxtBrojOtpremnice.Text = _existingRacun.BrojOtpremnice ?? _existingRacun.BrojRacuna.ToString();
                 DpDatum.SelectedDate = _existingRacun.DatumRacuna;
                 TxtKontoKupca.Text = _existingRacun.Partner?.SifraPartnera ?? _existingRacun.KontoKupca;
                 TxtRokPlacanja.Text = _existingRacun.RokPlacanjaDana.ToString();
@@ -70,7 +70,7 @@ public partial class RacunOtpremnicaEditWindow : Window
                 TxtNaslov.Text = "➕ Novi račun - otpremnica";
                 DpDatum.SelectedDate = DateTime.Now;
 
-                int maxBr = await db.RacuniOtpremnice.CountAsync() + 1;
+                int maxBr = await db.RacuniOtpremnice.Select(r => r.BrojRacuna).DefaultIfEmpty(0).MaxAsync() + 1;
                 TxtBrojRacuna.Text = maxBr.ToString("D5");
                 TxtBrojOtpremnice.Text = maxBr.ToString("D5");
 
@@ -102,12 +102,11 @@ public partial class RacunOtpremnicaEditWindow : Window
 
     private async void BtnSacuvaj_Click(object sender, RoutedEventArgs e)
     {
-        string brRacuna = TxtBrojRacuna.Text.Trim();
         string kontoKupca = TxtKontoKupca.Text.Trim();
 
-        if (string.IsNullOrWhiteSpace(brRacuna))
+        if (!int.TryParse(TxtBrojRacuna.Text.Trim(), out int brRacuna))
         {
-            MessageBox.Show("Molimo unesite broj računa.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Molimo unesite ispravan broj računa.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -136,7 +135,7 @@ public partial class RacunOtpremnicaEditWindow : Window
 
             var racun = _existingRacun ?? new RacunOtpremnica();
             racun.BrojRacuna = brRacuna;
-            racun.BrojOtpremnice = string.IsNullOrWhiteSpace(TxtBrojOtpremnice.Text) ? brRacuna : TxtBrojOtpremnice.Text.Trim();
+            racun.BrojOtpremnice = string.IsNullOrWhiteSpace(TxtBrojOtpremnice.Text) ? brRacuna.ToString() : TxtBrojOtpremnice.Text.Trim();
             racun.DatumRacuna = DpDatum.SelectedDate ?? DateTime.Now;
             racun.DatumOtpremnice = racun.DatumRacuna;
             racun.PartnerId = partner?.PartnerId;

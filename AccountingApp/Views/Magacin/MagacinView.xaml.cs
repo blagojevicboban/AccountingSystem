@@ -20,6 +20,12 @@ public partial class MagacinView : UserControl
         // ispalio sinhrono usred InitializeComponent(), pre nego što LstArtikli (deklarisan
         // kasnije u istom XAML stablu) uopšte postoji, i FiltrirajArtikle() bi pukao na null.
         ChkSamoSaKarticom.IsChecked = true;
+        // Isti razlog kao gore — DgUlazi/DgTrebovanja/DgPrimopredaje su deklarisani kasnije
+        // u istom XAML stablu (u drugom Border-u), pa bi Checked event ovde upucen kao
+        // XAML literal pukao na null pre nego što oni uopšte postoje.
+        RbSviUlazi.IsChecked = true;
+        RbSviTrebovanja.IsChecked = true;
+        RbSviPrimopredaje.IsChecked = true;
         LoadAllData();
     }
 
@@ -438,17 +444,38 @@ public partial class MagacinView : UserControl
 
     private void ApplyFilterUlazi()
     {
+        if (DgUlazi == null) return;
+
         string search = TxtPretragaUlaz.Text.Trim().ToLower();
-        DgUlazi.ItemsSource = string.IsNullOrEmpty(search)
-            ? _sviUlazi
-            : _sviUlazi.Where(n => n.BrojNaloga.ToLower().Contains(search)).ToList();
+        bool samoProknjizeni = RbProknjizeniUlazi?.IsChecked == true;
+        bool samoNeproknjizeni = RbNeproknjizeniUlazi?.IsChecked == true;
+
+        DgUlazi.ItemsSource = _sviUlazi.Where(n =>
+            (string.IsNullOrEmpty(search) || n.BrojNaloga.ToString().Contains(search)) &&
+            (!samoProknjizeni || n.IsKnjizen) &&
+            (!samoNeproknjizeni || !n.IsKnjizen)
+        ).ToList();
     }
 
     private void TxtPretragaUlaz_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterUlazi();
 
+    private void Filter_Ulazi_Changed(object sender, RoutedEventArgs e) => ApplyFilterUlazi();
+
     private void DgUlazi_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        DgUlazStavke.ItemsSource = DgUlazi.SelectedItem is UlazNalog nalog ? nalog.Stavke : null;
+        if (DgUlazi.SelectedItem is UlazNalog nalog)
+        {
+            var artikliDict = _sviArtikli.ToDictionary(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
+            foreach (var st in nalog.Stavke)
+            {
+                st.NazivArtikla = artikliDict.TryGetValue(st.SifraArtikla, out var art) ? art.Naziv : null;
+            }
+            DgUlazStavke.ItemsSource = nalog.Stavke;
+        }
+        else
+        {
+            DgUlazStavke.ItemsSource = null;
+        }
     }
 
     private void BtnNoviUlaz_Click(object sender, RoutedEventArgs e)
@@ -490,7 +517,9 @@ public partial class MagacinView : UserControl
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
             var artikliMap = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
-            var pdfBytes = Services.PdfReportService.GenerisiUlazPdf(firma, selektovan, artikliMap);
+            var magacin = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovan.SifraMagacina)
+                ?? new AccountingData.Models.Magacin { SifraMagacina = selektovan.SifraMagacina, NazivMagacina = selektovan.SifraMagacina };
+            var pdfBytes = Services.PdfReportService.GenerisiUlazPdf(firma, selektovan, artikliMap, magacin);
 
             string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Ulaz_{selektovan.BrojNaloga}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
@@ -557,13 +586,22 @@ public partial class MagacinView : UserControl
 
     private void ApplyFilterTrebovanja()
     {
+        if (DgTrebovanja == null) return;
+
         string search = TxtPretragaTrebovanje.Text.Trim().ToLower();
-        DgTrebovanja.ItemsSource = string.IsNullOrEmpty(search)
-            ? _svaTrebovanja
-            : _svaTrebovanja.Where(n => n.BrojNaloga.ToLower().Contains(search)).ToList();
+        bool samoProknjizeni = RbProknjizeniTrebovanja?.IsChecked == true;
+        bool samoNeproknjizeni = RbNeproknjizeniTrebovanja?.IsChecked == true;
+
+        DgTrebovanja.ItemsSource = _svaTrebovanja.Where(n =>
+            (string.IsNullOrEmpty(search) || n.BrojNaloga.ToString().Contains(search)) &&
+            (!samoProknjizeni || n.IsKnjizen) &&
+            (!samoNeproknjizeni || !n.IsKnjizen)
+        ).ToList();
     }
 
     private void TxtPretragaTrebovanje_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterTrebovanja();
+
+    private void Filter_Trebovanja_Changed(object sender, RoutedEventArgs e) => ApplyFilterTrebovanja();
 
     private void DgTrebovanja_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -609,7 +647,9 @@ public partial class MagacinView : UserControl
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
             var artikliMap = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
-            var pdfBytes = Services.PdfReportService.GenerisiTrebovanjePdf(firma, selektovano, artikliMap);
+            var magacin = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovano.SifraMagacina)
+                ?? new AccountingData.Models.Magacin { SifraMagacina = selektovano.SifraMagacina, NazivMagacina = selektovano.SifraMagacina };
+            var pdfBytes = Services.PdfReportService.GenerisiTrebovanjePdf(firma, selektovano, artikliMap, magacin);
 
             string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Trebovanje_{selektovano.BrojNaloga}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
@@ -675,13 +715,22 @@ public partial class MagacinView : UserControl
 
     private void ApplyFilterPrimopredaja()
     {
+        if (DgPrimopredaje == null) return;
+
         string search = TxtPretragaPrimopredaja.Text.Trim().ToLower();
-        DgPrimopredaje.ItemsSource = string.IsNullOrEmpty(search)
-            ? _svePrimopredaje
-            : _svePrimopredaje.Where(n => n.BrojNaloga.ToLower().Contains(search) || n.SifraMagacinaDaje.ToLower().Contains(search) || n.SifraMagacinaPrima.ToLower().Contains(search)).ToList();
+        bool samoProknjizeni = RbProknjizeniPrimopredaje?.IsChecked == true;
+        bool samoNeproknjizeni = RbNeproknjizeniPrimopredaje?.IsChecked == true;
+
+        DgPrimopredaje.ItemsSource = _svePrimopredaje.Where(n =>
+            (string.IsNullOrEmpty(search) || n.BrojNaloga.ToString().Contains(search) || n.SifraMagacinaDaje.ToLower().Contains(search) || n.SifraMagacinaPrima.ToLower().Contains(search)) &&
+            (!samoProknjizeni || n.IsKnjizen) &&
+            (!samoNeproknjizeni || !n.IsKnjizen)
+        ).ToList();
     }
 
     private void TxtPretragaPrimopredaja_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterPrimopredaja();
+
+    private void Filter_Primopredaje_Changed(object sender, RoutedEventArgs e) => ApplyFilterPrimopredaja();
 
     private void DgPrimopredaje_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -731,8 +780,22 @@ public partial class MagacinView : UserControl
             using var db = new AccountingDbContext(options);
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
-            var artikliMap = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
-            var pdfBytes = Services.PdfReportService.GenerisiPrimopredajuPdf(firma, selektovano, artikliMap);
+            var artikliDict = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
+            foreach (var st in selektovano.Stavke)
+            {
+                if (artikliDict.TryGetValue(st.SifraArtikla, out var art))
+                {
+                    st.NazivArtikla = art.Naziv;
+                    st.JedinicaMere = art.JedinicaMere;
+                }
+            }
+
+            var magDaje = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovano.SifraMagacinaDaje)
+                ?? new AccountingData.Models.Magacin { SifraMagacina = selektovano.SifraMagacinaDaje, NazivMagacina = selektovano.SifraMagacinaDaje };
+            var magPrima = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovano.SifraMagacinaPrima)
+                ?? new AccountingData.Models.Magacin { SifraMagacina = selektovano.SifraMagacinaPrima, NazivMagacina = selektovano.SifraMagacinaPrima };
+
+            var pdfBytes = Services.PdfReportService.GenerisiPrimopredajuPdf(firma, selektovano, magDaje, magPrima);
 
             string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Primopredaja_{selektovano.BrojNaloga}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
@@ -803,9 +866,9 @@ public partial class MagacinView : UserControl
 
             var sviRedovi = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db, magId, doDatuma, pretraga);
 
-            var materijaliSifre = await db.Artikli.Where(a => a.Vrsta == "Materijal").Select(a => a.SifraArtikla).ToListAsync();
-            var materijaliSet = new HashSet<string>(materijaliSifre, StringComparer.OrdinalIgnoreCase);
-            _sviBrutoRedoviMat = sviRedovi.Where(r => materijaliSet.Contains(r.SifraArtikla)).ToList();
+            var robaSifre = await db.Artikli.Where(a => a.Vrsta == "Roba").Select(a => a.SifraArtikla).ToListAsync();
+            var robaSet = new HashSet<string>(robaSifre, StringComparer.OrdinalIgnoreCase);
+            _sviBrutoRedoviMat = sviRedovi.Where(r => !robaSet.Contains(r.SifraArtikla)).ToList();
 
             DgBrutoBilansMat.ItemsSource = _sviBrutoRedoviMat;
 
@@ -859,4 +922,24 @@ public partial class MagacinView : UserControl
             MessageBox.Show($"Greška pri štampi Bruto bilansa materijala: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    // ===================== EXCEL EXPORT DUGMIĆI =====================
+
+    private void BtnExportExcelMaterijali_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgSifrarnikMaterijala, "Šifrarnik materijala", "Sifrarnik_Materijala");
+
+    private void BtnExportExcelUlazi_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgUlazi, "Ulazi materijala", "Ulazi_Materijala");
+
+    private void BtnExportExcelTrebovanja_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgTrebovanja, "Trebovanja materijala", "Trebovanja_Materijala");
+
+    private void BtnExportExcelPrimopredaje_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgPrimopredaje, "Primopredaje materijala", "Primopredaje_Materijala");
+
+    private void BtnExportExcelKartica_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgKarticaMaterijala, TxtNaslovArtikla.Text, "Materijalna_Kartica");
+
+    private void BtnExportExcelBrutoMat_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgBrutoBilansMat, "Bruto bilans materijalnog knjigovodstva", "Bruto_Bilans_Materijalnog_Knjigovodstva");
 }

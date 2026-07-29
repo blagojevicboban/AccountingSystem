@@ -42,7 +42,7 @@
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
                 <TextBlock Text="📖 Nalozi za knjiženje (Glavna knjiga)" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
-                <DataGrid x:Name="DgNalozi" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgNalozi_SelectionChanged" Sorting="DgNalozi_Sorting" MouseDoubleClick="DgNalozi_MouseDoubleClick">
+                <DataGrid x:Name="DgNalozi" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgNalozi_SelectionChanged" MouseDoubleClick="DgNalozi_MouseDoubleClick">
                     <DataGrid.ContextMenu>
                         <ContextMenu x:Name="CmNalozi">
                             <MenuItem Header="➕ Novi nalog" Click="BtnNoviNalog_Click"/>

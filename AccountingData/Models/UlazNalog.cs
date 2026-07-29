@@ -8,9 +8,7 @@ public class UlazNalog
     [Key]
     public int UlazNalogId { get; set; }
 
-    [Required]
-    [MaxLength(20)]
-    public string BrojNaloga { get; set; } = string.Empty;
+    public int BrojNaloga { get; set; }
 
     public DateTime Datum { get; set; } = DateTime.Now;
 
@@ -51,4 +49,7 @@ public class UlazStavka
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal Iznos { get; set; }
+
+    [NotMapped]
+    public string? NazivArtikla { get; set; }
 }

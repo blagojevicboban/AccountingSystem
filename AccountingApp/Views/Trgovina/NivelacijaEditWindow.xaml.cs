@@ -22,7 +22,7 @@ public partial class NivelacijaEditWindow : Window
 
         Nivelacija = nivelacija ?? new NivelacijaCena
         {
-            BrojNivelacije = (db.NivelacijeCena.Count() + 1).ToString(),
+            BrojNivelacije = db.NivelacijeCena.Select(n => n.BrojNivelacije).DefaultIfEmpty(0).Max() + 1,
             DatumNivelacije = DateTime.Now
         };
 
@@ -50,7 +50,7 @@ public partial class NivelacijaEditWindow : Window
 
     private void PopuniPolja()
     {
-        TxtBrojNivelacije.Text = Nivelacija.BrojNivelacije;
+        TxtBrojNivelacije.Text = Nivelacija.BrojNivelacije.ToString();
         DpDatum.SelectedDate = Nivelacija.DatumNivelacije;
         TxtOpis.Text = Nivelacija.Opis;
     }
@@ -120,13 +120,13 @@ public partial class NivelacijaEditWindow : Window
 
     private void BtnSacuvaj_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(TxtBrojNivelacije.Text))
+        if (!int.TryParse(TxtBrojNivelacije.Text.Trim(), out int brojNivelacije))
         {
-            MessageBox.Show("Molimo unesite broj nivelacije.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Molimo unesite ispravan broj nivelacije.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        Nivelacija.BrojNivelacije = TxtBrojNivelacije.Text.Trim();
+        Nivelacija.BrojNivelacije = brojNivelacije;
         Nivelacija.DatumNivelacije = DpDatum.SelectedDate ?? DateTime.Now;
         Nivelacija.Opis = TxtOpis.Text.Trim();
         if (CmbMagacin.SelectedValue != null)

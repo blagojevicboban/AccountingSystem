@@ -8,9 +8,7 @@ public class Nalog
     [Key]
     public int NalogId { get; set; }
 
-    [Required]
-    [MaxLength(20)]
-    public string BrojNaloga { get; set; } = string.Empty;
+    public int BrojNaloga { get; set; }
 
     public DateTime DatumNaloga { get; set; } = DateTime.Now;
 

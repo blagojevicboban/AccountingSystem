@@ -26,7 +26,7 @@ public class PdvServiceTests
 
         var racun = new RacunOtpremnica
         {
-            BrojRacuna = "FAK-001",
+            BrojRacuna = 1,
             DatumRacuna = new DateTime(2026, 3, 1),
             PartnerId = 1,
             Partner = partner,
@@ -47,7 +47,7 @@ public class PdvServiceTests
         var kir = await service.GetKirZapisiAsync();
 
         Assert.Single(kir);
-        Assert.Equal("FAK-001", kir[0].BrojDokumenta);
+        Assert.Equal("1", kir[0].BrojDokumenta);
         Assert.Equal("Kupac Test", kir[0].PartnerNaziv);
         Assert.Equal(1000m, kir[0].Osnovica20);
         Assert.Equal(200m, kir[0].Pdv20);
@@ -62,7 +62,7 @@ public class PdvServiceTests
         // 1. KIR - Izlazni PDV = 200 RSD
         var racun = new RacunOtpremnica
         {
-            BrojRacuna = "FAK-002",
+            BrojRacuna = 2,
             DatumRacuna = new DateTime(2026, 3, 5),
             IsKnjizen = true,
             UkupnoZaUplatu = 1200m,
@@ -75,7 +75,7 @@ public class PdvServiceTests
         // 2. KPR - Prethodni PDV = 80 RSD
         var kalkulacija = new Kalkulacija
         {
-            BrojKalkulacije = "KALK-001",
+            BrojKalkulacije = 1,
             Datum = new DateTime(2026, 3, 2),
             IsKnjizen = true,
             SvegaNabavno = 400m,

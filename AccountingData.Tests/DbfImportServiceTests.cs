@@ -1,4 +1,6 @@
+using AccountingData;
 using AccountingData.Services;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace AccountingData.Tests;
@@ -69,16 +71,16 @@ public class DbfImportServiceTests
     }
 
     [Fact]
-    public void MapMagacin_MapsRacunopolToOdgovornoLice()
+    public void MapMagacin_MapsRacunopolToNazivMagacina()
     {
-        var row = Row(("SIFRA", "001"), ("RACUNOPOL", "Petrović Mile"));
+        var row = Row(("SIFRA", "001"), ("RACUNOPOL", "CENTRALNI MAGACIN"));
 
         var magacin = DbfImportService.MapMagacin(row);
 
         Assert.NotNull(magacin);
         Assert.Equal("001", magacin!.SifraMagacina);
-        Assert.Equal("Petrović Mile", magacin.OdgovornoLice);
-        Assert.Equal("Magacin 001", magacin.NazivMagacina);
+        Assert.Equal("CENTRALNI MAGACIN", magacin.NazivMagacina);
+        Assert.Null(magacin.OdgovornoLice);
     }
 
     [Fact]
@@ -116,7 +118,7 @@ public class DbfImportServiceTests
         var groups = DbfImportService.GroupNalogRows(rows);
 
         Assert.Single(groups);
-        Assert.Equal("5", groups[0].BrojNaloga);
+        Assert.Equal(5, groups[0].BrojNaloga);
         Assert.Equal(2, groups[0].Redovi.Count);
     }
 
@@ -129,14 +131,16 @@ public class DbfImportServiceTests
             Row(("DAT_NALOGA", "20260101"), ("KNJIZEN", "1"), ("BR_DOKUM", "R-1"), ("KONTO", "200"), ("DUGUJE", "0"), ("POTRAZUJE", "500"), ("RED_BROJ", "2")),
         };
 
-        var nalog = DbfImportService.MapNalogGrupa("42", redovi);
+        var nalog = DbfImportService.MapNalogGrupa(42, redovi);
 
         Assert.NotNull(nalog);
-        Assert.Equal("42", nalog!.BrojNaloga);
+        Assert.Equal(42, nalog!.BrojNaloga);
         Assert.Equal(new DateTime(2026, 1, 1), nalog.DatumNaloga);
         Assert.True(nalog.IsKnjizen);
         Assert.Equal(500m, nalog.UkupnoDuguje);
         Assert.Equal(500m, nalog.UkupnoPotrazuje);
         Assert.Equal(2, nalog.Stavke.Count);
     }
+
+
 }

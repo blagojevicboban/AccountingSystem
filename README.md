@@ -30,14 +30,15 @@
 - 📦 **Magacin i zalihe** — Materijalne kartice po ponderisanoj prosečnoj ceni (`M1`), unos/izmena materijala (`MaterijalEditWindow`), provera i rekalkulacija salda zaliha (`ProveraKarticaWindow`), Ulazi (`M2`), Trebovanja (`M3`) i **Primopredaje / Interni prenosi (`M4`)** (razlikuje Primopredaja/Zaduženje/Razduženje).
 - 🛒 **Trgovina i Fakture** — Veleprodajne (`MAT6`) i Maloprodajne (`MAT3`) kalkulacije (sa direktnom PDF štampom), **Računi-Otpremnice / Fakture (`MAT5`)** sa rokom dospelosti, rabatom i PDV-om (unos stavki po šifri artikla), i **Nivelacije cena (`MAT7`)** sa automatskom generacijom svođenjem na prosečnu nabavnu cenu, zbirnom PDF štampom i masovnim knjiženjem.
 - 🧾 **Poreske tarife** — samostalan šifarnik poreskih stopa (tarifni broj, porez %, poseban porez %) sa CRUD ekranom i PDF štampom.
-- 📊 **Robni bruto bilans i Analitika zaliha** — početno stanje/ulaz/izlaz/stanje po magacinu i artiklu, količinski i vrednosno, sa filterima, višestrukom štampom robnih kartica (više artikala ili svi magacini), izveštajem „Raspored artikala (analitika MAT91)” i sintetičkim izveštajem „Stanje po artiklima (sintetika MAT92)”.
+- 📊 **Robni i Materijalni Bruto Bilans (`BRUTO BILANS MATERIJALNOG KNJIGOVODSTVA`)** — početno stanje/ulaz/izlaz/stanje po magacinu i artiklu, količinski i vrednosno sa slažećim zbirom u paru sa Clipper izveštajima (`M1.PRG` / `st_mat_bruto()`), višestrukom štampom robnih kartica (više artikala ili svi magacini), izveštajem „Raspored artikala (analitika MAT91)” i sintetičkim izveštajem „Stanje po artiklima (sintetika MAT92)”.
+- 📊 **Excel (XLSX) Izvoz** — jednim klikom izvoz svih 15 tabova robnog i materijalnog poslovanja u Excel sa udesno poravnatim numeričkim kolonama i automatskim `=SUM(...)` zbirnim formulama.
 - 🏢 **Šifarnik artikala i Računopolagača** — samostalni CRUD ekrani (`MAT1`, `MAT2`) sa PDF štampom.
 
 ### Zajedničko
 - 🔐 **Prijava i uloge** — lozinke osoljene (PBKDF2), uloga Administrator za osetljive operacije (rasknjižavanje, nova godina).
 - 🏢 **Rad sa više firmi** — svaka firma ima sopstvenu SQLite bazu podataka.
 - 🔄 **Uvoz iz DOS sistema (`AccountingMigration`)** — uvozi kontni plan, naloge, partnere, materijale, magacine, ulaze, trebovanja, kartice i kamatne stope iz legacy dBase III / Clipper fajlova (`C:\KNJIGE\Radni\KORxx`).
-- 📄 **PDF izveštaji (`QuestPDF`)** — dnevnik glavne knjige, bruto bilans (finansijski i analitike), kartica konta, IOS, kamata, izveštaj o zalihama.
+- 📄 **PDF izveštaji (`QuestPDF`)** — dnevnik glavne knjige, bruto bilans (finansijski i analitike), kartica konta, IOS, kamata, izveštaj o zalihama (u Portrait A4 formatu).
 - ❓ **Pomoć** — uputstvo za korišćenje ugrađeno u samu aplikaciju (tab „Pomoć" u sidebar-u).
 
 ---
@@ -51,6 +52,7 @@
 | **Baza podataka** | SQLite (po jedna instanca po firmi) |
 | **ORM** | Entity Framework Core 8 (isključivo EF Core migracije, ne `EnsureCreated`) |
 | **Izveštaji / PDF** | QuestPDF |
+| **Izvoz u Excel** | ClosedXML (XLSX izvoz sa formulama) |
 | **Legacy DBF parser** | Sopstveni binarni dBase III parser (Latin1 / YUSCII / CP852) |
 | **Pakovanje / Update** | Velopack |
 | **Testiranje** | xUnit (kalkulatori/servisi bez zavisnosti od baze — in-memory EF provider za servise koji zavise od baze) |

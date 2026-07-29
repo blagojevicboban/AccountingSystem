@@ -80,7 +80,7 @@ public class KalkulacijaServiceTests
 
         var k = new Kalkulacija
         {
-            BrojKalkulacije = "K-1",
+            BrojKalkulacije = 1,
             NabavnaVrednost = 10000m,
             MarzaProcenat = 10m,
             PoreskaStopaProcenat = 20m
@@ -100,7 +100,7 @@ public class KalkulacijaServiceTests
         using var db = CreateInMemoryDb();
         var service = new KalkulacijaService(db);
 
-        var k = new Kalkulacija { BrojKalkulacije = "K-2", NabavnaVrednost = 1000m };
+        var k = new Kalkulacija { BrojKalkulacije = 2, NabavnaVrednost = 1000m };
         await service.SaveKalkulacijuAsync(k);
 
         await service.KnjiziKalkulacijuAsync(k.KalkulacijaId);
@@ -173,7 +173,7 @@ public class KalkulacijaServiceTests
 
         var k = new Kalkulacija
         {
-            BrojKalkulacije = "K-3",
+            BrojKalkulacije = 3,
             Datum = new DateTime(2026, 7, 26),
             SifraMagacina = "001",
             MarzaProcenat = 10m,
@@ -210,7 +210,7 @@ public class KalkulacijaServiceTests
 
         var k = new Kalkulacija
         {
-            BrojKalkulacije = "K-4",
+            BrojKalkulacije = 4,
             Stavke = new List<KalkulacijaStavka> { new() { SifraArtikla = "A1", Kolicina = 5m, NabavnaCena = 100m } }
         };
         var saved = await service.SaveKalkulacijuAsync(k);

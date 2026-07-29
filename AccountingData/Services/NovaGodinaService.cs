@@ -50,11 +50,12 @@ public class NovaGodinaService
             .ToList();
     }
 
-    private static string BrojPrenosa(int novaGodina) => $"PS-{novaGodina}";
+    private const string VrstaNalogaPrenosPocetnogStanja = "PrenosPocetnogStanja";
 
     public async Task<bool> PostojiPrenosAsync(int novaGodina)
     {
-        return await _db.Nalozi.AnyAsync(n => n.BrojNaloga == BrojPrenosa(novaGodina));
+        var pocetakGodine = new DateTime(novaGodina, 1, 1);
+        return await _db.Nalozi.AnyAsync(n => n.VrstaNaloga == VrstaNalogaPrenosPocetnogStanja && n.DatumNaloga == pocetakGodine);
     }
 
     /// <summary>
@@ -67,11 +68,10 @@ public class NovaGodinaService
     public async Task<Nalog> PrenesiUNovuGoduAsync(int izvornaGodina)
     {
         int novaGodina = izvornaGodina + 1;
-        string brojPrenosa = BrojPrenosa(novaGodina);
 
         if (await PostojiPrenosAsync(novaGodina))
         {
-            throw new InvalidOperationException($"Prenos početnog stanja za {novaGodina}. godinu je već izvršen (nalog {brojPrenosa}).");
+            throw new InvalidOperationException($"Prenos početnog stanja za {novaGodina}. godinu je već izvršen.");
         }
 
         var saldoPoKontu = await GetZakljucniSaldoAsync(izvornaGodina);
@@ -92,11 +92,12 @@ public class NovaGodinaService
                 "verovatno postoji neispravan proknjižen nalog. Ispravite ga (npr. preko Rasknjiži) pre prenosa u novu godinu.");
         }
 
+        int sledeciBrojNaloga = await _db.Nalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync() + 1;
         var nalog = new Nalog
         {
-            BrojNaloga = brojPrenosa,
+            BrojNaloga = sledeciBrojNaloga,
             DatumNaloga = new DateTime(novaGodina, 1, 1),
-            VrstaNaloga = "Finansijski",
+            VrstaNaloga = VrstaNalogaPrenosPocetnogStanja,
             Opis = $"Prenos početnog stanja iz {izvornaGodina}. godine",
             IsKnjizen = true,
             DatumKnjiženja = DateTime.Now

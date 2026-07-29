@@ -20,7 +20,7 @@ public class PrimopredajaService
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(p => p.BrojNaloga.Contains(search) || p.SifraMagacinaDaje.Contains(search) || p.SifraMagacinaPrima.Contains(search));
+            query = query.Where(p => p.BrojNaloga.ToString().Contains(search) || p.SifraMagacinaDaje.Contains(search) || p.SifraMagacinaPrima.Contains(search));
         }
 
         return await query.OrderByDescending(p => p.Datum).ThenByDescending(p => p.PrimopredajaNalogId).ToListAsync();

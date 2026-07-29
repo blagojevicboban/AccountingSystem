@@ -6,7 +6,7 @@ namespace AccountingData.Services;
 public class KarticaRed
 {
     public DateTime Datum { get; set; }
-    public string BrojNaloga { get; set; } = string.Empty;
+    public int BrojNaloga { get; set; }
     public string? Opis { get; set; }
     public string? OpisPromene { get; set; }
     public decimal Duguje { get; set; }

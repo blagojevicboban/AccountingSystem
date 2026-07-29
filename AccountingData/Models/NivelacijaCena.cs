@@ -8,9 +8,7 @@ public class NivelacijaCena
     [Key]
     public int NivelacijaCenaId { get; set; }
 
-    [Required]
-    [MaxLength(30)]
-    public string BrojNivelacije { get; set; } = string.Empty;
+    public int BrojNivelacije { get; set; }
 
     public DateTime DatumNivelacije { get; set; } = DateTime.Now;
 

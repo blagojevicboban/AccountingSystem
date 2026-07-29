@@ -73,13 +73,13 @@ public partial class TrgovinaView : UserControl
         {
             DgKalkulacije.ItemsSource = string.IsNullOrEmpty(search)
                 ? _sveKalkulacije
-                : _sveKalkulacije.Where(k => k.BrojKalkulacije.ToLower().Contains(search) || (k.SifraDobavljaca != null && k.SifraDobavljaca.ToLower().Contains(search))).ToList();
+                : _sveKalkulacije.Where(k => k.BrojKalkulacije.ToString().Contains(search) || (k.SifraDobavljaca != null && k.SifraDobavljaca.ToLower().Contains(search))).ToList();
         }
         else
         {
             DgKalkulacije.ItemsSource = string.IsNullOrEmpty(search)
                 ? _sveMaloprodajneKalkulacije
-                : _sveMaloprodajneKalkulacije.Where(k => k.BrojKalkulacije.ToLower().Contains(search)).ToList();
+                : _sveMaloprodajneKalkulacije.Where(k => k.BrojKalkulacije.ToString().Contains(search)).ToList();
         }
     }
 
@@ -159,7 +159,7 @@ public partial class TrgovinaView : UserControl
                 var magacin = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == puna.SifraMagacina);
 
                 pdfBytes = Services.PdfReportService.GenerisiKalkulacijuPdf(firma, puna, dobavljac, magacin);
-                brojZaFajl = puna.BrojKalkulacije;
+                brojZaFajl = puna.BrojKalkulacije.ToString();
             }
             else
             {
@@ -174,7 +174,7 @@ public partial class TrgovinaView : UserControl
                 var magacinPrima = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovana.SifraMagacinaPrima);
 
                 pdfBytes = Services.PdfReportService.GenerisiMaloprodajnuKalkulacijuPdf(firma, selektovana, dobavljac, magacinDaje, magacinPrima);
-                brojZaFajl = selektovana.BrojKalkulacije;
+                brojZaFajl = selektovana.BrojKalkulacije.ToString();
             }
 
             string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Kalkulacija_{brojZaFajl}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
@@ -213,34 +213,12 @@ public partial class TrgovinaView : UserControl
         var search = TxtPretragaRacuna.Text.Trim().ToLower();
         DgRacuni.ItemsSource = string.IsNullOrEmpty(search)
             ? _sviRacuni
-            : _sviRacuni.Where(r => r.BrojRacuna.ToLower().Contains(search) ||
+            : _sviRacuni.Where(r => r.BrojRacuna.ToString().Contains(search) ||
                                    (r.BrojOtpremnice != null && r.BrojOtpremnice.ToLower().Contains(search)) ||
                                    r.KontoKupca.ToLower().Contains(search)).ToList();
 
         if (DgRacuni.Items.Count > 0) DgRacuni.SelectedIndex = 0;
         else DgRacunStavke.ItemsSource = null;
-    }
-
-    private void DgRacuni_Sorting(object sender, DataGridSortingEventArgs e)
-    {
-        if (e.Column.SortMemberPath != "BrojRacuna") return;
-
-        e.Handled = true;
-        bool ascending = e.Column.SortDirection != ListSortDirection.Ascending;
-
-        var view = (ListCollectionView)CollectionViewSource.GetDefaultView(DgRacuni.ItemsSource);
-        view.CustomSort = Comparer<object>.Create((a, b) =>
-        {
-            var brojA = ((RacunOtpremnica)a).BrojRacuna;
-            var brojB = ((RacunOtpremnica)b).BrojRacuna;
-            int cmp = int.TryParse(brojA, out int nA) && int.TryParse(brojB, out int nB)
-                ? nA.CompareTo(nB)
-                : string.Compare(brojA, brojB, StringComparison.OrdinalIgnoreCase);
-            return ascending ? cmp : -cmp;
-        });
-
-        foreach (var col in DgRacuni.Columns) col.SortDirection = null;
-        e.Column.SortDirection = ascending ? ListSortDirection.Ascending : ListSortDirection.Descending;
     }
 
     private void TxtPretragaRacuna_TextChanged(object sender, TextChangedEventArgs e) => FiltrirajRacune();
@@ -1138,7 +1116,7 @@ public partial class TrgovinaView : UserControl
         string search = TxtPretragaPrimopredaja.Text.Trim().ToLower();
         DgPrimopredaje.ItemsSource = string.IsNullOrEmpty(search)
             ? _svePrimopredaje
-            : _svePrimopredaje.Where(p => p.BrojNaloga.ToLower().Contains(search) ||
+            : _svePrimopredaje.Where(p => p.BrojNaloga.ToString().Contains(search) ||
                                            p.SifraMagacinaDaje.ToLower().Contains(search) ||
                                            p.SifraMagacinaPrima.ToLower().Contains(search)).ToList();
 
@@ -1369,7 +1347,7 @@ public partial class TrgovinaView : UserControl
         var search = TxtPretragaNivelacija?.Text.Trim().ToLower() ?? "";
         var filtrirane = string.IsNullOrEmpty(search)
             ? _sveNivelacije
-            : _sveNivelacije.Where(n => n.BrojNivelacije.ToLower().Contains(search) || (n.Opis != null && n.Opis.ToLower().Contains(search))).ToList();
+            : _sveNivelacije.Where(n => n.BrojNivelacije.ToString().Contains(search) || (n.Opis != null && n.Opis.ToLower().Contains(search))).ToList();
 
         DgNivelacije.ItemsSource = filtrirane;
         if (filtrirane.Count > 0)
@@ -1692,4 +1670,33 @@ public partial class TrgovinaView : UserControl
             MessageBox.Show($"Greška pri štampi stanja po artiklima: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    // ===================== EXCEL EXPORT DUGMIĆI =====================
+
+    private void BtnExportExcelRacunopol_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgRacunopolagaci, "Šifrarnik računopolagača", "Sifrarnik_Racunopolagaca");
+
+    private void BtnExportExcelArtikli_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgSifrarnikArtikala, "Šifrarnik artikala", "Sifrarnik_Artikala");
+
+    private void BtnExportExcelTarife_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgPoreskeTarife, "Poreske tarife", "Poreske_Tarife");
+
+    private void BtnExportExcelPrimopredajeTrg_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgPrimopredaje, "Primopredaje robe", "Primopredaje_Robe");
+
+    private void BtnExportExcelKalkulacije_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgKalkulacije, "Kalkulacije", "Kalkulacije");
+
+    private void BtnExportExcelRacuni_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgRacuni, "Računi - Otpremnice", "Racuni_Otpremnice");
+
+    private void BtnExportExcelNivelacije_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgNivelacije, "Nivelacije cena", "Nivelacije_Cena");
+
+    private void BtnExportExcelRobnaKartica_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgRobnaKartica, TxtNaslovArtiklaRobno.Text, "Robna_Kartica");
+
+    private void BtnExportExcelRobniBruto_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgRobniBrutoBilans, "Robni Bruto bilans", "Robni_Bruto_Bilans");
 }

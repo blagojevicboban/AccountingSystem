@@ -21,7 +21,7 @@ public partial class PrimopredajaEditWindow : Window
         if (existing != null)
         {
             _existingId = existing.PrimopredajaNalogId;
-            TxtBrojNaloga.Text = existing.BrojNaloga;
+            TxtBrojNaloga.Text = existing.BrojNaloga.ToString();
             DpDatum.SelectedDate = existing.Datum;
 
             foreach (var st in existing.Stavke)
@@ -54,12 +54,7 @@ public partial class PrimopredajaEditWindow : Window
                 .Options;
             using var db = new AccountingDbContext(options);
 
-            var brojevi = await db.PrimopredajaNalozi.Select(p => p.BrojNaloga).ToListAsync();
-            int max = 0;
-            foreach (var b in brojevi)
-            {
-                if (int.TryParse(b, out var num) && num > max) max = num;
-            }
+            int max = await db.PrimopredajaNalozi.Select(p => p.BrojNaloga).DefaultIfEmpty(0).MaxAsync();
             TxtBrojNaloga.Text = (max + 1).ToString();
         }
         catch { }
@@ -106,9 +101,9 @@ public partial class PrimopredajaEditWindow : Window
 
     private async void BtnSačuvaj_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(TxtBrojNaloga.Text))
+        if (!int.TryParse(TxtBrojNaloga.Text.Trim(), out int brojNaloga))
         {
-            MessageBox.Show("Molimo unesite broj naloga primopredaje.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Molimo unesite ispravan broj naloga primopredaje.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -134,7 +129,7 @@ public partial class PrimopredajaEditWindow : Window
         var nalog = new PrimopredajaNalog
         {
             PrimopredajaNalogId = _existingId,
-            BrojNaloga = TxtBrojNaloga.Text.Trim(),
+            BrojNaloga = brojNaloga,
             Datum = DpDatum.SelectedDate ?? DateTime.Now,
             SifraMagacinaDaje = magDaje.SifraMagacina,
             SifraMagacinaPrima = magPrima.SifraMagacina,

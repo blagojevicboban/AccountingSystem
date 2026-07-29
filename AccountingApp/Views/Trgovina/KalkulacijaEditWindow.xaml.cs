@@ -41,12 +41,7 @@ public partial class KalkulacijaEditWindow : Window
             CmbMagacin.ItemsSource = magacini;
             if (magacini.Count > 0) CmbMagacin.SelectedIndex = 0;
 
-            var brojevi = await db.Kalkulacije.Select(k => k.BrojKalkulacije).ToListAsync();
-            int max = 0;
-            foreach (var b in brojevi)
-            {
-                if (int.TryParse(b, out var v) && v > max) max = v;
-            }
+            int max = await db.Kalkulacije.Select(k => k.BrojKalkulacije).DefaultIfEmpty(0).MaxAsync();
             TxtBrojKalkulacije.Text = (max + 1).ToString();
         }
         catch
@@ -66,7 +61,7 @@ public partial class KalkulacijaEditWindow : Window
     {
         return new Kalkulacija
         {
-            BrojKalkulacije = TxtBrojKalkulacije.Text.Trim(),
+            BrojKalkulacije = int.TryParse(TxtBrojKalkulacije.Text.Trim(), out int brojKalk) ? brojKalk : 0,
             Datum = DpDatum.SelectedDate ?? DateTime.Now,
             SifraDobavljaca = TxtSifraDobavljaca.Text.Trim(),
             BrojRacuna = TxtBrojRacuna.Text.Trim(),
@@ -160,9 +155,9 @@ public partial class KalkulacijaEditWindow : Window
 
     private async void BtnSnimi_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(TxtBrojKalkulacije.Text))
+        if (!int.TryParse(TxtBrojKalkulacije.Text.Trim(), out _))
         {
-            MessageBox.Show("Unesite broj kalkulacije.", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Unesite ispravan broj kalkulacije.", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
         foreach (var s in _stavke)

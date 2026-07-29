@@ -6,7 +6,7 @@ namespace AccountingData.Services;
 public class KamataStavka
 {
     public DateTime Datum { get; set; }
-    public string BrojNaloga { get; set; } = string.Empty;
+    public int BrojNaloga { get; set; }
     public string? Opis { get; set; }
     public decimal Iznos { get; set; }
     public int BrojDanaKasnjenja { get; set; }

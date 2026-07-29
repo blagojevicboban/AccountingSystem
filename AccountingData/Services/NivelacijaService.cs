@@ -21,7 +21,7 @@ public class NivelacijaService
         {
             pretraga = pretraga.ToLower();
             query = query.Where(n =>
-                n.BrojNivelacije.ToLower().Contains(pretraga) ||
+                n.BrojNivelacije.ToString().Contains(pretraga) ||
                 (n.Opis != null && n.Opis.ToLower().Contains(pretraga)) ||
                 (n.Magacin != null && n.Magacin.NazivMagacina.ToLower().Contains(pretraga)));
         }
@@ -133,9 +133,10 @@ public class NivelacijaService
             string kontoMagacina = niv.Magacin?.VrstaMagacina == "Maloprodaja" ? "1340" : "1320";
             string kontoRazlike = "1329";
 
+            int sledeciBrojNaloga = await db.Nalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync() + 1;
             var nalog = new Nalog
             {
-                BrojNaloga = $"NIV-{niv.BrojNivelacije}",
+                BrojNaloga = sledeciBrojNaloga,
                 DatumNaloga = niv.DatumNivelacije,
                 Opis = $"Nivelacija cena br. {niv.BrojNivelacije}",
                 IsKnjizen = true,
@@ -224,7 +225,7 @@ public class NivelacijaService
 
         if (artikliStanja.Count == 0) return null;
 
-        string sledeciBroj = (await db.NivelacijeCena.CountAsync() + 1).ToString();
+        int sledeciBroj = await db.NivelacijeCena.Select(n => n.BrojNivelacije).DefaultIfEmpty(0).MaxAsync() + 1;
 
         var niv = new NivelacijaCena
         {

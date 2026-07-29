@@ -104,9 +104,10 @@ public class RacunOtpremnicaService
         if (racun.IsKnjizen) throw new InvalidOperationException("Račun je već proknjižen.");
 
         // Automatsko kreiranje naloga knjiženja u Glavnoj knjizi
+        int sledeciBrojNaloga = await _db.Nalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync() + 1;
         var nalog = new Nalog
         {
-            BrojNaloga = $"RO-{racun.BrojRacuna}",
+            BrojNaloga = sledeciBrojNaloga,
             DatumNaloga = racun.DatumRacuna,
             VrstaNaloga = "Prodaja",
             Opis = $"Račun-otpremnica br. {racun.BrojRacuna}",
@@ -119,7 +120,7 @@ public class RacunOtpremnicaService
         {
             RedniBroj = 1,
             BrojKonta = "2040",
-            BrojDokumenta = racun.BrojRacuna,
+            BrojDokumenta = racun.BrojRacuna.ToString(),
             Opis = $"Faktura br. {racun.BrojRacuna}",
             Duguje = racun.UkupnoZaUplatu,
             Potrazuje = 0m,
@@ -131,7 +132,7 @@ public class RacunOtpremnicaService
         {
             RedniBroj = 2,
             BrojKonta = "6120",
-            BrojDokumenta = racun.BrojRacuna,
+            BrojDokumenta = racun.BrojRacuna.ToString(),
             Opis = $"Prihod po fakturi {racun.BrojRacuna}",
             Duguje = 0m,
             Potrazuje = racun.UkupnoOsnovica,
@@ -145,7 +146,7 @@ public class RacunOtpremnicaService
             {
                 RedniBroj = 3,
                 BrojKonta = "4700",
-                BrojDokumenta = racun.BrojRacuna,
+                BrojDokumenta = racun.BrojRacuna.ToString(),
                 Opis = $"Obračunati PDV po fakturi {racun.BrojRacuna}",
                 Duguje = 0m,
                 Potrazuje = racun.UkupnoPdv,

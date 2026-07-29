@@ -80,7 +80,7 @@ public class KalkulacijaService
         var query = _db.Kalkulacije.AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(k => k.BrojKalkulacije.Contains(search));
+            query = query.Where(k => k.BrojKalkulacije.ToString().Contains(search));
         }
         return await query.OrderByDescending(k => k.Datum).ToListAsync();
     }

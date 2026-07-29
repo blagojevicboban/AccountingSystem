@@ -85,7 +85,7 @@ public partial class MagacinEditWindow : Window
                 {
                     SifraMagacina = sifra,
                     NazivMagacina = naziv,
-                    OdgovornoLice = string.IsNullOrWhiteSpace(odgovornoLice) ? naziv : odgovornoLice,
+                    OdgovornoLice = string.IsNullOrWhiteSpace(odgovornoLice) ? null : odgovornoLice,
                     VrstaMagacina = vrsta
                 });
             }

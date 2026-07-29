@@ -56,7 +56,7 @@ public partial class NaloziView : UserControl
         bool samoNeproknjizeni = RbNeproknjizeni?.IsChecked == true;
 
         var filtered = _allNalozi.Where(n =>
-            (string.IsNullOrEmpty(search) || n.BrojNaloga.ToLower().Contains(search) || (n.Opis != null && n.Opis.ToLower().Contains(search))) &&
+            (string.IsNullOrEmpty(search) || n.BrojNaloga.ToString().Contains(search) || (n.Opis != null && n.Opis.ToLower().Contains(search))) &&
             (!samoProknjizeni || n.IsKnjizen) &&
             (!samoNeproknjizeni || !n.IsKnjizen)
         ).ToList();
@@ -121,40 +121,6 @@ public partial class NaloziView : UserControl
     private void Filter_Changed(object sender, RoutedEventArgs e)
     {
         ApplyFilter();
-    }
-
-    /// <summary>BrojNaloga je string (legacy formati poput "PS-2026" postoje), pa podrazumevano
-    /// sortiranje DataGrid-a poredi leksikografski (npr. "213" ispred "53"). Ovde sortiramo
-    /// numerički kad je moguće, uz padanje na string poređenje za nenumeričke vrednosti.</summary>
-    private void DgNalozi_Sorting(object sender, DataGridSortingEventArgs e)
-    {
-        if (e.Column.Header as string != "Br. naloga") return;
-        e.Handled = true;
-
-        var direction = e.Column.SortDirection != ListSortDirection.Ascending
-            ? ListSortDirection.Ascending
-            : ListSortDirection.Descending;
-
-        if (DgNalozi.ItemsSource is not List<Nalog> current) return;
-
-        var sorted = direction == ListSortDirection.Ascending
-            ? current.OrderBy(n => n.BrojNaloga, BrojNalogaComparer.Instance).ToList()
-            : current.OrderByDescending(n => n.BrojNaloga, BrojNalogaComparer.Instance).ToList();
-
-        DgNalozi.ItemsSource = sorted;
-        e.Column.SortDirection = direction;
-    }
-
-    private class BrojNalogaComparer : IComparer<string?>
-    {
-        public static readonly BrojNalogaComparer Instance = new();
-
-        public int Compare(string? x, string? y)
-        {
-            bool xNum = int.TryParse(x, out int xi);
-            bool yNum = int.TryParse(y, out int yi);
-            return xNum && yNum ? xi.CompareTo(yi) : string.CompareOrdinal(x, y);
-        }
     }
 
     private void DgNalozi_SelectionChanged(object sender, SelectionChangedEventArgs e)

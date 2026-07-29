@@ -34,7 +34,7 @@ public partial class UlazEditWindow : Window
         }
 
         Title = $"Izmena ulaza br. {postojeci.BrojNaloga}";
-        TxtBrojNaloga.Text = postojeci.BrojNaloga;
+        TxtBrojNaloga.Text = postojeci.BrojNaloga.ToString();
         TxtBrojNaloga.IsReadOnly = true;
         DpDatum.SelectedDate = postojeci.Datum;
         TxtBrojRacuna.Text = postojeci.BrojRacuna ?? "";
@@ -69,12 +69,7 @@ public partial class UlazEditWindow : Window
 
             if (_postojeciId == 0)
             {
-                var brojevi = await db.UlazNalozi.Select(n => n.BrojNaloga).ToListAsync();
-                int max = 0;
-                foreach (var b in brojevi)
-                {
-                    if (int.TryParse(b, out var v) && v > max) max = v;
-                }
+                int max = await db.UlazNalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync();
                 TxtBrojNaloga.Text = (max + 1).ToString();
             }
         }
@@ -102,9 +97,9 @@ public partial class UlazEditWindow : Window
 
     private async void BtnSnimi_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(TxtBrojNaloga.Text))
+        if (!int.TryParse(TxtBrojNaloga.Text.Trim(), out int brojNaloga))
         {
-            MessageBox.Show("Unesite broj naloga.", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Unesite ispravan broj naloga.", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
         if (CmbMagacin.SelectedItem is not AccountingData.Models.Magacin magacin)
@@ -150,7 +145,7 @@ public partial class UlazEditWindow : Window
             {
                 var nalog = new UlazNalog
                 {
-                    BrojNaloga = TxtBrojNaloga.Text.Trim(),
+                    BrojNaloga = brojNaloga,
                     Datum = DpDatum.SelectedDate ?? DateTime.Now,
                     SifraMagacina = magacin.SifraMagacina,
                     BrojRacuna = TxtBrojRacuna.Text.Trim()

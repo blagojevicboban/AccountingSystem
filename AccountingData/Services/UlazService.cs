@@ -17,7 +17,7 @@ public class UlazService
         var query = _db.UlazNalozi.Include(n => n.Stavke).AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(n => n.BrojNaloga.Contains(search) || (n.BrojRacuna != null && n.BrojRacuna.Contains(search)));
+            query = query.Where(n => n.BrojNaloga.ToString().Contains(search) || (n.BrojRacuna != null && n.BrojRacuna.Contains(search)));
         }
         return await query.OrderByDescending(n => n.Datum).ToListAsync();
     }

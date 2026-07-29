@@ -113,14 +113,17 @@ public static class DbfImportService
         string sifra = Get(row, "SIFRA", "KOD");
         if (string.IsNullOrWhiteSpace(sifra)) return null;
 
-        string naziv = Get(row, "NAZIV", "IME", "OPIS");
+        // U MAGACIN.DBF polje RACUNOPOL sadrži naziv računopolagača/magacina (npr. "CENTRALNI MAGACIN", "SUMSKO")
+        string naziv = Get(row, "RACUNOPOL", "NAZIV", "IME", "OPIS");
         if (string.IsNullOrWhiteSpace(naziv)) naziv = $"Magacin {sifra}";
+
+        string odgLice = Get(row, "ODG_LICE", "ODGOVORNO", "LICE");
 
         return new Magacin
         {
             SifraMagacina = sifra,
             NazivMagacina = naziv,
-            OdgovornoLice = NullIfEmpty(Get(row, "RACUNOPOL", "ODG_LICE", "LICE")),
+            OdgovornoLice = NullIfEmpty(odgLice),
             VrstaMagacina = "Veleprodaja"
         };
     }
@@ -208,18 +211,18 @@ public static class DbfImportService
     }
 
     /// <summary>Grupiše NALOG.DBF redove po broju naloga (BR_NALOGA), izbacuje prazne/nulte brojeve.</summary>
-    public static List<(string BrojNaloga, List<Dictionary<string, string>> Redovi)> GroupNalogRows(List<Dictionary<string, string>> rows)
+    public static List<(int BrojNaloga, List<Dictionary<string, string>> Redovi)> GroupNalogRows(List<Dictionary<string, string>> rows)
     {
         return rows
             .Select(r => new { Row = r, Broj = Get(r, "BR_NALOGA") })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj.TrimStart('0') != "")
-            .GroupBy(x => x.Broj)
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj.TrimStart('0') != "" && int.TryParse(x.Broj, out _))
+            .GroupBy(x => int.Parse(x.Broj, CultureInfo.InvariantCulture))
             .Select(g => (g.Key, g.Select(x => x.Row).ToList()))
             .ToList();
     }
 
     /// <summary>Grupa redova NALOG.DBF (isti BR_NALOGA) → Nalog sa stavkama.</summary>
-    public static Nalog? MapNalogGrupa(string brojNaloga, List<Dictionary<string, string>> redovi, Dictionary<int, string>? promeneMap = null)
+    public static Nalog? MapNalogGrupa(int brojNaloga, List<Dictionary<string, string>> redovi, Dictionary<int, string>? promeneMap = null)
     {
         if (redovi.Count == 0) return null;
 
@@ -283,11 +286,11 @@ public static class DbfImportService
     public static Kalkulacija? MapKalkulacija(Dictionary<string, string> row)
     {
         string broj = Get(row, "BR_KALKUL", "BR_KAL", "BROJ", "BR_NALOGA").Trim();
-        if (string.IsNullOrWhiteSpace(broj) || broj == "0" || broj.TrimStart('0') == "") return null;
+        if (string.IsNullOrWhiteSpace(broj) || broj == "0" || broj.TrimStart('0') == "" || !int.TryParse(broj, out int brojKalk)) return null;
 
         return new Kalkulacija
         {
-            BrojKalkulacije = broj,
+            BrojKalkulacije = brojKalk,
             Datum = ParseDate(Get(row, "DATUM", "DAT_KAL")),
             SifraDobavljaca = NullIfEmpty(Get(row, "DOBAVLJAC", "KUPAC", "KONTO")),
             BrojOtpremnice = NullIfEmpty(Get(row, "BR_OTP", "OTPREMNICA")),
@@ -337,13 +340,13 @@ public static class DbfImportService
     }
 
     /// <summary>Grupiše KAL_NAL.DBF redove po broju kalkulacije.</summary>
-    public static Dictionary<string, List<Dictionary<string, string>>> GroupKalkulacijaStavke(List<Dictionary<string, string>> rows)
+    public static Dictionary<int, List<Dictionary<string, string>>> GroupKalkulacijaStavke(List<Dictionary<string, string>> rows)
     {
         return rows
             .Select(r => new { Row = r, Broj = Get(r, "BR_KALKUL", "BR_KAL", "BR_NALOGA", "BROJ") })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Broj))
-            .GroupBy(x => x.Broj, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.Select(x => x.Row).ToList(), StringComparer.OrdinalIgnoreCase);
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && int.TryParse(x.Broj, out _))
+            .GroupBy(x => int.Parse(x.Broj, CultureInfo.InvariantCulture))
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Row).ToList());
     }
 
     /// <summary>MAT_NAL.DBF / ZADUZ.DBF / RAZDUZ.DBF → PrimopredajaNalog i stavke.</summary>
@@ -353,13 +356,13 @@ public static class DbfImportService
 
         var grouped = rows
             .Select(r => new { Row = r, Broj = Get(r, "BR_NALOGA", "BR_NAL", "BROJ").Trim() })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "")
-            .GroupBy(x => x.Broj, StringComparer.OrdinalIgnoreCase);
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "" && int.TryParse(x.Broj, out _))
+            .GroupBy(x => int.Parse(x.Broj, CultureInfo.InvariantCulture));
 
         foreach (var group in grouped)
         {
             var firstRow = group.First();
-            string brNaloga = group.Key;
+            int brNaloga = group.Key;
             string magDaje = Get(firstRow.Row, "MAG_DAJE", "MAG_IZ", "MAGACIN", "MAG");
             string magPrima = Get(firstRow.Row, "MAG_PRIMA", "MAG_U", "KORISNIK", "KONTO");
             string knjiStr = Get(firstRow.Row, "KNJIZEN", "KNJIZ");
@@ -415,26 +418,26 @@ public static class DbfImportService
 
         var podMap = racPodRows
             .Select(r => new { Row = r, Broj = Get(r, "BR_NALOGA", "BR_NAL", "BROJ").Trim() })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "")
-            .GroupBy(x => x.Broj, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.First().Row, StringComparer.OrdinalIgnoreCase);
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "" && int.TryParse(x.Broj, out _))
+            .GroupBy(x => int.Parse(x.Broj, CultureInfo.InvariantCulture))
+            .ToDictionary(g => g.Key, g => g.First().Row);
 
         var grouped = racOtpRows
             .Select(r => new { Row = r, Broj = Get(r, "BR_NALOGA", "BR_NAL", "BROJ").Trim() })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "")
-            .GroupBy(x => x.Broj, StringComparer.OrdinalIgnoreCase);
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "" && int.TryParse(x.Broj, out _))
+            .GroupBy(x => int.Parse(x.Broj, CultureInfo.InvariantCulture));
 
         foreach (var group in grouped)
         {
             var firstRow = group.First().Row;
-            string brNaloga = group.Key;
+            int brNaloga = group.Key;
             DateTime datum = ParseDate(Get(firstRow, "DATUMOGA", "DATUM"));
             string magDaje = Get(firstRow, "MAG_DAJE", "MAGACIN");
             string kontoKupca = Get(firstRow, "KONTOZNOS", "KONTO", "KUPAC");
             string knjiStr = Get(firstRow, "KNJIZENOS", "KNJIZEN");
 
             int rokDana = 0;
-            string brOtprem = brNaloga;
+            string brOtprem = brNaloga.ToString(CultureInfo.InvariantCulture);
             if (podMap.TryGetValue(brNaloga, out var podRow))
             {
                 int.TryParse(Get(podRow, "ROKALOGA", "ROK"), out rokDana);
@@ -534,13 +537,13 @@ public static class DbfImportService
 
         var grouped = allRows
             .Select(r => new { Row = r, Broj = Get(r, "BR_NALOGA", "BR_NIV", "BR_KALKUL", "BROJ").Trim() })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "")
-            .GroupBy(x => x.Broj, StringComparer.OrdinalIgnoreCase);
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "" && int.TryParse(x.Broj, out _))
+            .GroupBy(x => int.Parse(x.Broj, CultureInfo.InvariantCulture));
 
         foreach (var group in grouped)
         {
             var firstRow = group.First().Row;
-            string brNivelacije = group.Key;
+            int brNivelacije = group.Key;
             DateTime datum = ParseDate(Get(firstRow, "DATUMOGA", "DATUM", "DAT_NIV"));
             string magSifra = Get(firstRow, "MAGACIN", "MAG", "MAG_DAJE");
             string opis = Get(firstRow, "OPIS", "NAPOMENA");
@@ -618,8 +621,8 @@ public static class DbfImportService
 
         var grouped = rows
             .Select(r => new { Row = r, Broj = Get(r, "BR_NALOGA").Trim() })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "")
-            .GroupBy(x => x.Broj, StringComparer.OrdinalIgnoreCase);
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "" && int.TryParse(x.Broj, out _))
+            .GroupBy(x => int.Parse(x.Broj, CultureInfo.InvariantCulture));
 
         foreach (var group in grouped)
         {
@@ -675,8 +678,8 @@ public static class DbfImportService
 
         var grouped = rows
             .Select(r => new { Row = r, Broj = Get(r, "BR_NALOGA").Trim() })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "")
-            .GroupBy(x => x.Broj, StringComparer.OrdinalIgnoreCase);
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && x.Broj != "0" && x.Broj.TrimStart('0') != "" && int.TryParse(x.Broj, out _))
+            .GroupBy(x => int.Parse(x.Broj, CultureInfo.InvariantCulture));
 
         foreach (var group in grouped)
         {

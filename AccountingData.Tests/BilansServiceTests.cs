@@ -24,7 +24,7 @@ public class BilansServiceTests
         // Nalog 1: Početno stanje - Osnovna sredstva (0200) Duguje 100.000, Kapital (3000) Potražuje 100.000
         var nalog1 = new Nalog
         {
-            BrojNaloga = "001",
+            BrojNaloga = 1,
             DatumNaloga = new DateTime(2026, 1, 1),
             IsKnjizen = true,
             Stavke = new List<StavkaNaloga>
@@ -37,7 +37,7 @@ public class BilansServiceTests
         // Nalog 2: Kupovina robe (1300) Duguje 50.000, Dobavljači (4350) Potražuje 50.000
         var nalog2 = new Nalog
         {
-            BrojNaloga = "002",
+            BrojNaloga = 2,
             DatumNaloga = new DateTime(2026, 1, 15),
             IsKnjizen = true,
             Stavke = new List<StavkaNaloga>
@@ -70,7 +70,7 @@ public class BilansServiceTests
         // Nalog 2: Nabavna vrednost robe (5010) Duguje 70.000, Roba (1300) Potražuje 70.000
         var nalog = new Nalog
         {
-            BrojNaloga = "010",
+            BrojNaloga = 10,
             DatumNaloga = new DateTime(2026, 2, 1),
             IsKnjizen = true,
             Stavke = new List<StavkaNaloga>

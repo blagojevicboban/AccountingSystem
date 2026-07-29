@@ -20,7 +20,7 @@ public class NaloziService
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(n => n.BrojNaloga.Contains(search) || (n.Opis != null && n.Opis.Contains(search)));
+            query = query.Where(n => n.BrojNaloga.ToString().Contains(search) || (n.Opis != null && n.Opis.Contains(search)));
         }
 
         if (samoProknjizeni.HasValue)
@@ -120,7 +120,7 @@ public class NaloziService
             }
             else
             {
-                neuravnotezeni.Add(nalog.BrojNaloga);
+                neuravnotezeni.Add(nalog.BrojNaloga.ToString());
             }
         }
 

@@ -28,7 +28,7 @@ public class BrutoBilansServiceTests
             db.Konta.Add(new Konto { BrojKonta = "1010/47", NazivKonta = "MAGACIN ZONA" });
             db.Konta.Add(new Konto { BrojKonta = "1033", NazivKonta = "ALAT I INVENTAR" });
 
-            var nalog = new Nalog { BrojNaloga = "1", DatumNaloga = new DateTime(2026, 1, 15), IsKnjizen = true };
+            var nalog = new Nalog { BrojNaloga = 1, DatumNaloga = new DateTime(2026, 1, 15), IsKnjizen = true };
             nalog.Stavke.Add(new StavkaNaloga { RedniBroj = 1, BrojKonta = "1010/35", Duguje = 529057.02m, Potrazuje = 0m });
             nalog.Stavke.Add(new StavkaNaloga { RedniBroj = 2, BrojKonta = "1010/47", Duguje = 2664864.09m, Potrazuje = 0m });
             nalog.Stavke.Add(new StavkaNaloga { RedniBroj = 3, BrojKonta = "1033", Duguje = 6566210.23m, Potrazuje = 0m });

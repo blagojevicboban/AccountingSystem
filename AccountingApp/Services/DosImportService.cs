@@ -197,7 +197,7 @@ public class DosImportService
                 var existingPartneri = firmDb.Partneri.Select(p => p.SifraPartnera).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var existingMagacini = firmDb.Magacini.Select(m => m.SifraMagacina).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var existingArtikli = firmDb.Artikli.Select(a => a.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                var existingNalogi = firmDb.Nalozi.Select(n => n.BrojNaloga).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var existingNalogi = firmDb.Nalozi.Select(n => n.BrojNaloga).ToHashSet();
                 var existingPromene = firmDb.Promene.Select(p => p.Sifra).ToHashSet();
                 var existingTarife = firmDb.PoreskeTarife.Select(t => t.TarifniBroj).ToHashSet(StringComparer.OrdinalIgnoreCase);
 

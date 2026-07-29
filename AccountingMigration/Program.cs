@@ -237,7 +237,7 @@ class Program
         {
             Console.WriteLine("📥 Uvoz Ulaza materijala (ULAZ.DBF)...");
             var rows = ReadDbfRows(ulazFile);
-            var groups = rows.Where(r => !string.IsNullOrWhiteSpace(GetVal(r, 0))).GroupBy(r => GetVal(r, 0).Trim());
+            var groups = rows.Where(r => int.TryParse(GetVal(r, 0).Trim(), out _)).GroupBy(r => int.Parse(GetVal(r, 0).Trim(), CultureInfo.InvariantCulture));
             int nalogCount = 0, stavkeCount = 0;
 
             foreach (var group in groups)
@@ -283,7 +283,7 @@ class Program
         {
             Console.WriteLine("📤 Uvoz Trebovanja (TREBOV.DBF)...");
             var rows = ReadDbfRows(trebovFile);
-            var groups = rows.Where(r => !string.IsNullOrWhiteSpace(GetVal(r, 0))).GroupBy(r => GetVal(r, 0).Trim());
+            var groups = rows.Where(r => int.TryParse(GetVal(r, 0).Trim(), out _)).GroupBy(r => int.Parse(GetVal(r, 0).Trim(), CultureInfo.InvariantCulture));
             int nalogCount = 0, stavkeCount = 0;
 
             foreach (var group in groups)
@@ -328,7 +328,7 @@ class Program
         {
             Console.WriteLine("🔄 Uvoz Primopredaja (M_PRIMO.DBF)...");
             var rows = ReadDbfRows(mPrimoFile);
-            var groups = rows.Where(r => !string.IsNullOrWhiteSpace(GetVal(r, 0))).GroupBy(r => GetVal(r, 0).Trim());
+            var groups = rows.Where(r => int.TryParse(GetVal(r, 0).Trim(), out _)).GroupBy(r => int.Parse(GetVal(r, 0).Trim(), CultureInfo.InvariantCulture));
             int nalogCount = 0, stavkeCount = 0;
 
             foreach (var group in groups)
@@ -377,8 +377,7 @@ class Program
 
             foreach (var r in rows)
             {
-                string brKalkul = GetVal(r, 0).Trim();
-                if (string.IsNullOrWhiteSpace(brKalkul)) continue;
+                if (!int.TryParse(GetVal(r, 0).Trim(), out int brKalkul)) continue;
 
                 db.Kalkulacije.Add(new Kalkulacija
                 {
@@ -419,8 +418,7 @@ class Program
 
             foreach (var r in rows)
             {
-                string brKalkul = GetVal(r, 1).Trim();
-                if (string.IsNullOrWhiteSpace(brKalkul)) continue;
+                if (!int.TryParse(GetVal(r, 1).Trim(), out int brKalkul)) continue;
 
                 db.MaloprodajneKalkulacije.Add(new MaloprodajnaKalkulacija
                 {

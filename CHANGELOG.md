@@ -4,6 +4,29 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.23] - 2026-07-29
+
+### 🚀 Izvoz Finansijskih i Robnih Podataka u Excel (XLSX)
+- **Implementiran `ExcelExportService` (ClosedXML)**: Omogućeno jednim klikom izvoženje bilo kog tabelarnog prikaza u `.xlsx` fajl sa automatski udesno poravnatim numeričkim vrednostima, prilagođenim širinama kolona, stilizovanim zaglavljima i zbirnim redom sa Excel `=SUM(...)` formulama.
+- **Dodata `📊 Excel` dugmad na svim tabovima (15 tabova)**:
+  * **Materijalno knihovodstvo (`MagacinView`)**: Šifrarnik materijala, Ulazi, Trebovanja, Primopredaje, Kartice materijala, Bruto bilans materijala.
+  * **Robno knihovodstvo (`TrgovinaView`)**: Računopolagači, Šifrarnik artikala, Poreske tarife, Primopredaje, Kalkulacije, Računi/Otpremnice, Nivelacije cena, Robna kartica, Robni Bruto bilans.
+
+### 🎨 UI / UX, Odzivnost i Otklanjanje Preklapanja (Responsive Toolbars)
+- **Kompletno refaktorisana zaglavlja svih tabova na `DockPanel` + `WrapPanel`**: Rigidni jednocelijski `Grid` elementi na svim tabovima (`MagacinView`, `TrgovinaView`, `PartneriView`) zamenjeni su fleksibilnim layout-om koji automatski prelama dugmiće i komande u više redova na manjim rezolucijama ekrana ili uzim prozorima. Sva preklapanja pretrage i akcionih dugmića su u potpunosti eliminisana.
+- **Standarizacija naziva u zaglavljima**: Preimenovano zaglavlje modula u **`BRUTO BILANS MATERIJALNOG KNJIGOVODSTVA`** na svim nivoima (WPF tab, WPF prozor, PDF izveštaj i Excel export) radi potpunog usklađivanja sa Clipper izveštajima (`M1.PRG` / `st_mat_bruto()`).
+- **Orijentacija PDF štampa u Portret (A4 Portrait)**: Svi štampani izveštaji i kartice (`RobnaKartica`, `MaterijalnaKartica`, `RobniBrutoBilans`, `StanjePoArtiklima`, `RasporedArtikala`) prebačeni su u A4 vertikalni (portrait) format.
+
+### 🐛 Ispravke, Preciznost Bilansa i Baza Podataka
+- **Matematička preciznost u paru u Bruto bilansu materijalnog knjigovodstva**: Rešen problem neslaganja salda u odnosu na Clipper izveštaj `brutobilansmaterijalno.txt`. Prilagođeno filtriranje kartica tako da se ne izbacuju stavke iz `MaterijalneKartice` koje nemaju eksplicitnu oznaku vrste materijala (npr. ekseri `09010`), čime se ukupni zbir za magacine poklapa u paru sa DOS izvornikom (npr. Centralni magacin `1.368.356,67 RSD` Duguje / `372.599,16 RSD` Potražuje / `995.757,51 RSD` Saldo).
+- **Korekcija uvoza `RACUNOPOL` polja (`DbfImportService`)**: Mapiranje uvoza magacina prilagođeno tako da se podaci iz polja `RACUNOPOL` upisuju u naziv magacina/računopolagača.
+- **Konverzija brojeva dokumenata u Integer tipove**: Reinisane i migrirane kolone za brojeve dokumenata (`BrojNaloga`, `BrojKalkulacije`, `BrojOtpremnice`, `BrojRacuna`, `BrojNivelacije`) u celobrojni tip (int) radi efikasnijeg sortiranja i pretrage.
+
+### ⚠️ Migracije i Baza Podataka
+- **Nova EF Core migracija `BrojPoljaKaoInt`**: Automatski se primenjuje pri pokretanju aplikacije za ažuriranje tipova kolona u SQLite bazi.
+
+---
+
 ## [1.0.22] - 2026-07-29
 
 ### 🚀 Reorganizacija i Unapređenje Glavnog Menija

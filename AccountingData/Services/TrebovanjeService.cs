@@ -17,7 +17,7 @@ public class TrebovanjeService
         var query = _db.TrebovanjeNalozi.Include(n => n.Stavke).AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(n => n.BrojNaloga.Contains(search));
+            query = query.Where(n => n.BrojNaloga.ToString().Contains(search));
         }
         return await query.OrderByDescending(n => n.Datum).ToListAsync();
     }

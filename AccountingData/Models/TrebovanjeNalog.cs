@@ -8,9 +8,7 @@ public class TrebovanjeNalog
     [Key]
     public int TrebovanjeNalogId { get; set; }
 
-    [Required]
-    [MaxLength(20)]
-    public string BrojNaloga { get; set; } = string.Empty;
+    public int BrojNaloga { get; set; }
 
     public DateTime Datum { get; set; } = DateTime.Now;
 

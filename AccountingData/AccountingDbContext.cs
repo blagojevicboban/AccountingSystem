@@ -54,6 +54,18 @@ public class AccountingDbContext : DbContext
         }
         catch { }
 
+        try
+        {
+            ctx.Database.ExecuteSqlRaw(@"
+                UPDATE Magacini 
+                SET NazivMagacina = OdgovornoLice, OdgovornoLice = NULL 
+                WHERE (NazivMagacina LIKE 'Magacin %' OR NazivMagacina IS NULL OR NazivMagacina = '') 
+                  AND OdgovornoLice IS NOT NULL 
+                  AND TRIM(OdgovornoLice) != '';
+            ");
+        }
+        catch { }
+
         return ctx;
     }
 

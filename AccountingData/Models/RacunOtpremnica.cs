@@ -8,9 +8,7 @@ public class RacunOtpremnica
     [Key]
     public int RacunOtpremnicaId { get; set; }
 
-    [Required]
-    [MaxLength(30)]
-    public string BrojRacuna { get; set; } = string.Empty;
+    public int BrojRacuna { get; set; }
 
     public DateTime DatumRacuna { get; set; } = DateTime.Now;
     public DateTime? RokPlacanja { get; set; }

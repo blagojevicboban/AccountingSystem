@@ -35,7 +35,7 @@ public partial class NalogEditWindow : Window
         if (existingNalog != null)
         {
             _existingNalogId = existingNalog.NalogId;
-            TxtBrojNaloga.Text = existingNalog.BrojNaloga;
+            TxtBrojNaloga.Text = existingNalog.BrojNaloga.ToString();
             DpDatum.SelectedDate = existingNalog.DatumNaloga;
             TxtOpisNaloga.Text = existingNalog.Opis;
 
@@ -189,12 +189,7 @@ public partial class NalogEditWindow : Window
                 .Options;
             using var db = new AccountingDbContext(options);
 
-            var brojevi = await db.Nalozi.Select(n => n.BrojNaloga).ToListAsync();
-            int max = 0;
-            foreach (var b in brojevi)
-            {
-                if (int.TryParse(b, out var v) && v > max) max = v;
-            }
+            int max = await db.Nalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync();
             TxtBrojNaloga.Text = (max + 1).ToString();
         }
         catch
@@ -482,9 +477,9 @@ public partial class NalogEditWindow : Window
 
     private async void BtnSnimi_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(TxtBrojNaloga.Text))
+        if (!int.TryParse(TxtBrojNaloga.Text.Trim(), out int brojNaloga))
         {
-            MessageBox.Show("Unesite broj naloga.", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Unesite ispravan broj naloga.", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -523,7 +518,7 @@ public partial class NalogEditWindow : Window
                 nalog = new Nalog();
             }
 
-            nalog.BrojNaloga = TxtBrojNaloga.Text.Trim();
+            nalog.BrojNaloga = brojNaloga;
             nalog.DatumNaloga = DpDatum.SelectedDate ?? DateTime.Now;
             nalog.Opis = TxtOpisNaloga.Text.Trim();
 

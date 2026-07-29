@@ -25,7 +25,7 @@ public class NaloziServiceTests
 
         var nalog = new Nalog
         {
-            BrojNaloga = "1001",
+            BrojNaloga = 1001,
             DatumNaloga = DateTime.Now,
             VrstaNaloga = "Finansijski",
             Opis = "Test Nalog",
@@ -52,7 +52,7 @@ public class NaloziServiceTests
 
         var nalog = new Nalog
         {
-            BrojNaloga = "1002",
+            BrojNaloga = 1002,
             DatumNaloga = DateTime.Now,
             Opis = "Neuravnotežen nalog",
             Stavke = new List<StavkaNaloga>
