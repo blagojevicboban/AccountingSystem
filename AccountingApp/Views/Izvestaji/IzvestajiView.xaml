@@ -71,7 +71,10 @@
                                 <DatePicker x:Name="DpZakljucniListDo" Width="120" Height="30"/>
                             </StackPanel>
                         </StackPanel>
-                        <Button Content="📥 Izvezi zaključni list (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#0891B2" Click="BtnGenerisiZakljucniList_Click"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="📥 Izvezi PDF" Style="{StaticResource ActionButtonStyle}" Background="#0891B2" Margin="0,0,8,0" Click="BtnGenerisiZakljucniList_Click"/>
+                            <Button Content="👁 Prikaži na ekranu" Style="{StaticResource ActionButtonStyle}" Background="#0EA5E9" Click="BtnPrikaziZakljucniList_Click"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

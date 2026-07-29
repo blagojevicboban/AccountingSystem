@@ -150,6 +150,30 @@ public partial class IzvestajiView : UserControl
         }
     }
 
+    private async void BtnPrikaziZakljucniList_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new BrutoBilansService(db);
+            var odDatuma = DpZakljucniListOd.SelectedDate;
+            var doDatuma = DpZakljucniListDo.SelectedDate;
+            var redovi = await service.GetZakljucniListAsync(odDatuma, doDatuma);
+
+            var dijalog = new ZakljucniListPreviewWindow("ZAKLJUČNI LIST", redovi, odDatuma, doDatuma) { Owner = Window.GetWindow(this) };
+            dijalog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri prikazu zaključnog lista: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+
     private void BtnGenerisiIOS_Click(object sender, RoutedEventArgs e)
     {
         MessageBox.Show(

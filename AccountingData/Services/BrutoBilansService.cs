@@ -189,22 +189,65 @@ public class BrutoBilansService
     {
         var detalji = await GetBrutoBilansAsync(odDatuma, doDatuma);
 
-        var sintetika = await _db.Konta
+        var sintetikaMap = await _db.Konta
             .Where(k => k.IsSintetika)
             .ToDictionaryAsync(k => k.BrojKonta, k => k.NazivKonta);
 
-        return detalji
+        var sintetickiRedovi = detalji
             .GroupBy(r => r.BrojKonta.Length >= 3 ? r.BrojKonta.Substring(0, 3) : r.BrojKonta)
             .Select(g => new BrutoBilansRed
             {
                 BrojKonta = g.Key,
-                NazivKonta = sintetika.TryGetValue(g.Key, out var naziv) ? naziv : g.Key,
+                NazivKonta = sintetikaMap.TryGetValue(g.Key, out var naziv) ? naziv : (g.FirstOrDefault(x => !string.IsNullOrEmpty(x.NazivKonta))?.NazivKonta ?? g.Key),
                 Duguje = g.Sum(x => x.Duguje),
                 Potrazuje = g.Sum(x => x.Potrazuje),
                 SaldoDuguje = g.Sum(x => x.SaldoDuguje),
-                SaldoPotrazuje = g.Sum(x => x.SaldoPotrazuje)
+                SaldoPotrazuje = g.Sum(x => x.SaldoPotrazuje),
+                Tip = BrutoBilansRedTip.Detalj
             })
             .OrderBy(r => r.BrojKonta)
             .ToList();
+
+        var rezultat = new List<BrutoBilansRed>();
+        string? tekucaKlasa = null;
+        decimal klasaDuguje = 0, klasaPotrazuje = 0, klasaSaldoDuguje = 0, klasaSaldoPotrazuje = 0;
+
+        void ZatvoriKlasu(string klasaOznaka)
+        {
+            rezultat.Add(new BrutoBilansRed
+            {
+                NazivKonta = $"KLASA: {klasaOznaka}",
+                Duguje = klasaDuguje,
+                Potrazuje = klasaPotrazuje,
+                SaldoDuguje = klasaSaldoDuguje,
+                SaldoPotrazuje = klasaSaldoPotrazuje,
+                Tip = BrutoBilansRedTip.KlasaTotal
+            });
+            klasaDuguje = 0;
+            klasaPotrazuje = 0;
+            klasaSaldoDuguje = 0;
+            klasaSaldoPotrazuje = 0;
+        }
+
+        foreach (var red in sintetickiRedovi)
+        {
+            var klasaOznaka = red.BrojKonta.Length > 0 ? red.BrojKonta[0].ToString() : "";
+            if (tekucaKlasa != null && klasaOznaka != tekucaKlasa)
+            {
+                ZatvoriKlasu(tekucaKlasa);
+            }
+
+            rezultat.Add(red);
+            klasaDuguje += red.Duguje;
+            klasaPotrazuje += red.Potrazuje;
+            klasaSaldoDuguje += red.SaldoDuguje;
+            klasaSaldoPotrazuje += red.SaldoPotrazuje;
+            tekucaKlasa = klasaOznaka;
+        }
+
+        if (tekucaKlasa != null) ZatvoriKlasu(tekucaKlasa);
+
+        return rezultat;
     }
+
 }

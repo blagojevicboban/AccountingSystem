@@ -371,42 +371,42 @@ public class PdfReportService
             container.Page(page =>
             {
                 page.Size(PageSizes.A4);
-                page.Margin(1.5f, Unit.Centimetre);
+                page.Margin(1.0f, Unit.Centimetre);
                 page.PageColor(Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(9).FontFamily("Calibri"));
+                page.DefaultTextStyle(x => x.FontSize(8).FontFamily("Calibri"));
 
                 page.Header().Column(col =>
                 {
-                    col.Item().Text(firma.Naziv).Bold().FontSize(14).FontColor(Colors.Blue.Medium);
-                    col.Item().Text($"{firma.Adresa}, {firma.PttIMesto} | PIB: {firma.Pib ?? "---"} | Žiro: {firma.ZiroRacun ?? "---"}").FontSize(9).FontColor(Colors.Grey.Medium);
-                    col.Item().PaddingTop(10).Text(naslov).Bold().FontSize(16).AlignCenter();
+                    col.Item().Text(firma.Naziv).Bold().FontSize(12).FontColor(Colors.Blue.Medium);
+                    col.Item().Text($"{firma.Adresa}, {firma.PttIMesto} | PIB: {firma.Pib ?? "---"} | Žiro: {firma.ZiroRacun ?? "---"}").FontSize(8).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(6).Text(naslov).Bold().FontSize(14).AlignCenter();
                     if (odDatuma.HasValue || doDatuma.HasValue)
-                        col.Item().Text($"Period: {odDatuma?.ToString("dd.MM.yyyy") ?? "---"} - {doDatuma?.ToString("dd.MM.yyyy") ?? "---"}").FontSize(9).AlignCenter().FontColor(Colors.Grey.Medium);
-                    col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                        col.Item().Text($"Period: {odDatuma?.ToString("dd.MM.yyyy") ?? "---"} - {doDatuma?.ToString("dd.MM.yyyy") ?? "---"}").FontSize(8).AlignCenter().FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(4).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
                 });
 
-                page.Content().PaddingVertical(10).Column(col =>
+                page.Content().PaddingVertical(6).Column(col =>
                 {
                     col.Item().Table(table =>
                     {
                         table.ColumnsDefinition(columns =>
                         {
-                            columns.ConstantColumn(60);
+                            columns.ConstantColumn(50);
                             columns.RelativeColumn(3);
-                            columns.ConstantColumn(85);
-                            columns.ConstantColumn(85);
-                            columns.ConstantColumn(85);
-                            columns.ConstantColumn(85);
+                            columns.ConstantColumn(82);
+                            columns.ConstantColumn(82);
+                            columns.ConstantColumn(82);
+                            columns.ConstantColumn(82);
                         });
 
                         table.Header(header =>
                         {
-                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Konto").Bold();
-                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Naziv konta").Bold();
-                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Duguje").Bold().AlignRight();
-                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Potražuje").Bold().AlignRight();
-                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Saldo duguje").Bold().AlignRight();
-                            header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Saldo potražuje").Bold().AlignRight();
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(3).Text("Konto").Bold().FontSize(8);
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(3).Text("Naziv konta").Bold().FontSize(8);
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(3).Text("Duguje").Bold().FontSize(8).AlignRight();
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(3).Text("Potražuje").Bold().FontSize(8).AlignRight();
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(3).Text("Saldo duguje").Bold().FontSize(8).AlignRight();
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(3).Text("Saldo potražuje").Bold().FontSize(8).AlignRight();
                         });
 
                         decimal zbirDuguje = 0, zbirPotrazuje = 0, zbirSaldoDuguje = 0, zbirSaldoPotrazuje = 0;
@@ -416,11 +416,11 @@ public class PdfReportService
                             if (r.Tip != BrutoBilansRedTip.Detalj)
                             {
                                 var pozadina = r.Tip == BrutoBilansRedTip.KlasaTotal ? Colors.Grey.Lighten2 : Colors.Grey.Lighten4;
-                                table.Cell().ColumnSpan(2).Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(r.NazivKonta).Bold();
-                                table.Cell().Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{r.Duguje:N2}").Bold().AlignRight();
-                                table.Cell().Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{r.Potrazuje:N2}").Bold().AlignRight();
-                                table.Cell().Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{r.SaldoDuguje:N2}").Bold().AlignRight();
-                                table.Cell().Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{r.SaldoPotrazuje:N2}").Bold().AlignRight();
+                                table.Cell().ColumnSpan(2).Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text(r.NazivKonta).Bold().FontSize(8);
+                                table.Cell().Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text($"{r.Duguje:N2}").Bold().FontSize(8).AlignRight();
+                                table.Cell().Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text($"{r.Potrazuje:N2}").Bold().FontSize(8).AlignRight();
+                                table.Cell().Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text($"{r.SaldoDuguje:N2}").Bold().FontSize(8).AlignRight();
+                                table.Cell().Background(pozadina).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text($"{r.SaldoPotrazuje:N2}").Bold().FontSize(8).AlignRight();
                                 continue;
                             }
 
@@ -429,21 +429,22 @@ public class PdfReportService
                             zbirSaldoDuguje += r.SaldoDuguje;
                             zbirSaldoPotrazuje += r.SaldoPotrazuje;
 
-                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(r.BrojKonta);
-                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(r.NazivKonta);
-                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{r.Duguje:N2}").AlignRight();
-                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{r.Potrazuje:N2}").AlignRight();
-                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{r.SaldoDuguje:N2}").AlignRight();
-                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text($"{r.SaldoPotrazuje:N2}").AlignRight();
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text(r.BrojKonta).FontSize(8);
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text(r.NazivKonta).FontSize(8);
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text($"{r.Duguje:N2}").FontSize(8).AlignRight();
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text($"{r.Potrazuje:N2}").FontSize(8).AlignRight();
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text($"{r.SaldoDuguje:N2}").FontSize(8).AlignRight();
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(3).Text($"{r.SaldoPotrazuje:N2}").FontSize(8).AlignRight();
                         }
 
-                        table.Cell().ColumnSpan(2).Padding(6).Text("UKUPNO:").Bold().AlignRight();
-                        table.Cell().Padding(6).Text($"{zbirDuguje:N2}").Bold().AlignRight();
-                        table.Cell().Padding(6).Text($"{zbirPotrazuje:N2}").Bold().AlignRight();
-                        table.Cell().Padding(6).Text($"{zbirSaldoDuguje:N2}").Bold().AlignRight();
-                        table.Cell().Padding(6).Text($"{zbirSaldoPotrazuje:N2}").Bold().AlignRight();
+                        table.Cell().ColumnSpan(2).PaddingVertical(4).PaddingHorizontal(3).Text("UKUPNO:").Bold().FontSize(8.5f).AlignRight();
+                        table.Cell().PaddingVertical(4).PaddingHorizontal(3).Text($"{zbirDuguje:N2}").Bold().FontSize(8.5f).AlignRight();
+                        table.Cell().PaddingVertical(4).PaddingHorizontal(3).Text($"{zbirPotrazuje:N2}").Bold().FontSize(8.5f).AlignRight();
+                        table.Cell().PaddingVertical(4).PaddingHorizontal(3).Text($"{zbirSaldoDuguje:N2}").Bold().FontSize(8.5f).AlignRight();
+                        table.Cell().PaddingVertical(4).PaddingHorizontal(3).Text($"{zbirSaldoPotrazuje:N2}").Bold().FontSize(8.5f).AlignRight();
                     });
                 });
+
 
                 page.Footer().AlignRight().Text(x =>
                 {

@@ -4,6 +4,19 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.26] - 2026-07-29
+
+### 🚀 Nove Funkcionalnosti & Prikazi
+- **Ekranski pregled Zaključnog lista sa Excel dugmetom (`ZakljucniListPreviewWindow`)**:
+  - Dodato dugme `👁 Prikaži na ekranu` na kartici **Zaključni list** (`IzvestajiView`).
+  - Omogućen ekranski pregled svih sintetičkih (3-cifrenih) konta sa zbirnim redovima po klasama (`KLASA: 0`, `KLASA: 1`, ...).
+  - Ugrađeno `📊 Excel` dugme za direktan izvoz Zaključnog lista u `.xlsx` fajl sa C# izračunatim zbirnim redom i senčenim redovima klasa.
+
+### 📄 PDF Izveštaji i Optimizacija za A4 Portrait
+- **Prilagođeni fontovi i margine za A4 uspravno (`PdfReportService`)**: Margine smanjene na 1.0cm, velika numerička polja formatirana na 8pt sa optimalnim paddingom tako da svi iznosi staju na A4 uspravno bez prelamanja cifara.
+
+---
+
 ## [1.0.25] - 2026-07-29
 
 ### 🐛 Ispravke i Validacije (Bug Fixes)
