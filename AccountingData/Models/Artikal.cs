@@ -34,9 +34,6 @@ public class Artikal
     [Column(TypeName = "decimal(18, 4)")]
     public decimal ProdajnaCena { get; set; }
 
-    [MaxLength(50)]
-    public string Vrsta { get; set; } = "Roba";
-
     [MaxLength(20)]
     public string? KlasifikacionaSifra { get; set; }
 

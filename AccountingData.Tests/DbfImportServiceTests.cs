@@ -106,6 +106,34 @@ public class DbfImportServiceTests
     }
 
     [Fact]
+    public void MapMaterijal_ReadsSifraNazivJmPakovanje_IndependentlyOfArtikli()
+    {
+        // M_SIFR.DBF nema TAR_BROJ/KLAS_SIFRA/SELEKTOVAN kolone — Materijal ih ni ne poseduje,
+        // za razliku od Artikal (Robno) koji dolazi iz posebne ARTIKLI.DBF serije šifara.
+        var row = Row(
+            ("SIFRA", "03030"),
+            ("PAKOVANJE", ""),
+            ("JED_MERE", "vr"),
+            ("NAZIV", "cement"));
+
+        var materijal = DbfImportService.MapMaterijal(row);
+
+        Assert.NotNull(materijal);
+        Assert.Equal("03030", materijal!.SifraArtikla);
+        Assert.Equal("cement", materijal.Naziv);
+        Assert.Equal("vr", materijal.JedinicaMere);
+        Assert.Null(materijal.Pakovanje);
+    }
+
+    [Fact]
+    public void MapMaterijal_ReturnsNull_WhenSifraEmpty()
+    {
+        var row = Row(("NAZIV", "cement"));
+
+        Assert.Null(DbfImportService.MapMaterijal(row));
+    }
+
+    [Fact]
     public void GroupNalogRows_GroupsByBrNaloga_AndSkipsZeroBroj()
     {
         var rows = new List<Dictionary<string, string>>

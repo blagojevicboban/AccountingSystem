@@ -9,7 +9,7 @@ namespace AccountingApp.Views.Magacin;
 
 public partial class MagacinView : UserControl
 {
-    private List<Artikal> _sviArtikli = new();
+    private List<Materijal> _sviArtikli = new();
     private List<UlazNalog> _sviUlazi = new();
     private List<TrebovanjeNalog> _svaTrebovanja = new();
 
@@ -41,7 +41,7 @@ public partial class MagacinView : UserControl
 
     // ===================== ŠIFRARNIK MATERIJALA =====================
 
-    private List<Artikal> _sviMaterijaliSifrarnik = new();
+    private List<Materijal> _sviMaterijaliSifrarnik = new();
 
     private async void LoadSifrarnikMaterijala()
     {
@@ -50,7 +50,7 @@ public partial class MagacinView : UserControl
             var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
             using var db = new AccountingDbContext(options);
 
-            _sviMaterijaliSifrarnik = await db.Artikli.Where(a => a.Vrsta == "Materijal").OrderBy(a => a.SifraArtikla).ToListAsync();
+            _sviMaterijaliSifrarnik = await db.Materijali.OrderBy(a => a.SifraArtikla).ToListAsync();
             ApplyFilterSifrarnikMaterijala();
         }
         catch (Exception ex)
@@ -84,7 +84,7 @@ public partial class MagacinView : UserControl
 
     private void OtvoriIzmenuMaterijala()
     {
-        if (DgSifrarnikMaterijala.SelectedItem is not Artikal selektovan)
+        if (DgSifrarnikMaterijala.SelectedItem is not Materijal selektovan)
         {
             MessageBox.Show("Izaberite materijal sa liste.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
@@ -100,7 +100,7 @@ public partial class MagacinView : UserControl
 
     private async void BtnBrisiMaterijal_Click(object sender, RoutedEventArgs e)
     {
-        if (DgSifrarnikMaterijala.SelectedItem is not Artikal selektovan)
+        if (DgSifrarnikMaterijala.SelectedItem is not Materijal selektovan)
         {
             MessageBox.Show("Izaberite materijal za brisanje.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
@@ -124,10 +124,10 @@ public partial class MagacinView : UserControl
 
             if (potv == MessageBoxResult.Yes)
             {
-                var a = await db.Artikli.FirstOrDefaultAsync(x => x.ArtikalId == selektovan.ArtikalId);
+                var a = await db.Materijali.FirstOrDefaultAsync(x => x.MaterijalId == selektovan.MaterijalId);
                 if (a != null)
                 {
-                    db.Artikli.Remove(a);
+                    db.Materijali.Remove(a);
                     await db.SaveChangesAsync();
                 }
                 LoadSifrarnikMaterijala();
@@ -154,7 +154,7 @@ public partial class MagacinView : UserControl
             using var db = new AccountingDbContext(options);
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
-            var pdfBytes = Services.PdfReportService.GenerisiSifrarnikArtikalaPdf(firma, _sviMaterijaliSifrarnik);
+            var pdfBytes = Services.PdfReportService.GenerisiSifrarnikMaterijalaPdf(firma, _sviMaterijaliSifrarnik);
 
             string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Sifrarnik_Materijala_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
@@ -197,7 +197,7 @@ public partial class MagacinView : UserControl
             CmbMagacin.ItemsSource = stavkeZaCombo;
             CmbMagacin.SelectedIndex = 0;
 
-            _sviArtikli = await db.Artikli.Where(a => a.Vrsta == "Materijal").OrderBy(a => a.Naziv).ToListAsync();
+            _sviArtikli = await db.Materijali.OrderBy(a => a.Naziv).ToListAsync();
             await OsveziMaterijaleSaKarticomAsync();
             FiltrirajArtikle();
         }
@@ -225,7 +225,7 @@ public partial class MagacinView : UserControl
     private void FiltrirajArtikle()
     {
         string search = TxtPretragaArtikla.Text.Trim().ToLower();
-        IEnumerable<Artikal> izvor = _sviArtikli;
+        IEnumerable<Materijal> izvor = _sviArtikli;
 
         if (ChkSamoSaKarticom.IsChecked == true)
             izvor = izvor.Where(a => _materijaliSaKarticom.Contains(a.SifraArtikla));
@@ -269,7 +269,7 @@ public partial class MagacinView : UserControl
             return;
         }
 
-        if (LstArtikli.SelectedItem is not Artikal artikal)
+        if (LstArtikli.SelectedItem is not Materijal artikal)
         {
             TxtNaslovArtikla.Text = "Izaberite magacin i materijal sa leve strane";
             TxtStanjeArtikla.Text = "";
@@ -308,7 +308,7 @@ public partial class MagacinView : UserControl
 
     private async void BtnStampajKarticu_Click(object sender, RoutedEventArgs e)
     {
-        var izabraniMaterijali = LstArtikli.SelectedItems.Cast<Artikal>().ToList();
+        var izabraniMaterijali = LstArtikli.SelectedItems.Cast<Materijal>().ToList();
         if (izabraniMaterijali.Count == 0 || CmbMagacin.SelectedItem is not AccountingData.Models.Magacin magacin)
         {
             MessageBox.Show("Izaberite magacin i bar jedan materijal sa liste za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -516,7 +516,7 @@ public partial class MagacinView : UserControl
             using var db = new AccountingDbContext(options);
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
-            var artikliMap = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
+            var artikliMap = await db.Materijali.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
             var magacin = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovan.SifraMagacina)
                 ?? new AccountingData.Models.Magacin { SifraMagacina = selektovan.SifraMagacina, NazivMagacina = selektovan.SifraMagacina };
             var pdfBytes = Services.PdfReportService.GenerisiUlazPdf(firma, selektovan, artikliMap, magacin);
@@ -646,7 +646,7 @@ public partial class MagacinView : UserControl
             using var db = new AccountingDbContext(options);
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
-            var artikliMap = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
+            var artikliMap = await db.Materijali.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
             var magacin = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovano.SifraMagacina)
                 ?? new AccountingData.Models.Magacin { SifraMagacina = selektovano.SifraMagacina, NazivMagacina = selektovano.SifraMagacina };
             var pdfBytes = Services.PdfReportService.GenerisiTrebovanjePdf(firma, selektovano, artikliMap, magacin);
@@ -780,7 +780,7 @@ public partial class MagacinView : UserControl
             using var db = new AccountingDbContext(options);
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
-            var artikliDict = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
+            var artikliDict = await db.Materijali.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
             foreach (var st in selektovano.Stavke)
             {
                 if (artikliDict.TryGetValue(st.SifraArtikla, out var art))
@@ -864,11 +864,7 @@ public partial class MagacinView : UserControl
             DateTime? doDatuma = DpDoDatumaBrutoMat?.SelectedDate;
             string? pretraga = TxtPretragaBrutoMat?.Text.Trim();
 
-            var sviRedovi = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db, magId, doDatuma, pretraga);
-
-            var robaSifre = await db.Artikli.Where(a => a.Vrsta == "Roba").Select(a => a.SifraArtikla).ToListAsync();
-            var robaSet = new HashSet<string>(robaSifre, StringComparer.OrdinalIgnoreCase);
-            _sviBrutoRedoviMat = sviRedovi.Where(r => !robaSet.Contains(r.SifraArtikla)).ToList();
+            _sviBrutoRedoviMat = await RobniBrutoBilansService.GetMaterijalniBrutoBilansAsync(db, magId, doDatuma, pretraga);
 
             DgBrutoBilansMat.ItemsSource = _sviBrutoRedoviMat;
 

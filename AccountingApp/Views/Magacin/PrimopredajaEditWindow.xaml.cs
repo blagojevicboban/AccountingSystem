@@ -76,7 +76,7 @@ public partial class PrimopredajaEditWindow : Window
             if (magacini.Count > 0) CmbMagacinDaje.SelectedIndex = 0;
             if (magacini.Count > 1) CmbMagacinPrima.SelectedIndex = 1;
 
-            var artikli = await db.Artikli.OrderBy(a => a.Naziv).ToListAsync();
+            var artikli = await db.Materijali.OrderBy(a => a.Naziv).ToListAsync();
             ColArtikli.ItemsSource = artikli;
             ColArtikli.DisplayMemberPath = "Naziv";
             ColArtikli.SelectedValuePath = "SifraArtikla";

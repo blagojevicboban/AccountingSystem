@@ -7,9 +7,9 @@ namespace AccountingApp.Views.Magacin;
 
 public partial class MaterijalEditWindow : Window
 {
-    private readonly Artikal? _existingMaterijal;
+    private readonly Materijal? _existingMaterijal;
 
-    public MaterijalEditWindow(Artikal? existingMaterijal = null)
+    public MaterijalEditWindow(Materijal? existingMaterijal = null)
     {
         InitializeComponent();
         _existingMaterijal = existingMaterijal;
@@ -65,26 +65,25 @@ public partial class MaterijalEditWindow : Window
 
             if (_existingMaterijal == null)
             {
-                bool vecPostoji = await db.Artikli.AnyAsync(a => a.SifraArtikla == sifra);
+                bool vecPostoji = await db.Materijali.AnyAsync(a => a.SifraArtikla == sifra);
                 if (vecPostoji)
                 {
-                    MessageBox.Show($"Artikal/materijal sa šifrom '{sifra}' već postoji.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"Materijal sa šifrom '{sifra}' već postoji.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
                     TxtSifra.Focus();
                     return;
                 }
 
-                db.Artikli.Add(new Artikal
+                db.Materijali.Add(new Materijal
                 {
                     SifraArtikla = sifra,
                     Naziv = naziv,
                     JedinicaMere = jm,
-                    Pakovanje = string.IsNullOrWhiteSpace(TxtPakovanje.Text) ? null : TxtPakovanje.Text.Trim(),
-                    Vrsta = "Materijal"
+                    Pakovanje = string.IsNullOrWhiteSpace(TxtPakovanje.Text) ? null : TxtPakovanje.Text.Trim()
                 });
             }
             else
             {
-                var a = await db.Artikli.FirstOrDefaultAsync(x => x.ArtikalId == _existingMaterijal.ArtikalId);
+                var a = await db.Materijali.FirstOrDefaultAsync(x => x.MaterijalId == _existingMaterijal.MaterijalId);
                 if (a != null)
                 {
                     a.Naziv = naziv;

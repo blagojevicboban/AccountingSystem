@@ -1600,6 +1600,71 @@ public class PdfReportService
         }).GeneratePdf();
     }
 
+    public static byte[] GenerisiSifrarnikMaterijalaPdf(Firma firma, List<Materijal> materijali)
+    {
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(1.5f, Unit.Centimetre);
+                page.PageColor(Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(9).FontFamily("Calibri"));
+
+                page.Header().Column(col =>
+                {
+                    col.Item().Text(firma.Naziv).Bold().FontSize(14).FontColor(Colors.Blue.Medium);
+                    col.Item().Text($"{firma.Adresa}, {firma.PttIMesto} | PIB: {firma.Pib ?? "---"}").FontSize(9).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(10).Text("ŠIFARNIK MATERIJALA").Bold().FontSize(16).AlignCenter();
+                    col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                });
+
+                page.Content().PaddingVertical(10).Column(col =>
+                {
+                    col.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(35);
+                            columns.ConstantColumn(65);
+                            columns.RelativeColumn(3);
+                            columns.ConstantColumn(45);
+                            columns.ConstantColumn(90);
+                        });
+
+                        table.Header(header =>
+                        {
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(4).PaddingHorizontal(4).Text("R.br").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(4).PaddingHorizontal(4).Text("Šifra").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(4).PaddingHorizontal(4).Text("Naziv materijala").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(4).PaddingHorizontal(4).Text("J.M.").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(4).PaddingHorizontal(4).Text("Pakovanje").Bold();
+                        });
+
+                        int rbr = 1;
+                        foreach (var m in materijali)
+                        {
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(3).PaddingHorizontal(4).Text(rbr.ToString());
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(3).PaddingHorizontal(4).Text(m.SifraArtikla).Bold();
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(3).PaddingHorizontal(4).Text(m.Naziv);
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(3).PaddingHorizontal(4).Text(m.JedinicaMere ?? "kom");
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(3).PaddingHorizontal(4).Text(m.Pakovanje ?? "---");
+                            rbr++;
+                        }
+                    });
+                });
+
+                page.Footer().AlignRight().Text(x =>
+                {
+                    x.Span("Stranica ");
+                    x.CurrentPageNumber();
+                    x.Span(" od ");
+                    x.TotalPages();
+                });
+            });
+        }).GeneratePdf();
+    }
+
     public static byte[] GenerisiSifrarnikPoreskihTarifaPdf(Firma firma, List<PoreskaTarifa> tarife)
     {
         return Document.Create(container =>
@@ -2717,7 +2782,7 @@ public class PdfReportService
                 page.Margin(15);
                 page.DefaultTextStyle(x => x.FontSize(8f).FontFamily("Calibri"));
 
-                ComponujRobnuKarticu(page, firma, magacin, artikal, kartice, "ROBNA KARTICA GLAVNE KNJIGE");
+                ComponujMagacinskuKarticu(page, firma, magacin, artikal.SifraArtikla, artikal.Naziv, artikal.JedinicaMere, artikal.ProdajnaCena, kartice, "ROBNA KARTICA GLAVNE KNJIGE");
             });
         }).GeneratePdf();
     }
@@ -2735,13 +2800,13 @@ public class PdfReportService
                     page.Margin(15);
                     page.DefaultTextStyle(x => x.FontSize(8f).FontFamily("Calibri"));
 
-                    ComponujRobnuKarticu(page, firma, magacin, artikal, kartice, "ROBNA KARTICA GLAVNE KNJIGE");
+                    ComponujMagacinskuKarticu(page, firma, magacin, artikal.SifraArtikla, artikal.Naziv, artikal.JedinicaMere, artikal.ProdajnaCena, kartice, "ROBNA KARTICA GLAVNE KNJIGE");
                 });
             }
         }).GeneratePdf();
     }
 
-    public static byte[] GenerisiMaterijalnuKarticuPdf(Firma firma, Magacin magacin, Artikal artikal, List<MaterijalnaKartica> kartice)
+    public static byte[] GenerisiMaterijalnuKarticuPdf(Firma firma, Magacin magacin, Materijal materijal, List<MaterijalnaKartica> kartice)
     {
         return Document.Create(container =>
         {
@@ -2751,17 +2816,17 @@ public class PdfReportService
                 page.Margin(15);
                 page.DefaultTextStyle(x => x.FontSize(8f).FontFamily("Calibri"));
 
-                ComponujRobnuKarticu(page, firma, magacin, artikal, kartice, "MATERIJALNA KARTICA GLAVNE KNJIGE");
+                ComponujMagacinskuKarticu(page, firma, magacin, materijal.SifraArtikla, materijal.Naziv, materijal.JedinicaMere, null, kartice, "MATERIJALNA KARTICA GLAVNE KNJIGE");
             });
         }).GeneratePdf();
     }
 
-    /// <summary>Generiše PDF sa materijalnim karticama za sve (magacin, artikal) parove sa prometom — jedna sekcija po paru.</summary>
-    public static byte[] GenerisiSveMaterijalneKarticePdf(Firma firma, List<(Magacin Magacin, Artikal Artikal, List<MaterijalnaKartica> Kartice)> sveKartice)
+    /// <summary>Generiše PDF sa materijalnim karticama za sve (magacin, materijal) parove sa prometom — jedna sekcija po paru.</summary>
+    public static byte[] GenerisiSveMaterijalneKarticePdf(Firma firma, List<(Magacin Magacin, Materijal Materijal, List<MaterijalnaKartica> Kartice)> sveKartice)
     {
         return Document.Create(container =>
         {
-            foreach (var (magacin, artikal, kartice) in sveKartice)
+            foreach (var (magacin, materijal, kartice) in sveKartice)
             {
                 container.Page(page =>
                 {
@@ -2769,13 +2834,13 @@ public class PdfReportService
                     page.Margin(15);
                     page.DefaultTextStyle(x => x.FontSize(8f).FontFamily("Calibri"));
 
-                    ComponujRobnuKarticu(page, firma, magacin, artikal, kartice, "MATERIJALNA KARTICA GLAVNE KNJIGE");
+                    ComponujMagacinskuKarticu(page, firma, magacin, materijal.SifraArtikla, materijal.Naziv, materijal.JedinicaMere, null, kartice, "MATERIJALNA KARTICA GLAVNE KNJIGE");
                 });
             }
         }).GeneratePdf();
     }
 
-    private static void ComponujRobnuKarticu(PageDescriptor page, Firma firma, Magacin magacin, Artikal artikal, List<MaterijalnaKartica> kartice, string naslov)
+    private static void ComponujMagacinskuKarticu(PageDescriptor page, Firma firma, Magacin magacin, string sifraArtikla, string nazivArtikla, string jedinicaMere, decimal? prodajnaCena, List<MaterijalnaKartica> kartice, string naslov)
     {
         page.Header().Row(row =>
         {
@@ -2789,8 +2854,8 @@ public class PdfReportService
             {
                 col.Item().Text(naslov).Bold().FontSize(13).FontColor(Colors.Blue.Darken2);
                 col.Item().Text($"Računopolagač: {magacin.NazivMagacina} ({magacin.SifraMagacina})").Bold().FontSize(9.5f);
-                col.Item().Text($"Artikal: {artikal.Naziv} ({artikal.SifraArtikla})").Bold().FontSize(9.5f);
-                col.Item().Text($"J.M.: {artikal.JedinicaMere} | Prod. cena: {artikal.ProdajnaCena:N2} RSD").FontSize(8.5f);
+                col.Item().Text($"Artikal: {nazivArtikla} ({sifraArtikla})").Bold().FontSize(9.5f);
+                col.Item().Text(prodajnaCena.HasValue ? $"J.M.: {jedinicaMere} | Prod. cena: {prodajnaCena:N2} RSD" : $"J.M.: {jedinicaMere}").FontSize(8.5f);
             });
         });
 
@@ -2948,7 +3013,7 @@ public class PdfReportService
     }
 
     /// <summary>Štampa jednog Ulaza materijala (legacy stampa_ulaza() — M2.PRG), sa stavkama.</summary>
-    public static byte[] GenerisiUlazPdf(Firma firma, UlazNalog nalog, Dictionary<string, Artikal> artikliMap, Magacin magacin)
+    public static byte[] GenerisiUlazPdf(Firma firma, UlazNalog nalog, Dictionary<string, Materijal> artikliMap, Magacin magacin)
     {
         return GenerisiMagacinskiNalogPdf(firma, "ULAZ MATERIJALA", nalog.BrojNaloga.ToString(), nalog.Datum, magacin, null,
             nalog.Stavke.Select(s => (s.SifraArtikla, artikliMap.TryGetValue(s.SifraArtikla, out var a) ? a.Naziv : s.SifraArtikla, artikliMap.TryGetValue(s.SifraArtikla, out var a2) ? a2.JedinicaMere : "", s.Kolicina, (decimal?)s.Cena, s.Iznos)).ToList(),
@@ -2956,7 +3021,7 @@ public class PdfReportService
     }
 
     /// <summary>Štampa jednog Trebovanja (legacy stampa_treb() — M3.PRG), sa stavkama.</summary>
-    public static byte[] GenerisiTrebovanjePdf(Firma firma, TrebovanjeNalog nalog, Dictionary<string, Artikal> artikliMap, Magacin magacin)
+    public static byte[] GenerisiTrebovanjePdf(Firma firma, TrebovanjeNalog nalog, Dictionary<string, Materijal> artikliMap, Magacin magacin)
     {
         return GenerisiMagacinskiNalogPdf(firma, "TREBOVANJE", nalog.BrojNaloga.ToString(), nalog.Datum, magacin, null,
             nalog.Stavke.Select(s => (s.SifraArtikla, artikliMap.TryGetValue(s.SifraArtikla, out var a) ? a.Naziv : s.SifraArtikla, artikliMap.TryGetValue(s.SifraArtikla, out var a2) ? a2.JedinicaMere : "", s.Kolicina, (decimal?)s.Cena, s.Iznos)).ToList(),

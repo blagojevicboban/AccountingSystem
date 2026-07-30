@@ -196,7 +196,11 @@ public class DosImportService
                 var existingKonta = firmDb.Konta.Select(k => k.BrojKonta).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var existingPartneri = firmDb.Partneri.Select(p => p.SifraPartnera).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var existingMagacini = firmDb.Magacini.Select(m => m.SifraMagacina).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                // Roba (ARTIKLI.DBF → Artikli) i Materijal (M_SIFR.DBF → Materijali) su dve nezavisne šifarničke
+                // serije iz legacy sistema — ista šifra u obe DBF datoteke ume da označava potpuno različite
+                // artikle, pa žive u odvojenim tabelama umesto da dele isti dedup-set.
                 var existingArtikli = firmDb.Artikli.Select(a => a.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var existingMaterijali = firmDb.Materijali.Select(m => m.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var existingNalogi = firmDb.Nalozi.Select(n => n.BrojNaloga).ToHashSet();
                 var existingPromene = firmDb.Promene.Select(p => p.Sifra).ToHashSet();
                 var existingTarife = firmDb.PoreskeTarife.Select(t => t.TarifniBroj).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -271,7 +275,7 @@ public class DosImportService
                     int count = 0;
                     foreach (var r in rows)
                     {
-                        var artikal = DbfImportService.MapArtikal(r, "Roba");
+                        var artikal = DbfImportService.MapArtikal(r);
                         if (artikal != null && existingArtikli.Add(artikal.SifraArtikla))
                         {
                             firmDb.Artikli.Add(artikal);
@@ -289,10 +293,10 @@ public class DosImportService
                     int count = 0;
                     foreach (var r in rows)
                     {
-                        var artikal = DbfImportService.MapArtikal(r, "Materijal");
-                        if (artikal != null && existingArtikli.Add(artikal.SifraArtikla))
+                        var materijal = DbfImportService.MapMaterijal(r);
+                        if (materijal != null && existingMaterijali.Add(materijal.SifraArtikla))
                         {
-                            firmDb.Artikli.Add(artikal);
+                            firmDb.Materijali.Add(materijal);
                             count++;
                         }
                     }
@@ -523,6 +527,7 @@ public class DosImportService
                     var racOtpRows = DbfImportService.ReadRows(racOtpPath);
                     var racPodRows = File.Exists(racPodPath) ? DbfImportService.ReadRows(racPodPath) : new List<Dictionary<string, string>>();
                     var magaciniMap = await firmDb.Magacini.ToDictionaryAsync(m => m.SifraMagacina, m => m.MagacinId, StringComparer.OrdinalIgnoreCase);
+                    // Računi-otpremnice su Robno dokumenta (ARTIKLI.DBF šifarnik) — Materijal deli iste šifre sa drugim značenjem.
                     var artikliMap = await firmDb.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a.ArtikalId, StringComparer.OrdinalIgnoreCase);
                     var racuni = DbfImportService.MapRacunOtpremnice(racOtpRows, racPodRows, magaciniMap, artikliMap);
                     if (racuni.Count > 0)
@@ -543,6 +548,7 @@ public class DosImportService
                     var nivNalRows = File.Exists(nivNalPath) ? DbfImportService.ReadRows(nivNalPath) : new List<Dictionary<string, string>>();
                     var pmNivRows = File.Exists(pmNivPath) ? DbfImportService.ReadRows(pmNivPath) : new List<Dictionary<string, string>>();
                     var magaciniMap = await firmDb.Magacini.ToDictionaryAsync(m => m.SifraMagacina, m => m.MagacinId, StringComparer.OrdinalIgnoreCase);
+                    // NIV_NAL/P_M_NIV su Robno dokumenta (ARTIKLI.DBF šifarnik), isto kao RAC_OTP.
                     var artikliMap = await firmDb.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a.ArtikalId, StringComparer.OrdinalIgnoreCase);
                     var nivelacije = DbfImportService.MapNivelacijeCena(nivNalRows, pmNivRows, magaciniMap, artikliMap);
                     if (nivelacije.Count > 0)

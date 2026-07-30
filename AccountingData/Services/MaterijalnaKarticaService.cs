@@ -32,9 +32,9 @@ public class MaterijalnaKarticaService
         return await query.OrderBy(m => m.SifraMagacina).ToListAsync();
     }
 
-    public async Task<List<Artikal>> GetArtikliAsync(string? search = null)
+    public async Task<List<Materijal>> GetArtikliAsync(string? search = null)
     {
-        var query = _db.Artikli.AsQueryable();
+        var query = _db.Materijali.AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(a => a.SifraArtikla.Contains(search) || a.Naziv.Contains(search));
@@ -53,16 +53,16 @@ public class MaterijalnaKarticaService
     }
 
     /// <summary>Skuplja (magacin, artikal, kartice) trojke sa prometom. sifraMagacina=null znači svi magacini; artikliFilter=null znači svi artikli.</summary>
-    public async Task<List<(Magacin Magacin, Artikal Artikal, List<MaterijalnaKartica> Kartice)>> PrikupiKarticeAsync(
-        string? sifraMagacina, IReadOnlyCollection<Artikal>? artikliFilter)
+    public async Task<List<(Magacin Magacin, Materijal Materijal, List<MaterijalnaKartica> Kartice)>> PrikupiKarticeAsync(
+        string? sifraMagacina, IReadOnlyCollection<Materijal>? artikliFilter)
     {
         var magaciniZaObradu = sifraMagacina == null
             ? await _db.Magacini.OrderBy(m => m.SifraMagacina).ToListAsync()
             : await _db.Magacini.Where(m => m.SifraMagacina == sifraMagacina).ToListAsync();
 
         var sifreFiltera = artikliFilter?.Select(a => a.SifraArtikla).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var artikliDict = await _db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a);
-        var rezultat = new List<(Magacin, Artikal, List<MaterijalnaKartica>)>();
+        var artikliDict = await _db.Materijali.ToDictionaryAsync(a => a.SifraArtikla, a => a);
+        var rezultat = new List<(Magacin, Materijal, List<MaterijalnaKartica>)>();
 
         foreach (var mag in magaciniZaObradu)
         {
@@ -81,7 +81,7 @@ public class MaterijalnaKarticaService
 
                 if (kartice.Count == 0) continue;
 
-                var artikal = artikliDict.TryGetValue(sifra, out var art) ? art : new Artikal { SifraArtikla = sifra, Naziv = sifra };
+                var artikal = artikliDict.TryGetValue(sifra, out var art) ? art : new Materijal { SifraArtikla = sifra, Naziv = sifra };
                 rezultat.Add((mag, artikal, kartice));
             }
         }

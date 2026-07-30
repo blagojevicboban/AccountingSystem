@@ -128,8 +128,8 @@ public static class DbfImportService
         };
     }
 
-    /// <summary>ARTIKLI.DBF / M_SIFR.DBF → Artikal. Vraća null ako red nema šifru.</summary>
-    public static Artikal? MapArtikal(Dictionary<string, string> row, string vrsta = "Roba")
+    /// <summary>ARTIKLI.DBF → Artikal (Robno). Vraća null ako red nema šifru.</summary>
+    public static Artikal? MapArtikal(Dictionary<string, string> row)
     {
         string sifra = Get(row, "SIFRA", "KOD", "SIFR");
         if (string.IsNullOrWhiteSpace(sifra)) return null;
@@ -146,8 +146,25 @@ public static class DbfImportService
             Pakovanje = NullIfEmpty(Get(row, "PAKOVANJE", "PAK")),
             TarifniBroj = NullIfEmpty(Get(row, "TAR_BROJ", "TARIFNI", "TAR_BR")),
             KlasifikacionaSifra = NullIfEmpty(Get(row, "KLAS_SIFRA", "KLASIFIKAC")),
-            Selektovan = selektovanStr is "T" or "1" or "TRUE" or "Y",
-            Vrsta = vrsta
+            Selektovan = selektovanStr is "T" or "1" or "TRUE" or "Y"
+        };
+    }
+
+    /// <summary>M_SIFR.DBF → Materijal (Materijalno, nezavisna šifarnička serija od ARTIKLI.DBF). Vraća null ako red nema šifru.</summary>
+    public static Materijal? MapMaterijal(Dictionary<string, string> row)
+    {
+        string sifra = Get(row, "SIFRA", "KOD", "SIFR");
+        if (string.IsNullOrWhiteSpace(sifra)) return null;
+
+        string naziv = Get(row, "NAZIV", "IME", "OPIS", "ARTIKAL");
+        string jm = Get(row, "JED_MERE", "JM", "JEDINICA");
+
+        return new Materijal
+        {
+            SifraArtikla = sifra,
+            Naziv = string.IsNullOrWhiteSpace(naziv) ? $"Materijal {sifra}" : naziv,
+            JedinicaMere = string.IsNullOrWhiteSpace(jm) ? "kom" : jm,
+            Pakovanje = NullIfEmpty(Get(row, "PAKOVANJE", "PAK"))
         };
     }
 

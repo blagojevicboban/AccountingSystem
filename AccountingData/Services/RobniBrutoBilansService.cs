@@ -33,11 +33,23 @@ public class RobniBrutoBilansRed
 
 public class RobniBrutoBilansService
 {
-    public static async Task<List<RobniBrutoBilansRed>> GetRobniBrutoBilansAsync(
-        AccountingDbContext db,
-        int? magacinId = null,
-        DateTime? doDatuma = null,
-        string? pretraga = null)
+    /// <summary>Bruto bilans za Robno knjigovodstvo — samo šifre koje postoje u šifarniku Artikli (Roba).</summary>
+    public static Task<List<RobniBrutoBilansRed>> GetRobniBrutoBilansAsync(
+        AccountingDbContext db, int? magacinId = null, DateTime? doDatuma = null, string? pretraga = null)
+        => IzracunajAsync(db, magacinId, doDatuma, pretraga, samoRoba: true);
+
+    /// <summary>Bruto bilans za Materijalno knjigovodstvo — sve šifre koje NISU potvrđena Roba (Materijal + eventualni redovi bez artikla u šifarniku).</summary>
+    public static Task<List<RobniBrutoBilansRed>> GetMaterijalniBrutoBilansAsync(
+        AccountingDbContext db, int? magacinId = null, DateTime? doDatuma = null, string? pretraga = null)
+        => IzracunajAsync(db, magacinId, doDatuma, pretraga, samoRoba: false);
+
+    /// <summary>
+    /// MaterijalneKartice je jedna deljena tabela za promet i Robnog i Materijalnog knjigovodstva i sama
+    /// po sebi ne beleži kojoj seriji šifra pripada (Roba i Materijal su odvojene tabele koje mogu deliti
+    /// istu šifru sa različitim značenjem). Razdvajanje se radi po tome da li je šifra poznata u Artikli.
+    /// </summary>
+    private static async Task<List<RobniBrutoBilansRed>> IzracunajAsync(
+        AccountingDbContext db, int? magacinId, DateTime? doDatuma, string? pretraga, bool samoRoba)
     {
         string? trazeniMagacinSifra = null;
         if (magacinId.HasValue && magacinId.Value > 0)
@@ -62,14 +74,19 @@ public class RobniBrutoBilansService
         var karticeList = await query.ToListAsync();
 
         var magaciniMap = await db.Magacini.ToDictionaryAsync(m => m.SifraMagacina, m => m.NazivMagacina, StringComparer.OrdinalIgnoreCase);
-        var artikliMap = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
+        var robaMap = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a, StringComparer.OrdinalIgnoreCase);
+        var materijalMap = samoRoba
+            ? new Dictionary<string, Materijal>(StringComparer.OrdinalIgnoreCase)
+            : await db.Materijali.ToDictionaryAsync(m => m.SifraArtikla, m => m, StringComparer.OrdinalIgnoreCase);
 
         var rezultat = karticeList
             .GroupBy(k => new { k.SifraMagacina, k.SifraArtikla })
+            .Where(g => robaMap.ContainsKey(g.Key.SifraArtikla) == samoRoba)
             .Select(g =>
             {
                 var first = g.First();
-                artikliMap.TryGetValue(g.Key.SifraArtikla, out var art);
+                materijalMap.TryGetValue(g.Key.SifraArtikla, out var mat);
+                robaMap.TryGetValue(g.Key.SifraArtikla, out var rob);
                 magaciniMap.TryGetValue(g.Key.SifraMagacina, out string? nazivMag);
 
                 var last = g.OrderBy(k => k.DatumPromene).ThenBy(k => k.MaterijalnaKarticaId).LastOrDefault();
@@ -81,16 +98,16 @@ public class RobniBrutoBilansService
 
                 decimal zadnjeStanjeKol = last?.Stanje ?? (ukUlazKol - ukIzlazKol);
                 decimal zadnjiSaldoVred = last?.Saldo ?? (ukUlazVred - ukIzlazVred);
-                decimal zadnjaCena = last?.Cena ?? (art?.ProdajnaCena ?? 0m);
+                decimal zadnjaCena = last?.Cena ?? (rob?.ProdajnaCena ?? 0m);
 
                 return new RobniBrutoBilansRed
                 {
                     SifraMagacina = g.Key.SifraMagacina,
                     NazivMagacina = nazivMag ?? g.Key.SifraMagacina,
                     SifraArtikla = g.Key.SifraArtikla,
-                    NazivArtikla = art?.Naziv ?? g.Key.SifraArtikla,
-                    Pakovanje = art?.Pakovanje,
-                    JedinicaMere = art?.JedinicaMere ?? "kom",
+                    NazivArtikla = mat?.Naziv ?? rob?.Naziv ?? g.Key.SifraArtikla,
+                    Pakovanje = mat?.Pakovanje ?? rob?.Pakovanje,
+                    JedinicaMere = mat?.JedinicaMere ?? rob?.JedinicaMere ?? "kom",
                     Cena = zadnjaCena,
 
                     UlazKolicina = ukUlazKol,

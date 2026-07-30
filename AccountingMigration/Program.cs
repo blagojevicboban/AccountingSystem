@@ -110,13 +110,12 @@ class Program
 
                 if (!string.IsNullOrWhiteSpace(sifra))
                 {
-                    db.Artikli.Add(new Artikal
+                    db.Materijali.Add(new Materijal
                     {
                         SifraArtikla = sifra,
-                        Naziv = string.IsNullOrWhiteSpace(naziv) ? $"Artikal {sifra}" : naziv,
+                        Naziv = string.IsNullOrWhiteSpace(naziv) ? $"Materijal {sifra}" : naziv,
                         JedinicaMere = string.IsNullOrWhiteSpace(jm) ? "kom" : jm,
-                        Pakovanje = pak,
-                        Vrsta = "Materijal"
+                        Pakovanje = pak
                     });
                     artikalCount++;
                 }

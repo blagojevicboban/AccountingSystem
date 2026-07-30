@@ -107,8 +107,7 @@ public partial class ArtikalEditWindow : Window
                     Pakovanje = string.IsNullOrWhiteSpace(TxtPakovanje.Text) ? null : TxtPakovanje.Text.Trim(),
                     TarifniBroj = tarifniBroj,
                     NabavnaCena = nabCena,
-                    ProdajnaCena = prodCena,
-                    Vrsta = "Roba"
+                    ProdajnaCena = prodCena
                 });
             }
             else

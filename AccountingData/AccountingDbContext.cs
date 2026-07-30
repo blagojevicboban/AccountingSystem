@@ -14,6 +14,7 @@ public class AccountingDbContext : DbContext
     public DbSet<Partner> Partneri => Set<Partner>();
     public DbSet<Magacin> Magacini => Set<Magacin>();
     public DbSet<Artikal> Artikli => Set<Artikal>();
+    public DbSet<Materijal> Materijali => Set<Materijal>();
     public DbSet<MaterijalnaKartica> MaterijalneKartice => Set<MaterijalnaKartica>();
     public DbSet<UlazNalog> UlazNalozi => Set<UlazNalog>();
     public DbSet<UlazStavka> UlazStavke => Set<UlazStavka>();
@@ -103,6 +104,9 @@ public class AccountingDbContext : DbContext
 
         modelBuilder.Entity<Artikal>()
             .HasIndex(a => a.SifraArtikla);
+
+        modelBuilder.Entity<Materijal>()
+            .HasIndex(m => m.SifraArtikla);
 
         modelBuilder.Entity<Nalog>()
             .HasIndex(n => n.BrojNaloga);
