@@ -102,7 +102,7 @@ public partial class MainWindow : Window
         MainContentHost.Content = new Views.Konta.KontaView();
     }
 
-    private void NavNalozi_Click(object sender, RoutedEventArgs e)
+    public void NavNalozi_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📖 Glavna knjiga (Nalozi za knjiženje)";
         MainContentHost.Content = new NaloziView();
@@ -132,7 +132,7 @@ public partial class MainWindow : Window
         MainContentHost.Content = new TrgovinaView();
     }
 
-    private void NavIzvestaji_Click(object sender, RoutedEventArgs e)
+    public void NavIzvestaji_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📄 Izveštaji i PDF";
         MainContentHost.Content = new IzvestajiView();
@@ -167,7 +167,7 @@ public partial class MainWindow : Window
         MainContentHost.Content = new Views.Firme.FirmeView();
     }
 
-    private void NavPodesavanja_Click(object sender, RoutedEventArgs e)
+    public void NavPodesavanja_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "⚙️ Podešavanja aplikacije";
         MainContentHost.Content = new Views.Podesavanja.PodesavanjaView();

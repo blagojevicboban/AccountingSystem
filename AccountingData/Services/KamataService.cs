@@ -22,8 +22,31 @@ public class KamataService
         _db = db;
     }
 
+    public async Task EnsureSeedRatesAsync()
+    {
+        if (!await _db.KamatneStope.AnyAsync())
+        {
+            var defaultStope = new List<KamatnaStopa>
+            {
+                new KamatnaStopa { DatumOd = new DateTime(2021, 1, 1), GodisnjaStopaProcenat = 8.00m, Napomena = "Zakon o zateznoj kamati NBS" },
+                new KamatnaStopa { DatumOd = new DateTime(2022, 1, 1), GodisnjaStopaProcenat = 8.50m, Napomena = "Referentna stopa NBS + 8%" },
+                new KamatnaStopa { DatumOd = new DateTime(2022, 7, 1), GodisnjaStopaProcenat = 10.00m, Napomena = "Korekcija stope NBS" },
+                new KamatnaStopa { DatumOd = new DateTime(2023, 1, 1), GodisnjaStopaProcenat = 13.00m, Napomena = "Referentna kamatna stopa NBS" },
+                new KamatnaStopa { DatumOd = new DateTime(2023, 7, 1), GodisnjaStopaProcenat = 14.00m, Napomena = "Stopa zatezne kamate NBS" },
+                new KamatnaStopa { DatumOd = new DateTime(2024, 1, 1), GodisnjaStopaProcenat = 14.50m, Napomena = "Zatezna kamatna stopa 2024" },
+                new KamatnaStopa { DatumOd = new DateTime(2024, 7, 1), GodisnjaStopaProcenat = 14.00m, Napomena = "Korekcija kamatne stope NBS" },
+                new KamatnaStopa { DatumOd = new DateTime(2025, 1, 1), GodisnjaStopaProcenat = 13.75m, Napomena = "Stopa zatezne kamate 2025" },
+                new KamatnaStopa { DatumOd = new DateTime(2026, 1, 1), GodisnjaStopaProcenat = 13.50m, Napomena = "Važeća stopa zatezne kamate 2026" }
+            };
+
+            _db.KamatneStope.AddRange(defaultStope);
+            await _db.SaveChangesAsync();
+        }
+    }
+
     public async Task<List<KamatnaStopa>> GetStopeAsync()
     {
+        await EnsureSeedRatesAsync();
         return await _db.KamatneStope.OrderBy(k => k.DatumOd).ToListAsync();
     }
 
@@ -40,13 +63,19 @@ public class KamataService
         return stopa;
     }
 
+    public async Task BrisiStopuAsync(int kamatnaStopaId)
+    {
+        var item = await _db.KamatneStope.FindAsync(kamatnaStopaId);
+        if (item != null)
+        {
+            _db.KamatneStope.Remove(item);
+            await _db.SaveChangesAsync();
+        }
+    }
+
     /// <summary>
-    /// Obračun zatezne kamate na dugovne (Duguje) otvorene stavke partnera, zaključno
-    /// sa <paramref name="datumObracuna"/>. Za svaku stavku kamata se računa po danu
-    /// (glavnica * godišnja stopa/100 * broj dana / 365), primenjujući odgovarajuću
-    /// stopu za svaki pod-period u kome je ta stopa važila (stope se menjaju kroz
-    /// vreme prema <see cref="KamatnaStopa.DatumOd"/>) — analogno legacy obrac_kamate
-    /// proceduri iz FIN2.PRG.
+    /// Obračun zatezne kamate na dugovne (Duguje) otvorene stavke partnera po konformnom metodu
+    /// (analogno legacy obrac_kamate proceduri iz FIN2.PRG).
     /// </summary>
     public async Task<List<KamataStavka>> ObracunajKamatuAsync(int partnerId, DateTime datumObracuna)
     {
@@ -71,15 +100,18 @@ public class KamataService
             int dana = (datumObracuna.Date - datumDuga).Days;
             decimal kamata = ObracunajKamatuZaPeriod(s.Duguje, datumDuga, datumObracuna.Date, stope);
 
-            rezultat.Add(new KamataStavka
+            if (kamata > 0)
             {
-                Datum = datumDuga,
-                BrojNaloga = s.Nalog.BrojNaloga,
-                Opis = string.IsNullOrWhiteSpace(s.Opis) ? s.Nalog.Opis : s.Opis,
-                Iznos = s.Duguje,
-                BrojDanaKasnjenja = dana,
-                ObracunataKamata = kamata
-            });
+                rezultat.Add(new KamataStavka
+                {
+                    Datum = datumDuga,
+                    BrojNaloga = s.Nalog.BrojNaloga,
+                    Opis = string.IsNullOrWhiteSpace(s.Opis) ? s.Nalog.Opis : s.Opis,
+                    Iznos = s.Duguje,
+                    BrojDanaKasnjenja = dana,
+                    ObracunataKamata = kamata
+                });
+            }
         }
 
         return rezultat;
@@ -106,9 +138,72 @@ public class KamataService
                 .FirstOrDefault();
             if (stopa == null) continue;
 
-            ukupno += glavnica * (stopa.GodisnjaStopaProcenat / 100m) * dana / 365m;
+            // Konformni metod: glavnica * ((1 + r/100)^(dana/365) - 1)
+            double r = (double)(stopa.GodisnjaStopaProcenat / 100m);
+            double koeficijent = Math.Pow(1.0 + r, (double)dana / 365.0) - 1.0;
+            decimal parcijalnaKamata = glavnica * (decimal)koeficijent;
+
+            ukupno += parcijalnaKamata;
         }
 
         return Math.Round(ukupno, 2);
+    }
+
+    /// <summary>
+    /// Knjiži obračunatu zateznu kamatu u Glavnu knjigu (Konto 204... Duguje / Konto 662000 Potražuje).
+    /// </summary>
+    public async Task<Nalog> ProknjiziKamatuNalogAsync(int partnerId, decimal ukupnaKamata, DateTime datumObracuna, string opis)
+    {
+        if (ukupnaKamata <= 0)
+            throw new InvalidOperationException("Iznos kamate za knjiženje mora biti veći od 0.");
+
+        var partner = await _db.Partneri.FindAsync(partnerId);
+        if (partner == null)
+            throw new ArgumentException("Partner nije pronađen.");
+
+        // Tražimo analitičko konto partnera (npr. 204... ili 204000)
+        string kontoKupca = "204000";
+        var zadnjaStavka = await _db.StavkeNaloga.FirstOrDefaultAsync(s => s.PartnerId == partnerId && s.BrojKonta != null && s.BrojKonta.StartsWith("204"));
+        if (zadnjaStavka != null && !string.IsNullOrWhiteSpace(zadnjaStavka.BrojKonta))
+        {
+            kontoKupca = zadnjaStavka.BrojKonta;
+        }
+
+        int maxBrojNaloga = await _db.Nalozi.MaxAsync(n => (int?)n.BrojNaloga) ?? 0;
+        int noviBroj = maxBrojNaloga + 1;
+
+        var nalog = new Nalog
+        {
+            BrojNaloga = noviBroj,
+            DatumNaloga = datumObracuna,
+            Opis = string.IsNullOrWhiteSpace(opis) ? $"Obračun zatezne kamate za partnera {partner.Naziv}" : opis,
+            IsKnjizen = true,
+            UkupnoDuguje = ukupnaKamata,
+            UkupnoPotrazuje = ukupnaKamata,
+            Stavke = new List<StavkaNaloga>
+            {
+                new StavkaNaloga
+                {
+                    RedniBroj = 1,
+                    BrojKonta = kontoKupca,
+                    PartnerId = partnerId,
+                    Opis = $"Obračunata zatezna kamata do {datumObracuna:dd.MM.yyyy}",
+                    Duguje = ukupnaKamata,
+                    Potrazuje = 0m
+                },
+                new StavkaNaloga
+                {
+                    RedniBroj = 2,
+                    BrojKonta = "662000", // Prihodi od zateznih kamata
+                    Opis = $"Prihod od zatezne kamate — {partner.Naziv}",
+                    Duguje = 0m,
+                    Potrazuje = ukupnaKamata
+                }
+            }
+        };
+
+        _db.Nalozi.Add(nalog);
+        await _db.SaveChangesAsync();
+        return nalog;
     }
 }

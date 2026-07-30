@@ -1,7 +1,7 @@
 <Window x:Class="AccountingApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AccountingSystem — Finansijsko knjigovodstvo i glavna knjiga"
+        Title="ERPi Finansije — Integrisani poslovni sistem"
         Icon="/app.ico"
         Height="768" Width="1280"
         MinHeight="650" MinWidth="1000"
@@ -26,8 +26,8 @@
 
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="20,20,20,12">
-                    <TextBlock x:Name="TxtBrandTitle" Text="💼 KNJIGOVODSTVO" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock x:Name="TxtBrandSubtitle" Text="Glavna knjiga i ERP" FontSize="11" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="TxtBrandTitle" Text="⚡ ERPi Finansije" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock x:Name="TxtBrandSubtitle" Text="Glavna knjiga, robno i materijalno" FontSize="11" Foreground="#38BDF8" Margin="0,2,0,0"/>
                 </StackPanel>
 
                 <!-- Quick Search Bar u Meniju -->
@@ -106,27 +106,41 @@
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel x:Name="PnlNavigation">
+                        <!-- 💼 FINANSIJSKO KNJIGOVODSTVO -->
                         <TextBlock x:Name="HeaderFinansije" Text="FINANSIJSKO KNJIGOVODSTVO" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
                         <RadioButton x:Name="BtnDashboard" Content="📊 Radna tabla" Style="{StaticResource NavButtonStyle}" IsChecked="True" Click="NavDashboard_Click" ToolTip="Radna tabla sa indikatorima i brzim akcijama"/>
-                        <RadioButton x:Name="BtnKonta" Content="📋 Kontni plan" Style="{StaticResource NavButtonStyle}" Click="NavKonta_Click" ToolTip="Šifarnik sintetike i analitike sa kontnim planom"/>
-                        <RadioButton x:Name="BtnNalozi" Content="📖 Glavna knjiga" Style="{StaticResource NavButtonStyle}" Click="NavNalozi_Click" ToolTip="Evidencija i knjiženje naloga glavne knjige"/>
-                        <RadioButton x:Name="BtnKartice" Content="📋 Kartice konta" Style="{StaticResource NavButtonStyle}" Click="NavKartice_Click" ToolTip="Pregled hronoloških kartica po kontima"/>
-                        <RadioButton x:Name="BtnPartneri" Content="👥 Partneri (Analitika)" Style="{StaticResource NavButtonStyle}" Click="NavPartneri_Click" ToolTip="Analitika kupaca, dobavljača i otvorenih stavki"/>
-                        <RadioButton x:Name="BtnIzvestaji" Content="📄 Finansijski izveštaji i PDF" Style="{StaticResource NavButtonStyle}" Click="NavIzvestaji_Click" ToolTip="Štampa Dnevnika GK, Bruto bilansa i IOS obrazaca"/>
+                        <RadioButton x:Name="BtnNalozi" Content="📖 Glavna knjiga i Nalozi" Style="{StaticResource NavButtonStyle}" Click="NavNalozi_Click" ToolTip="Evidencija, knjiženje i pregled naloga glavne knjige"/>
+                        <RadioButton x:Name="BtnKartice" Content="📋 Dnevnik i Kartice konta" Style="{StaticResource NavButtonStyle}" Click="NavKartice_Click" ToolTip="Pregled hronoloških sintetičkih i analitičkih kartica konta"/>
+                        <RadioButton x:Name="BtnPartneri" Content="👥 Partneri i Otvorene stavke" Style="{StaticResource NavButtonStyle}" Click="NavPartneri_Click" ToolTip="Analitika kupaca, dobavljača i otvorene stavke (IOS)"/>
+                        <RadioButton x:Name="BtnIzvestaji" Content="📄 Finansijski izveštaji" Style="{StaticResource NavButtonStyle}" Click="NavIzvestaji_Click" ToolTip="Bruto bilans, Zaključni list i zvanični finansijski izveštaji"/>
 
+                        <!-- 📦 ROBNO KNJIGOVODSTVO -->
                         <Separator x:Name="SepRobno" Background="#334155" Margin="16,8"/>
-                        <TextBlock x:Name="HeaderRobno" Text="ROBNO KNJIGOVODSTVO I MAGACINI" FontSize="10" FontWeight="SemiBold"
+                        <TextBlock x:Name="HeaderRobno" Text="ROBNO KNJIGOVODSTVO (VP / MP)" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
-                        <RadioButton x:Name="BtnKalkulacije" Content="📦 Robno knjigovodstvo" Style="{StaticResource NavButtonStyle}" Click="NavKalkulacije_Click" ToolTip="Kalkulacije veleprodaje/maloprodaje, otpremnice i nivelacije"/>
-                        <RadioButton x:Name="BtnMagacin" Content="🏭 Ulazi i zalihe magacina" Style="{StaticResource NavButtonStyle}" Click="NavMagacin_Click" ToolTip="Prijemnice, ulazi, prateće dokumentacije i stanje magacina"/>
+                        <RadioButton x:Name="BtnKalkulacije" Content="📦 Kalkulacije i Nivelacije" Style="{StaticResource NavButtonStyle}" Click="NavKalkulacije_Click" ToolTip="Kalkulacije veleprodaje/maloprodaje, otpremnice i nivelacije"/>
 
+                        <!-- 🏭 MATERIJALNO KNJIGOVODSTVO -->
+                        <Separator x:Name="SepMaterijalno" Background="#334155" Margin="16,8"/>
+                        <TextBlock x:Name="HeaderMaterijalno" Text="MATERIJALNO KNJIGOVODSTVO" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="#38BDF8" Margin="24,2,0,3"/>
+                        <RadioButton x:Name="BtnMagacin" Content="🏭 Skladište i Zalihe" Style="{StaticResource NavButtonStyle}" Click="NavMagacin_Click" ToolTip="Prijemnice materijala, stanje zaliha i skladišne kartice"/>
+
+                        <!-- 🧾 POREZI I APR BILANSI -->
                         <Separator x:Name="SepPorezi" Background="#334155" Margin="16,8"/>
-                        <TextBlock x:Name="HeaderPorezi" Text="POREZI I ZVANIČNI BILANSI" FontSize="10" FontWeight="SemiBold"
+                        <TextBlock x:Name="HeaderPorezi" Text="POREZI I APR BILANSI" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
+                        <RadioButton x:Name="BtnPdv" Content="🧾 PDV Evidencija (KPR/KIR)" Style="{StaticResource NavButtonStyle}" Click="NavPdv_Click" ToolTip="Evidencija nabavki (KPR), isporuka (KIR) i POPDV prijava"/>
                         <RadioButton x:Name="BtnBilansi" Content="🏛️ Bilansi (APR)" Style="{StaticResource NavButtonStyle}" Click="NavBilansi_Click" ToolTip="Izrada zvaničnih finansijskih izveštaja (APR)"/>
-                        <RadioButton x:Name="BtnPdv" Content="🧾 PDV Evidencija (KIR/KPR)" Style="{StaticResource NavButtonStyle}" Click="NavPdv_Click" ToolTip="Evidencija nabavki (KPR), isporuka (KIR) i POPDV prijava"/>
 
+                        <!-- 🗂️ MATIČNI PODACI (ŠIFARNICI) -->
+                        <Separator x:Name="SepSifarnici" Background="#334155" Margin="16,8"/>
+                        <TextBlock x:Name="HeaderSifarnici" Text="MATIČNI PODACI (ŠIFARNICI)" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="#38BDF8" Margin="24,2,0,3"/>
+                        <RadioButton x:Name="BtnKonta" Content="📋 Kontni plan" Style="{StaticResource NavButtonStyle}" Click="NavKonta_Click" ToolTip="Šifarnik sintetike i analitike sa kontnim planom"/>
+
+                        <!-- ⚙️ PODEŠAVANJA I SISTEM -->
                         <Separator x:Name="SepPodesavanja" Background="#334155" Margin="16,8"/>
                         <TextBlock x:Name="HeaderPodesavanja" Text="PODEŠAVANJA I SISTEM" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>

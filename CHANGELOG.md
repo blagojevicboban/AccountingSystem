@@ -4,6 +4,20 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.29] - 2026-07-30
+
+### 🚀 Nove Funkcionalnosti & Obračun Zatezne Kamate
+- **Modul Obračun Zatezne Kamate (`obrac_kamate()`)**:
+  - Ugrađena kompletna poslovna logika obračuna zakonske zatezne kamate po konformnom metodu NBS (podržane stope 2021–2026 sa pod-periodima).
+  - Automatsko sejanje zakonskih kamatnih stopa i mogućnost unosa novih.
+  - Zvanični PDF obrazac **Obračun zatezne kamate** po partnerima sa potpisnim linijama.
+  - Automatsko knjiženje kamatnog lista u Glavnu knjigu na **Konto 662000 (Prihodi od zateznih kamata)** i duguje kupac.
+
+### 🎨 Vizuelni Identitet & Ikonica Aplikacije
+- Zvanična nova ikona `app.ico` (motiv poslovne aktovke + ERPi FINANSIJE) na plavoj zaobljenoj podlozi (`#2563EB`).
+
+---
+
 ## [1.0.28] - 2026-07-29
 
 ### 🚀 Poboljšanja & Precizno Usklađivanje Zaključnog Lista (`FIN1.PRG` / `gk5()`)

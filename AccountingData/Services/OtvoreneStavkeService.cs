@@ -92,6 +92,176 @@ public class OtvoreneStavkeService
             .OrderBy(r => r.NazivPartnera)
             .ToList();
     }
+
+    /// <summary>
+    /// Dohvata izveštaj otvorenih stavki (IOS) po partnerima/kontima,
+    /// sa mogućnošću filtriranja po opsegu konta (odKonta-doKonta, npr. 202 - 2029999 kao u legacy gk91)
+    /// i vremenskom periodu.
+    /// </summary>
+    public async Task<List<IosPartnerGrupa>> GetIosIzvestajAsync(
+        string? odKonta = null,
+        string? doKonta = null,
+        DateTime? odDatuma = null,
+        DateTime? doDatuma = null,
+        bool samoSaSaldom = true)
+    {
+        var query = _db.StavkeNaloga
+            .Include(s => s.Nalog)
+            .Include(s => s.Partner)
+            .Where(s => s.Nalog != null && s.Nalog.IsKnjizen);
+
+        if (odDatuma.HasValue)
+            query = query.Where(s => s.Nalog!.DatumNaloga >= odDatuma.Value);
+
+        if (doDatuma.HasValue)
+            query = query.Where(s => s.Nalog!.DatumNaloga <= doDatuma.Value);
+
+        var stavke = await query
+            .OrderBy(s => s.Nalog!.DatumNaloga)
+            .ThenBy(s => s.Nalog!.NalogId)
+            .ThenBy(s => s.RedniBroj)
+            .ToListAsync();
+
+        // Filtriranje opsega konta u memoriji radi tačnosti prefix/range poređenja
+        string odK = (odKonta ?? "").Trim();
+        string doK = (doKonta ?? "").Trim();
+
+        if (!string.IsNullOrEmpty(odK) || !string.IsNullOrEmpty(doK))
+        {
+            stavke = stavke.Where(s =>
+            {
+                if (string.IsNullOrEmpty(s.BrojKonta)) return false;
+                string k = s.BrojKonta.Trim();
+
+                if (!string.IsNullOrEmpty(odK) && string.IsNullOrEmpty(doK))
+                {
+                    return k.StartsWith(odK, StringComparison.OrdinalIgnoreCase) ||
+                           string.Compare(k, odK, StringComparison.OrdinalIgnoreCase) >= 0;
+                }
+
+                if (string.IsNullOrEmpty(odK) && !string.IsNullOrEmpty(doK))
+                {
+                    return k.StartsWith(doK, StringComparison.OrdinalIgnoreCase) ||
+                           string.Compare(k, doK, StringComparison.OrdinalIgnoreCase) <= 0;
+                }
+
+                if (string.Equals(odK, doK, StringComparison.OrdinalIgnoreCase))
+                {
+                    return k.StartsWith(odK, StringComparison.OrdinalIgnoreCase);
+                }
+
+                bool okOd = k.StartsWith(odK, StringComparison.OrdinalIgnoreCase) || string.Compare(k, odK, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool okDo = k.StartsWith(doK, StringComparison.OrdinalIgnoreCase) || string.Compare(k, doK, StringComparison.OrdinalIgnoreCase) <= 0;
+
+                return okOd && okDo;
+            }).ToList();
+        }
+
+        var kontaMap = await _db.Konta
+            .AsNoTracking()
+            .ToDictionaryAsync(k => k.BrojKonta.Trim(), k => k.NazivKonta, StringComparer.OrdinalIgnoreCase);
+
+        var grupeDict = new Dictionary<string, IosPartnerGrupa>();
+
+        foreach (var s in stavke)
+        {
+            string key = s.PartnerId.HasValue
+                ? $"P_{s.PartnerId.Value}_{s.BrojKonta}"
+                : $"K_{s.BrojKonta}";
+
+            if (!grupeDict.TryGetValue(key, out var grupa))
+            {
+                string nazivVal = s.Partner != null && !string.IsNullOrWhiteSpace(s.Partner.Naziv)
+                    ? s.Partner.Naziv
+                    : (kontaMap.TryGetValue(s.BrojKonta.Trim(), out var kNaziv) && !string.IsNullOrWhiteSpace(kNaziv)
+                        ? kNaziv
+                        : $"Konto {s.BrojKonta}");
+
+                var partnerObj = s.Partner ?? new Partner
+                {
+                    PartnerId = s.PartnerId ?? 0,
+                    SifraPartnera = string.IsNullOrWhiteSpace(s.BrojKonta) ? "---" : s.BrojKonta,
+                    Naziv = nazivVal,
+                    KontoPartnera = s.BrojKonta
+                };
+
+                grupa = new IosPartnerGrupa
+                {
+                    SifraPartnera = partnerObj.SifraPartnera,
+                    NazivPartnera = nazivVal,
+                    Konto = s.BrojKonta,
+                    Adresa = partnerObj.Adresa,
+                    PttIMesto = partnerObj.PttIMesto,
+                    Pib = partnerObj.Pib,
+                    Partner = partnerObj,
+                    Stavke = new List<KarticaRed>()
+                };
+
+                grupeDict[key] = grupa;
+            }
+
+            decimal prethodniSaldo = grupa.Stavke.Count > 0 ? grupa.Stavke[^1].Saldo : 0m;
+            decimal noviSaldo = prethodniSaldo + s.Duguje - s.Potrazuje;
+
+            grupa.Stavke.Add(new KarticaRed
+            {
+                Datum = s.Nalog!.DatumNaloga,
+                BrojNaloga = s.Nalog.BrojNaloga,
+                Opis = string.IsNullOrWhiteSpace(s.Opis) ? (s.BrojDokumenta ?? s.Nalog.Opis) : s.Opis,
+                OpisPromene = s.BrojDokumenta,
+                Duguje = s.Duguje,
+                Potrazuje = s.Potrazuje,
+                Saldo = noviSaldo
+            });
+        }
+
+        var rezultat = grupeDict.Values.ToList();
+
+        if (samoSaSaldom)
+        {
+            rezultat = rezultat.Where(g => g.Saldo != 0m || (g.Stavke.Count > 0 && g.Stavke.Any(st => st.Saldo != 0m))).ToList();
+        }
+
+        return rezultat
+            .OrderBy(g => g.Konto)
+            .ThenBy(g => g.NazivPartnera)
+            .ToList();
+    }
+}
+
+public class IosPartnerGrupa : System.ComponentModel.INotifyPropertyChanged
+{
+    private bool _isSelected;
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected != value)
+            {
+                _isSelected = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string SifraPartnera { get; set; } = string.Empty;
+    public string NazivPartnera { get; set; } = string.Empty;
+    public string Konto { get; set; } = string.Empty;
+    public string? Adresa { get; set; }
+    public string? PttIMesto { get; set; }
+    public string? Pib { get; set; }
+    public Partner Partner { get; set; } = null!;
+    public List<KarticaRed> Stavke { get; set; } = new();
+    public decimal UkupnoDuguje => Stavke.Sum(s => s.Duguje);
+    public decimal UkupnoPotrazuje => Stavke.Sum(s => s.Potrazuje);
+    public decimal Saldo => Stavke.Count > 0 ? Stavke[^1].Saldo : 0m;
+    public int BrojStavki => Stavke.Count;
+
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+        => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
 }
 
 public class BrutoBilansAnalitikeRed
@@ -102,3 +272,4 @@ public class BrutoBilansAnalitikeRed
     public decimal Potrazuje { get; set; }
     public decimal Saldo { get; set; }
 }
+

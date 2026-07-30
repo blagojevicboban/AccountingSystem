@@ -1,7 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using AccountingApp.Views.Izvestaji;
 using AccountingData;
+using AccountingData.Models;
 using AccountingData.Services;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
@@ -33,65 +38,111 @@ public partial class DashboardView : UserControl
 
             using var db = new AccountingDbContext(options);
 
+            // ===== OSNOVNE STATISTIKE =====
             int proknjizenoCount = await db.Nalozi.CountAsync(n => n.IsKnjizen);
             int stavkiCount = await db.StavkeNaloga.CountAsync(s => s.Nalog != null && s.Nalog.IsKnjizen);
             int neproknjizenoCount = await db.Nalozi.CountAsync(n => !n.IsKnjizen);
-            int stavkiNeproknjizenoCount = await db.StavkeNaloga.CountAsync(s => s.Nalog != null && !s.Nalog.IsKnjizen);
             int kontaCount = await db.Konta.CountAsync();
             int partneriCount = await db.Partneri.CountAsync();
-            int magacinaCount = await db.Magacini.CountAsync();
 
             TxtUkupnoNaloga.Text = proknjizenoCount.ToString("N0");
-            TxtStavkiKnjizenja.Text = $"{stavkiCount:N0} stavki knjiženja";
+            TxtStavkiKnjizenja.Text = $"{stavkiCount:N0}";
             TxtNeproknjizenoNaloga.Text = neproknjizenoCount.ToString("N0");
-            TxtStavkiNeproknjizeno.Text = $"{stavkiNeproknjizenoCount:N0} stavki knjiženja";
             TxtUkupnoKonta.Text = kontaCount.ToString("N0");
-            TxtBrojMagacina.Text = $"{magacinaCount:N0} magacina";
             TxtUkupnoPartnera.Text = partneriCount.ToString("N0");
 
-            // ===== ROBNO KNJIGOVODSTVO =====
-            int nezaknjizenoKalk = await db.Kalkulacije.CountAsync(k => !k.IsKnjizen);
-            int nezaknjizenoRacuni = await db.RacuniOtpremnice.CountAsync(r => !r.IsKnjizen);
-            int nezaknjizenoPrimopredaje = await db.PrimopredajaNalozi.CountAsync(p => !p.IsKnjizen);
-            int nezaknjizenoNivelacije = await db.NivelacijeCena.CountAsync(n => !n.IsKnjizen);
-            int ukupnoNezaknjizeno = nezaknjizenoKalk + nezaknjizenoRacuni + nezaknjizenoPrimopredaje + nezaknjizenoNivelacije;
+            var firma = AppSession.TrenutnaFirma ?? await db.Firme.FirstOrDefaultAsync();
+            if (firma != null)
+            {
+                TxtFirmaNaziv.Text = firma.Naziv;
+                TxtFirmaAdresa.Text = string.IsNullOrWhiteSpace(firma.Adresa) ? "—" : $"{firma.Adresa}, {firma.PttIMesto}";
+                TxtFirmaZiro.Text = string.IsNullOrWhiteSpace(firma.ZiroRacun) ? "—" : firma.ZiroRacun;
+            }
 
-            TxtNezaknjizeniDokumenti.Text = ukupnoNezaknjizeno.ToString("N0");
-            TxtNezaknjizeniDetalji.Text = $"Kalk: {nezaknjizenoKalk}, Rač: {nezaknjizenoRacuni}, Prim: {nezaknjizenoPrimopredaje}, Niv: {nezaknjizenoNivelacije}";
+            // ===== OTVORENE STAVKE (IOS & LIKVIDNOST) =====
+            var iosService = new OtvoreneStavkeService(db);
 
-            decimal ukupnoFakturisano = await db.RacuniOtpremnice.SumAsync(r => (decimal?)r.UkupanIznos) ?? 0m;
-            int brojRacuna = await db.RacuniOtpremnice.CountAsync();
-            int brojKalkulacija = await db.Kalkulacije.CountAsync();
+            // Kupci (prefix 204...)
+            var kupciIos = await iosService.GetIosIzvestajAsync("204", "2049999", null, null, true);
+            decimal ukupnoKupciDug = kupciIos.Where(k => k.Saldo > 0).Sum(k => k.Saldo);
+            int brojKupacaDug = kupciIos.Count(k => k.Saldo > 0);
 
-            TxtUkupnoFakturisano.Text = $"{ukupnoFakturisano:N0} RSD";
-            TxtBrojRacuna.Text = $"{brojRacuna:N0} računa-otpremnica";
-            TxtBrojKalkulacija.Text = brojKalkulacija.ToString("N0");
+            TxtUkupnoKupciDug.Text = $"{ukupnoKupciDug:N2} RSD";
+            TxtBrojKupacaDug.Text = $"{brojKupacaDug} kupca ima otvoreno dugovanje";
 
-            // ===== MATERIJALNO KNJIGOVODSTVO =====
-            var brutoBilans = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db);
-            decimal vrednostZaliha = brutoBilans.Sum(r => r.SaldoVrednosni);
-            int artikalaNaZalihama = brutoBilans.Where(r => r.SaldoKolicinski > 0).Select(r => r.SifraArtikla).Distinct().Count();
-            int negativnaStanja = brutoBilans.Where(r => r.SaldoKolicinski < 0).Select(r => r.SifraArtikla).Distinct().Count();
+            var topKupci = kupciIos
+                .Where(k => k.Saldo > 0)
+                .OrderByDescending(k => k.Saldo)
+                .Take(5)
+                .ToList();
+            DgTopKupci.ItemsSource = topKupci;
 
-            TxtUkupnoMaterijala.Text = artikalaNaZalihama.ToString("N0");
-            TxtVrednostZaliha.Text = $"{vrednostZaliha:N0} RSD";
-            TxtNegativnaStanja.Text = negativnaStanja.ToString("N0");
+            // Dobavljači (prefix 435...)
+            var dobavljaciIos = await iosService.GetIosIzvestajAsync("435", "4359999", null, null, true);
+            decimal ukupnoDobavljaciDug = dobavljaciIos.Where(d => d.Saldo < 0 || d.UkupnoPotrazuje > d.UkupnoDuguje).Sum(d => Math.Abs(d.Saldo));
+            int brojDobavljaciDug = dobavljaciIos.Count(d => d.Saldo < 0 || d.UkupnoPotrazuje > d.UkupnoDuguje);
 
+            TxtUkupnoDobavljaciDug.Text = $"{ukupnoDobavljaciDug:N2} RSD";
+            TxtBrojDobavljaciDug.Text = $"{brojDobavljaciDug} dobavljača sa obavezama";
+
+            var topDobavljaci = dobavljaciIos
+                .Where(d => d.UkupnoPotrazuje > d.UkupnoDuguje || d.Saldo < 0)
+                .OrderByDescending(d => Math.Abs(d.Saldo))
+                .Take(5)
+                .ToList();
+            DgTopDobavljaci.ItemsSource = topDobavljaci;
+
+            // Neto Saldo Likvidnosti (Kupci - Dobavljači)
+            decimal netoLikvidnost = ukupnoKupciDug - ukupnoDobavljaciDug;
+            TxtNetoSaldoLikvidnost.Text = $"{netoLikvidnost:N2} RSD";
+
+            if (netoLikvidnost >= 0)
+            {
+                TxtNetoSaldoLikvidnost.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#059669"));
+                TxtNetoOpis.Text = "Pozitivan neto priliv (Potraživanja > Obaveze)";
+                TxtNetoOpis.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
+            }
+            else
+            {
+                TxtNetoSaldoLikvidnost.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC2626"));
+                TxtNetoOpis.Text = "Upozorenje: Obaveze veće od potraživanja";
+                TxtNetoOpis.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
+            }
+
+            // ===== MATERIJALNO KNJIGOVODSTVO & ZALIHE =====
+            var robniBrutoBilans = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db);
+            decimal vrednostZaliha = robniBrutoBilans.Sum(r => r.SaldoVrednosni);
+            int artikalaNaZalihama = robniBrutoBilans.Where(r => r.SaldoKolicinski > 0).Select(r => r.SifraArtikla).Distinct().Count();
+            int negativnaStanja = robniBrutoBilans.Where(r => r.SaldoKolicinski < 0).Select(r => r.SifraArtikla).Distinct().Count();
+
+            TxtVrednostZaliha.Text = $"{vrednostZaliha:N2} RSD";
+            if (negativnaStanja > 0)
+            {
+                TxtZaliheDetalji.Text = $"{artikalaNaZalihama} artikala • ⚠️ {negativnaStanja} sa negativnim zalihama!";
+                TxtZaliheDetalji.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC2626"));
+            }
+            else
+            {
+                TxtZaliheDetalji.Text = $"{artikalaNaZalihama} artikala na zalihama u magacinima";
+                TxtZaliheDetalji.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
+            }
+
+            // ===== RECENT NALOZI =====
             var recentNalozi = await db.Nalozi
                 .OrderByDescending(n => n.NalogId)
-                .Take(15)
+                .Take(10)
                 .ToListAsync();
 
             DgRecentNalozi.ItemsSource = recentNalozi;
 
-            // Status naloga (Donut)
+            // ===== GRAFIKONI =====
             PieStatusNaloga.Series = new ISeries[]
             {
-                new PieSeries<int> { Values = new[] { proknjizenoCount }, Name = "Proknjiženi", InnerRadius = 40 },
-                new PieSeries<int> { Values = new[] { neproknjizenoCount }, Name = "Neproknjiženi", InnerRadius = 40 }
+                new PieSeries<int> { Values = new[] { proknjizenoCount }, Name = "Proknjiženi", InnerRadius = 40, Fill = new SolidColorPaint(SKColor.Parse("#2563EB")) },
+                new PieSeries<int> { Values = new[] { neproknjizenoCount }, Name = "Neproknjiženi", InnerRadius = 40, Fill = new SolidColorPaint(SKColor.Parse("#F59E0B")) }
             };
 
-            // Promet po kontu — Top 10 (horizontalni bar, najveći na vrhu)
+            // Promet po kontu Top 10
             var brutoBilansService = new BrutoBilansService(db);
             var bilansPoKontu = await brutoBilansService.GetBrutoBilansAsync();
             var top10Konta = bilansPoKontu
@@ -120,48 +171,79 @@ public partial class DashboardView : UserControl
                     TextSize = 11
                 }
             };
-
-            // Top 5 partnera po prometu (Bar)
-            var otvoreneStavkeService = new OtvoreneStavkeService(db);
-            var bilansAnalitike = await otvoreneStavkeService.GetBrutoBilansAnalitikeAsync();
-            var top5Partnera = bilansAnalitike
-                .OrderByDescending(r => r.Duguje + r.Potrazuje)
-                .Take(5)
-                .ToList();
-
-            if (top5Partnera.Count == 0)
-            {
-                BarTopPartneri.Visibility = System.Windows.Visibility.Collapsed;
-                TxtNemaPartnera.Visibility = System.Windows.Visibility.Visible;
-            }
-            else
-            {
-                BarTopPartneri.Series = new ISeries[]
-                {
-                    new ColumnSeries<double>
-                    {
-                        Values = top5Partnera.Select(p => (double)(p.Duguje + p.Potrazuje)).ToArray(),
-                        Name = "Promet",
-                        Fill = new SolidColorPaint(SKColor.Parse("#2563EB")),
-                        DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#334155")),
-                        DataLabelsPosition = DataLabelsPosition.Top,
-                        DataLabelsFormatter = point => point.Model.ToString("N0"),
-                        YToolTipLabelFormatter = point => $"{point.Model:N2}"
-                    }
-                };
-                BarTopPartneri.XAxes = new Axis[]
-                {
-                    new Axis
-                    {
-                        Labels = top5Partnera.Select(p => p.NazivPartnera).ToArray(),
-                        LabelsRotation = 15,
-                        TextSize = 12
-                    }
-                };
-            }
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Greška pri učitavanju radne table: {ex.Message}");
+        }
+    }
+
+    // ===== BRZE AKCIJE =====
+    private async void BtnOpenIos_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string dbPath = AppConfig.DbPath;
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new OtvoreneStavkeService(db);
+            var grupe = await service.GetIosIzvestajAsync(null, null, null, null, true);
+            var firma = AppSession.TrenutnaFirma ?? await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Kompanija" };
+
+            var iosWin = new IosPreviewWindow(grupe, firma);
+            iosWin.Owner = Window.GetWindow(this);
+            iosWin.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju ekrana otvorenih stavki: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnOpenBrutoBilans_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWin = Window.GetWindow(this) as MainWindow;
+        mainWin?.NavIzvestaji_Click(sender, e);
+    }
+
+    private void BtnNewNalog_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWin = Window.GetWindow(this) as MainWindow;
+        mainWin?.NavNalozi_Click(sender, e);
+    }
+
+    private void BtnDosImport_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWin = Window.GetWindow(this) as MainWindow;
+        mainWin?.NavPodesavanja_Click(sender, e);
+    }
+
+    private async void BtnPrintPartnerIos_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.CommandParameter is IosPartnerGrupa grupa)
+        {
+            try
+            {
+                string dbPath = AppConfig.DbPath;
+                var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                    .UseSqlite($"Data Source={dbPath}")
+                    .Options;
+
+                using var db = new AccountingDbContext(options);
+                var singleList = new List<IosPartnerGrupa> { grupa };
+                var firma = AppSession.TrenutnaFirma ?? await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Kompanija" };
+
+                var previewWin = new IosPreviewWindow(singleList, firma);
+                previewWin.Owner = Window.GetWindow(this);
+                previewWin.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri prikazu IOS za partnera: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

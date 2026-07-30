@@ -22,6 +22,8 @@ public partial class IzvestajiView : UserControl
         DpBrutoBilansDo.SelectedDate = DateTime.Now;
         DpZakljucniListOd.SelectedDate = pocetakGodine;
         DpZakljucniListDo.SelectedDate = DateTime.Now;
+        DpIosOd.SelectedDate = pocetakGodine;
+        DpIosDo.SelectedDate = DateTime.Now;
     }
 
     private async void BtnGenerisiDnevnik_Click(object sender, RoutedEventArgs e)
@@ -174,16 +176,92 @@ public partial class IzvestajiView : UserControl
     }
 
 
-    private void BtnGenerisiIOS_Click(object sender, RoutedEventArgs e)
+    private async void BtnGenerisiIOS_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show(
-            "IOS obrazac se izvozi po partneru — izaberite partnera na tabu \"Partneri (Analitika)\" i kliknite \"Izvezi IOS (PDF)\".",
-            "IOS obrazac", MessageBoxButton.OK, MessageBoxImage.Information);
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new OtvoreneStavkeService(db);
+
+            string odKonta = TxtIosOdKonta.Text.Trim();
+            string doKonta = TxtIosDoKonta.Text.Trim();
+            var odDatuma = DpIosOd.SelectedDate;
+            var doDatuma = DpIosDo.SelectedDate;
+            bool samoSaSaldom = ChkIosSamoOtvorene.IsChecked == true;
+
+            var grupe = await service.GetIosIzvestajAsync(odKonta, doKonta, odDatuma, doDatuma, samoSaSaldom);
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? new AccountingData.Models.Firma { Naziv = "ARHIBEL - 2026" };
+
+            byte[] pdfBytes = PdfReportService.GenerisiZbirniIOSPdf(firma, grupe, odKonta, doKonta, odDatuma, doDatuma);
+
+            string pdfPath = Path.Combine(Path.GetTempPath(), $"IOS_Zbirni_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            await File.WriteAllBytesAsync(pdfPath, pdfBytes);
+
+            Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri generisanju PDF-a otvorenih stavki: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
-    private void BtnGenerisiZalihe_Click(object sender, RoutedEventArgs e)
+    private async void BtnPrikaziIOS_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Izveštaj o vrednovanju zaliha (PDF) je spreman!", "Izveštaj", MessageBoxButton.OK, MessageBoxImage.Information);
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new OtvoreneStavkeService(db);
+
+            string odKonta = TxtIosOdKonta.Text.Trim();
+            string doKonta = TxtIosDoKonta.Text.Trim();
+            var odDatuma = DpIosOd.SelectedDate;
+            var doDatuma = DpIosDo.SelectedDate;
+            bool samoSaSaldom = ChkIosSamoOtvorene.IsChecked == true;
+
+            var grupe = await service.GetIosIzvestajAsync(odKonta, doKonta, odDatuma, doDatuma, samoSaSaldom);
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? new AccountingData.Models.Firma { Naziv = "ARHIBEL - 2026" };
+
+            var dijalog = new IosPreviewWindow(grupe, firma, odKonta, doKonta, odDatuma, doDatuma) { Owner = Window.GetWindow(this) };
+            dijalog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri prikazu otvorenih stavki na ekranu: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnGenerisiZalihe_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var redovi = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db);
+
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? new AccountingData.Models.Firma { Naziv = "ARHIBEL - 2026" };
+
+            byte[] pdfBytes = PdfReportService.GenerisiVrednovanjeZalihaPdf(firma, redovi);
+
+            string pdfPath = Path.Combine(Path.GetTempPath(), $"VrednovanjeZaliha_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            await File.WriteAllBytesAsync(pdfPath, pdfBytes);
+
+            Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri generisanju PDF-a: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private async void BtnGenerisiBrutoBilansAnalitike_Click(object sender, RoutedEventArgs e)

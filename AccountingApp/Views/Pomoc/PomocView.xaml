@@ -28,7 +28,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock x:Name="TxtNaslovTeme" Text="Dobrodošli" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,16"/>
-                    <TextBlock x:Name="TxtSadrzajTeme" FontSize="14" Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" LineHeight="24"/>
+                    <TextBox x:Name="TxtSadrzajTeme" FontSize="13" Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" IsReadOnly="True" BorderThickness="0" Background="Transparent" VerticalScrollBarVisibility="Disabled"/>
                 </StackPanel>
             </ScrollViewer>
         </Border>

@@ -81,8 +81,30 @@
                 <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="👥 IOS – Izvod otvorenih stavki" FontSize="16" FontWeight="Bold" Foreground="#7C3AED"/>
-                        <TextBlock Text="Izvod otvorenih stavki za usaglašavanje salda sa kupcima i dobavljačima." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
-                        <Button Content="📥 Izvezi IOS obrazac (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Click="BtnGenerisiIOS_Click"/>
+                        <TextBlock Text="Izvod otvorenih stavki za usaglašavanje salda po kontima/partnerima (legacy gk91)." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,12"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="Od konta" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtIosOdKonta" Text="" Width="75" Height="30" VerticalContentAlignment="Center" Padding="4,0" ToolTip="Prazno za sve partnere ili unesite npr. 204 (Kupci) ili 435 (Dobavljači)"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="Do konta" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBox x:Name="TxtIosDoKonta" Text="" Width="85" Height="30" VerticalContentAlignment="Center" Padding="4,0" ToolTip="Prazno za sve partnere ili unesite krajnji konto"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="Od datuma" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                <DatePicker x:Name="DpIosOd" Width="105" Height="30"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Do datuma" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                <DatePicker x:Name="DpIosDo" Width="105" Height="30"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <CheckBox x:Name="ChkIosSamoOtvorene" Content="Samo partneri sa neusaglašenim saldom" IsChecked="True" FontSize="12" Margin="0,0,0,12"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="📥 Izvezi PDF" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,0,8,0" Click="BtnGenerisiIOS_Click"/>
+                            <Button Content="👁 Prikaži na ekranu" Style="{StaticResource ActionButtonStyle}" Background="#0EA5E9" Click="BtnPrikaziIOS_Click"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
