@@ -2006,65 +2006,206 @@ public class PdfReportService
         }).GeneratePdf();
     }
 
-    /// <summary>Generiše PDF Kalkulacije cena na malo (MAT7 - mal_nal) — bez stavki po artiklu (šifarnik stavki još nije modelovan za maloprodajne kalkulacije).</summary>
+    /// <summary>
+    /// Generiše PDF Kalkulacije cena na malo (MAT3/MAT7 - mal_nal, stampaMkalkulacija() iz MAT2.PRG).
+    /// Ako kalkulacija ima stavke, štampa se stavka-po-stavka tabela (analogno veleprodajnoj
+    /// <see cref="GenerisiKalkulacijuPdf"/>); starije/legacy-uvezene kalkulacije bez stavki i dalje
+    /// dobijaju header-only prikaz kao ranije.
+    /// </summary>
     public static byte[] GenerisiMaloprodajnuKalkulacijuPdf(Firma firma, MaloprodajnaKalkulacija kalk, Partner? dobavljac, Magacin? magacinDaje, Magacin? magacinPrima)
     {
+        if (kalk.Stavke.Count == 0)
+        {
+            return Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(1.5f, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(9).FontFamily("Calibri"));
+
+                    page.Header().Column(col =>
+                    {
+                        col.Item().Text(firma.Naziv).Bold().FontSize(14).FontColor(Colors.Blue.Medium);
+                        col.Item().Text(firma.Adresa).FontSize(9).FontColor(Colors.Grey.Medium);
+                        col.Item().PaddingTop(10).Text($"KALKULACIJA CENA NA MALO broj {kalk.BrojKalkulacije} od {kalk.Datum:dd.MM.yyyy}").Bold().FontSize(14).AlignCenter();
+                        col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                    });
+
+                    page.Content().PaddingVertical(12).Column(col =>
+                    {
+                        col.Item().Text($"Dobavljač: {kalk.SifraDobavljaca}   {dobavljac?.Naziv ?? ""}").FontSize(10);
+                        col.Item().Row(row =>
+                        {
+                            row.RelativeItem().Text($"Otpremnica-prijemnica br. {kalk.BrojOtpremnice}   Datum {(kalk.DatumOtpremnice.HasValue ? kalk.DatumOtpremnice.Value.ToString("dd.MM.yyyy") : "")}").FontSize(10);
+                            row.RelativeItem().Text($"RAČUN: {kalk.BrojRacuna}   datum {(kalk.DatumRacuna.HasValue ? kalk.DatumRacuna.Value.ToString("dd.MM.yyyy") : "")}").FontSize(10);
+                        });
+
+                        if (magacinPrima != null)
+                            col.Item().PaddingTop(6).Text($"Magacin (prima): {magacinPrima.SifraMagacina} - {magacinPrima.NazivMagacina}").FontSize(10);
+                        if (magacinDaje != null)
+                            col.Item().Text($"Magacin (daje): {magacinDaje.SifraMagacina} - {magacinDaje.NazivMagacina}").FontSize(10);
+
+                        col.Item().PaddingTop(15).AlignRight().Width(260).Table(t =>
+                        {
+                            t.ColumnsDefinition(c => { c.RelativeColumn(); c.ConstantColumn(100); });
+                            t.Cell().Text("Svega nabavna vrednost:");
+                            t.Cell().AlignRight().Text($"{kalk.SvegaNabavno:N2} RSD");
+                            t.Cell().Text("Razlika u ceni:");
+                            t.Cell().AlignRight().Text($"{kalk.Razlika:N2} RSD");
+                            t.Cell().Text("PDV:");
+                            t.Cell().AlignRight().Text($"{kalk.Porez:N2} RSD");
+                            t.Cell().Text("Rabat:");
+                            t.Cell().AlignRight().Text($"{kalk.RabatIznos:N2} RSD");
+                            t.Cell().Background(Colors.Grey.Lighten3).Padding(3).Text("Prodajna vrednost:").Bold();
+                            t.Cell().Background(Colors.Grey.Lighten3).Padding(3).Text($"{kalk.ProdajnaVrednost:N2} RSD").Bold().AlignRight();
+                        });
+
+                        col.Item().PaddingTop(20).Text("Napomena: kalkulacija je uvezena bez stavki po artiklu (legacy header-only zapis).")
+                            .FontSize(8).Italic().FontColor(Colors.Grey.Medium);
+                    });
+
+                    page.Footer().AlignRight().Text(x =>
+                    {
+                        x.Span("Stranica ");
+                        x.CurrentPageNumber();
+                        x.Span(" od ");
+                        x.TotalPages();
+                    });
+                });
+            }).GeneratePdf();
+        }
+
         return Document.Create(container =>
         {
             container.Page(page =>
             {
-                page.Size(PageSizes.A4);
-                page.Margin(1.5f, Unit.Centimetre);
+                page.Size(PageSizes.A4.Landscape());
+                page.Margin(1, Unit.Centimetre);
                 page.PageColor(Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(9).FontFamily("Calibri"));
+                page.DefaultTextStyle(x => x.FontSize(7).FontFamily("Calibri"));
 
                 page.Header().Column(col =>
                 {
-                    col.Item().Text(firma.Naziv).Bold().FontSize(14).FontColor(Colors.Blue.Medium);
-                    col.Item().Text(firma.Adresa).FontSize(9).FontColor(Colors.Grey.Medium);
-                    col.Item().PaddingTop(10).Text($"KALKULACIJA CENA NA MALO broj {kalk.BrojKalkulacije} od {kalk.Datum:dd.MM.yyyy}").Bold().FontSize(14).AlignCenter();
-                    col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
-                });
+                    col.Item().Text(firma.Naziv).Bold().FontSize(12);
+                    col.Item().Text(firma.Adresa).FontSize(8).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(6).Text($"KALKULACIJA CENA NA MALO broj {kalk.BrojKalkulacije} od {kalk.Datum:dd.MM.yyyy}").Bold().FontSize(12).AlignCenter();
 
-                page.Content().PaddingVertical(12).Column(col =>
-                {
-                    col.Item().Text($"Dobavljač: {kalk.SifraDobavljaca}   {dobavljac?.Naziv ?? ""}").FontSize(10);
+                    col.Item().PaddingTop(6).Text($"Dobavljač: {kalk.SifraDobavljaca}   {dobavljac?.Naziv ?? ""}").FontSize(8);
                     col.Item().Row(row =>
                     {
-                        row.RelativeItem().Text($"Otpremnica-prijemnica br. {kalk.BrojOtpremnice}   Datum {(kalk.DatumOtpremnice.HasValue ? kalk.DatumOtpremnice.Value.ToString("dd.MM.yyyy") : "")}").FontSize(10);
-                        row.RelativeItem().Text($"RAČUN: {kalk.BrojRacuna}   datum {(kalk.DatumRacuna.HasValue ? kalk.DatumRacuna.Value.ToString("dd.MM.yyyy") : "")}").FontSize(10);
+                        row.RelativeItem().Text($"Otpremnica-prijemnica br. {kalk.BrojOtpremnice}   Datum {(kalk.DatumOtpremnice.HasValue ? kalk.DatumOtpremnice.Value.ToString("dd.MM.yyyy") : "")}").FontSize(8);
+                        row.RelativeItem().Text($"RAČUN: {kalk.BrojRacuna}   datum {(kalk.DatumRacuna.HasValue ? kalk.DatumRacuna.Value.ToString("dd.MM.yyyy") : "")}").FontSize(8);
+                        row.RelativeItem().Text(magacinDaje != null ? $"Magacin (daje): {magacinDaje.SifraMagacina} - {magacinDaje.NazivMagacina}" : "").FontSize(8);
+                        row.RelativeItem().Text(magacinPrima != null ? $"Magacin (prima): {magacinPrima.SifraMagacina} - {magacinPrima.NazivMagacina}" : "").FontSize(8);
                     });
 
-                    if (magacinPrima != null)
-                        col.Item().PaddingTop(6).Text($"Magacin (prima): {magacinPrima.SifraMagacina} - {magacinPrima.NazivMagacina}").FontSize(10);
-                    if (magacinDaje != null)
-                        col.Item().Text($"Magacin (daje): {magacinDaje.SifraMagacina} - {magacinDaje.NazivMagacina}").FontSize(10);
-
-                    col.Item().PaddingTop(15).AlignRight().Width(260).Table(t =>
+                    col.Item().PaddingTop(4).AlignRight().Width(230).Table(t =>
                     {
-                        t.ColumnsDefinition(c => { c.RelativeColumn(); c.ConstantColumn(100); });
+                        t.ColumnsDefinition(c => { c.RelativeColumn(); c.ConstantColumn(90); });
+                        t.Cell().Text("Fakturna vrednost:");
+                        t.Cell().AlignRight().Text($"{kalk.Stavke.Sum(s => s.Iznos):N2}");
                         t.Cell().Text("Svega nabavna vrednost:");
-                        t.Cell().AlignRight().Text($"{kalk.SvegaNabavno:N2} RSD");
+                        t.Cell().AlignRight().Text($"{kalk.SvegaNabavno:N2}");
                         t.Cell().Text("Razlika u ceni:");
-                        t.Cell().AlignRight().Text($"{kalk.Razlika:N2} RSD");
+                        t.Cell().AlignRight().Text($"{kalk.Razlika:N2}");
                         t.Cell().Text("PDV:");
-                        t.Cell().AlignRight().Text($"{kalk.Porez:N2} RSD");
-                        t.Cell().Text("Rabat:");
-                        t.Cell().AlignRight().Text($"{kalk.RabatIznos:N2} RSD");
-                        t.Cell().Background(Colors.Grey.Lighten3).Padding(3).Text("Prodajna vrednost:").Bold();
-                        t.Cell().Background(Colors.Grey.Lighten3).Padding(3).Text($"{kalk.ProdajnaVrednost:N2} RSD").Bold().AlignRight();
+                        t.Cell().AlignRight().Text($"{kalk.Porez:N2}");
+                        t.Cell().Text("Rabat (informativno):");
+                        t.Cell().AlignRight().Text($"{kalk.RabatIznos:N2}");
+                        t.Cell().Text("Prodajna vrednost:").Bold();
+                        t.Cell().AlignRight().Text($"{kalk.ProdajnaVrednost:N2}").Bold();
                     });
 
-                    col.Item().PaddingTop(20).Text("Napomena: stavke po artiklu se ne evidentiraju za maloprodajne kalkulacije u trenutnoj verziji sistema.")
-                        .FontSize(8).Italic().FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(4).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                });
+
+                page.Content().PaddingVertical(6).Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.ConstantColumn(18);   // Rbr
+                        columns.ConstantColumn(35);   // Šifra
+                        columns.RelativeColumn(2.2f); // Naziv
+                        columns.ConstantColumn(20);   // J.M.
+                        columns.ConstantColumn(42);   // Količina
+                        columns.ConstantColumn(42);   // Nabavna cena
+                        columns.ConstantColumn(45);   // Iznos
+                        columns.ConstantColumn(38);   // Troškovi
+                        columns.ConstantColumn(48);   // Nabavna vrednost
+                        columns.ConstantColumn(30);   // Razlika %
+                        columns.ConstantColumn(42);   // Iznos razlike
+                        columns.ConstantColumn(48);   // Vrednost bez poreza
+                        columns.ConstantColumn(26);   // PDV %
+                        columns.ConstantColumn(40);   // Iznos PDV-a
+                        columns.ConstantColumn(48);   // Prodajna vrednost
+                        columns.ConstantColumn(40);   // Cena po J.M.
+                    });
+
+                    table.Header(header =>
+                    {
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("R.br").Bold().FontSize(6.5f);
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Šifra").Bold().FontSize(6.5f);
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Naziv artikla").Bold().FontSize(6.5f);
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("J.M.").Bold().FontSize(6.5f);
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Količina").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Nabavna cena").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Iznos").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Troškovi").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Nabavna vrednost").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Razlika %").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Iznos razlike").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Vred. bez poreza").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("PDV %").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Iznos PDV-a").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Prodajna vrednost").Bold().FontSize(6.5f).AlignRight();
+                        header.Cell().Background(Colors.Grey.Lighten3).PaddingVertical(3).PaddingHorizontal(2).Text("Cena po J.M.").Bold().FontSize(6.5f).AlignRight();
+                    });
+
+                    int rbr = 1;
+                    foreach (var st in kalk.Stavke)
+                    {
+                        decimal vrednostBezPoreza = st.NabavnaVrednost + st.RazlikaIznos;
+                        decimal razlikaProcenat = kalk.MarzaProcenat;
+                        decimal pdvProcenat = kalk.PoreskaStopaProcenat;
+
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text(rbr.ToString()).FontSize(6.5f);
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text(st.SifraArtikla).Bold().FontSize(6.5f);
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text(st.NazivArtikla ?? st.SifraArtikla).FontSize(6.5f);
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text(st.JedinicaMere ?? "").FontSize(6.5f);
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{st.Kolicina:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{st.NabavnaCena:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{st.Iznos:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{st.Troskovi:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{st.NabavnaVrednost:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{razlikaProcenat:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{st.RazlikaIznos:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{vrednostBezPoreza:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{pdvProcenat:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{st.PorezIznos:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{st.ProdajnaVrednost:N2}").FontSize(6.5f).AlignRight();
+                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(2).PaddingHorizontal(2).Text($"{st.ProdajnaCena:N2}").FontSize(6.5f).AlignRight();
+                        rbr++;
+                    }
+
+                    table.Cell().ColumnSpan(8).PaddingVertical(4).PaddingHorizontal(2).Text("SVEGA:").Bold().FontSize(7).AlignRight();
+                    table.Cell().PaddingVertical(4).PaddingHorizontal(2).Text($"{kalk.Stavke.Sum(s => s.NabavnaVrednost):N2}").Bold().FontSize(6.5f).AlignRight();
+                    table.Cell().PaddingVertical(4).PaddingHorizontal(2).Text("").FontSize(6.5f);
+                    table.Cell().PaddingVertical(4).PaddingHorizontal(2).Text($"{kalk.Razlika:N2}").Bold().FontSize(6.5f).AlignRight();
+                    table.Cell().PaddingVertical(4).PaddingHorizontal(2).Text($"{kalk.Stavke.Sum(s => s.NabavnaVrednost + s.RazlikaIznos):N2}").Bold().FontSize(6.5f).AlignRight();
+                    table.Cell().PaddingVertical(4).PaddingHorizontal(2).Text("").FontSize(6.5f);
+                    table.Cell().PaddingVertical(4).PaddingHorizontal(2).Text($"{kalk.Porez:N2}").Bold().FontSize(6.5f).AlignRight();
+                    table.Cell().PaddingVertical(4).PaddingHorizontal(2).Text($"{kalk.ProdajnaVrednost:N2}").Bold().FontSize(6.5f).AlignRight();
+                    table.Cell().PaddingVertical(4).PaddingHorizontal(2).Text("").FontSize(6.5f);
                 });
 
                 page.Footer().AlignRight().Text(x =>
                 {
-                    x.Span("Stranica ");
-                    x.CurrentPageNumber();
-                    x.Span(" od ");
-                    x.TotalPages();
+                    x.Span("Stranica ").FontSize(7);
+                    x.CurrentPageNumber().FontSize(7);
+                    x.Span(" od ").FontSize(7);
+                    x.TotalPages().FontSize(7);
                 });
             });
         }).GeneratePdf();

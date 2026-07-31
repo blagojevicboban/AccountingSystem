@@ -144,7 +144,12 @@
                             </WrapPanel>
                             <WrapPanel VerticalAlignment="Center">
                                 <TextBlock Text="🔍 Pretraga zaduženja:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaZaduzenja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaZaduzenja_TextChanged"/>
+                                <TextBox x:Name="TxtPretragaZaduzenja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaZaduzenja_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviZaduzenja" Content="Svi" GroupName="ZaduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Zaduzenja_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniZaduzenja" Content="Proknjiženi" GroupName="ZaduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Zaduzenja_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniZaduzenja" Content="Neproknjiženi" GroupName="ZaduzenjaStatusFilter" VerticalAlignment="Center" Checked="Filter_Zaduzenja_Changed"/>
+                                </WrapPanel>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -204,7 +209,12 @@
                             </WrapPanel>
                             <WrapPanel VerticalAlignment="Center">
                                 <TextBlock Text="🔍 Pretraga razduženja:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaRazduzenja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRazduzenja_TextChanged"/>
+                                <TextBox x:Name="TxtPretragaRazduzenja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRazduzenja_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviRazduzenja" Content="Svi" GroupName="RazduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Razduzenja_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniRazduzenja" Content="Proknjiženi" GroupName="RazduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Razduzenja_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniRazduzenja" Content="Neproknjiženi" GroupName="RazduzenjaStatusFilter" VerticalAlignment="Center" Checked="Filter_Razduzenja_Changed"/>
+                                </WrapPanel>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -264,7 +274,12 @@
                             </WrapPanel>
                             <WrapPanel VerticalAlignment="Center">
                                 <TextBlock Text="🔍 Pretraga primopredaja:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaPrimopredaja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPrimopredaja_TextChanged"/>
+                                <TextBox x:Name="TxtPretragaPrimopredaja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPrimopredaja_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviPrimopredajeTrg" Content="Svi" GroupName="PrimopredajeTrgStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_PrimopredajeTrg_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniPrimopredajeTrg" Content="Proknjiženi" GroupName="PrimopredajeTrgStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_PrimopredajeTrg_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniPrimopredajeTrg" Content="Neproknjiženi" GroupName="PrimopredajeTrgStatusFilter" VerticalAlignment="Center" Checked="Filter_PrimopredajeTrg_Changed"/>
+                                </WrapPanel>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -328,7 +343,12 @@
                                     <ComboBoxItem Content="🏪 Maloprodaja"/>
                                 </ComboBox>
                                 <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                                <TextBox x:Name="TxtPretraga" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged"/>
+                                <TextBox x:Name="TxtPretraga" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviKalkulacije" Content="Svi" GroupName="KalkulacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Kalkulacije_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniKalkulacije" Content="Proknjiženi" GroupName="KalkulacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Kalkulacije_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniKalkulacije" Content="Neproknjiženi" GroupName="KalkulacijeStatusFilter" VerticalAlignment="Center" Checked="Filter_Kalkulacije_Changed"/>
+                                </WrapPanel>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -396,7 +416,12 @@
                             </WrapPanel>
                             <WrapPanel VerticalAlignment="Center">
                                 <TextBlock Text="🔍 Pretraga faktura:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaRacuna" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRacuna_TextChanged"/>
+                                <TextBox x:Name="TxtPretragaRacuna" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRacuna_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviRacuni" Content="Svi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniRacuni" Content="Proknjiženi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniRacuni" Content="Neproknjiženi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Checked="Filter_Racuni_Changed"/>
+                                </WrapPanel>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -467,7 +492,12 @@
                             </WrapPanel>
                             <WrapPanel VerticalAlignment="Center">
                                 <TextBlock Text="🔍 Pretraga nivelacija:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaNivelacija" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaNivelacija_TextChanged"/>
+                                <TextBox x:Name="TxtPretragaNivelacija" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaNivelacija_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviNivelacije" Content="Svi" GroupName="NivelacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Nivelacije_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniNivelacije" Content="Proknjiženi" GroupName="NivelacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Nivelacije_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniNivelacije" Content="Neproknjiženi" GroupName="NivelacijeStatusFilter" VerticalAlignment="Center" Checked="Filter_Nivelacije_Changed"/>
+                                </WrapPanel>
                             </WrapPanel>
                         </DockPanel>
                     </Border>

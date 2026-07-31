@@ -64,12 +64,22 @@ public class MaloprodajnaKalkulacija
     [Column(TypeName = "decimal(18, 2)")]
     public decimal Razlika { get; set; }
 
+    /// <summary>Procenat trgovačke marže korišćen za obračun Razlike — čuva se radi revizije obračuna (analogno Kalkulacija.MarzaProcenat).</summary>
+    [Column(TypeName = "decimal(9, 4)")]
+    public decimal MarzaProcenat { get; set; }
+
     [Column(TypeName = "decimal(18, 2)")]
     public decimal Porez { get; set; }
+
+    /// <summary>Poreska stopa (PDV %) korišćena za obračun Poreza — čuva se radi revizije obračuna (analogno Kalkulacija.PoreskaStopaProcenat).</summary>
+    [Column(TypeName = "decimal(9, 4)")]
+    public decimal PoreskaStopaProcenat { get; set; }
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal ProdajnaVrednost { get; set; }
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal RabatIznos { get; set; }
+
+    public List<MaloprodajnaKalkulacijaStavka> Stavke { get; set; } = new();
 }

@@ -111,6 +111,7 @@ public partial class PomocView : UserControl
         {
             Naslov = "📦 Robno knjigovodstvo (VP / MP, Fakture i Nivelacije)",
             Sadrzaj =
+                "Meni '📊 Radna tabla' (u sekciji ROBNO KNJIGOVODSTVO) prikazuje vrednost zaliha (VP/MP), poslednje kalkulacije i nivelacije i brze akcije za nov unos.\n\n" +
                 "Meni '📦 Kalkulacije i Nivelacije' pokriva robno poslovanje (Clipper MAT1–MAT7):\n\n" +
                 "1. KALKULACIJE NABAVKE (MAT3 / MAT6):\n" +
                 "• Veleprodajna kalkulacija: Ulaz po dobavljačkoj ceni, zavisni troškovi, marža i formiranje veleprodajne cene.\n" +
@@ -119,12 +120,18 @@ public partial class PomocView : UserControl
                 "• Izdavanje faktura kupcima sa automatskim proračunom PDV-a, rabata %, rokom dospelosti i štampom u PDF.\n" +
                 "• Automatsko razduživanje zaliha i mogućnost generisanja naloga za knjiženje u Glavnoj knjizi.\n\n" +
                 "3. NIVELACIJE CENA (MAT7):\n" +
-                "• Promena prodajnih cena artikala po magacinu sa automatskim zapisnikom o nivelaciji i svođenjem na novu vrednost zaliha."
+                "• Promena prodajnih cena artikala po magacinu sa automatskim zapisnikom o nivelaciji i svođenjem na novu vrednost zaliha.\n\n" +
+                "4. ZADUŽENJA, RAZDUŽENJA I PRIMOPREDAJE (MAT4):\n" +
+                "• Interni prenosi robe između magacina, sa filterom 'Svi / Proknjiženi / Neproknjiženi' iznad svake tabele.\n\n" +
+                "5. RASKNJIŽAVANJE (svi tabovi gde se knjiži — Zaduženja, Razduženja, Primopredaje, Kalkulacije, Računi-Otpremnice, Nivelacije):\n" +
+                "• Klik na 'Izmeni' nad proknjiženim dokumentom nudi pitanje 'Da li želite da rasknjižite radi izmene?' (isto kao kod naloga glavne knjige).\n" +
+                "• Dostupno samo administratorima. Rasknjižavanje bezbedno poništava samo promet koji je taj dokument upisao — ako je u međuvremenu nešto knjiženo posle njega za isti artikal/magacin, rasknjižavanje se odbija radi zaštite tačnosti zaliha."
         },
         new PomocTema
         {
             Naslov = "🏭 Materijalno knjigovodstvo i Skladište",
             Sadrzaj =
+                "Meni '📊 Radna tabla' (u sekciji MATERIJALNO KNJIGOVODSTVO) prikazuje vrednost zaliha materijala, broj materijala na zalihi, upozorenje o negativnim stanjima, poslednje ulaze/trebovanja i brze akcije za nov unos.\n\n" +
                 "Meni '🏭 Skladište i Zalihe' obezbeđuje precizno praćenje materijala (Clipper M1–M4):\n\n" +
                 "1. KARTICE MATERIJALA (M1):\n" +
                 "• Praćenje zaliha po ponderisanoj prosečnoj nabavnoj ceni (Weighted Average Cost).\n\n" +
@@ -132,7 +139,11 @@ public partial class PomocView : UserControl
                 "• Prijem sirovina i materijala u magacin sa ulaznom fakturnom cenom.\n\n" +
                 "3. TREBOVANJA I IZDATNICE (M3):\n" +
                 "• Razduženje materijala iz magacina i prenos na konto troškova po trenutnoj prosečnoj ceni.\n\n" +
-                "4. POPISNE LISTE I NIKAD VEĆA PRECIZNOST:\n" +
+                "4. PRIMOPREDAJE MATERIJALA (M4):\n" +
+                "• Interni prenosi materijala između magacina, sa filterom 'Svi / Proknjiženi / Neproknjiženi' iznad svake tabele.\n\n" +
+                "5. RASKNJIŽAVANJE (Ulazi, Trebovanja, Primopredaje):\n" +
+                "• Klik na 'Izmeni' nad proknjiženim dokumentom nudi pitanje 'Da li želite da rasknjižite radi izmene?', dostupno samo administratorima — isti princip kao u Robnom knjigovodstvu i Glavnoj knjizi.\n\n" +
+                "6. POPISNE LISTE I NIKAD VEĆA PRECIZNOST:\n" +
                 "• Unos stvarnog popisanog stanja i automatski proračun viškova i manjkova materijala."
         },
         new PomocTema

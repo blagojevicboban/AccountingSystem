@@ -119,12 +119,14 @@
                         <Separator x:Name="SepRobno" Background="#334155" Margin="16,8"/>
                         <TextBlock x:Name="HeaderRobno" Text="ROBNO KNJIGOVODSTVO (VP / MP)" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
+                        <RadioButton x:Name="BtnRobnoDashboard" Content="📊 Radna tabla" Style="{StaticResource NavButtonStyle}" Click="NavRobnoDashboard_Click" ToolTip="Radna tabla robnog knjigovodstva — vrednost zaliha, poslednje kalkulacije/nivelacije i brze akcije"/>
                         <RadioButton x:Name="BtnKalkulacije" Content="📦 Kalkulacije i Nivelacije" Style="{StaticResource NavButtonStyle}" Click="NavKalkulacije_Click" ToolTip="Kalkulacije veleprodaje/maloprodaje, otpremnice i nivelacije"/>
 
                         <!-- 🏭 MATERIJALNO KNJIGOVODSTVO -->
                         <Separator x:Name="SepMaterijalno" Background="#334155" Margin="16,8"/>
                         <TextBlock x:Name="HeaderMaterijalno" Text="MATERIJALNO KNJIGOVODSTVO" FontSize="10" FontWeight="SemiBold"
                                    Foreground="#38BDF8" Margin="24,2,0,3"/>
+                        <RadioButton x:Name="BtnMaterijalnoDashboard" Content="📊 Radna tabla" Style="{StaticResource NavButtonStyle}" Click="NavMaterijalnoDashboard_Click" ToolTip="Radna tabla materijalnog knjigovodstva — vrednost zaliha, poslednji ulazi/trebovanja i brze akcije"/>
                         <RadioButton x:Name="BtnMagacin" Content="🏭 Skladište i Zalihe" Style="{StaticResource NavButtonStyle}" Click="NavMagacin_Click" ToolTip="Prijemnice materijala, stanje zaliha i skladišne kartice"/>
 
                         <!-- 🧾 POREZI I APR BILANSI -->

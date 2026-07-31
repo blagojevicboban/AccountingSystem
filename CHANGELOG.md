@@ -4,6 +4,39 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.35] - 2026-07-31
+
+### 🚀 Nove funkcionalnosti
+- **Radna tabla za Materijalno knjigovodstvo (`MaterijalnoDashboardView`)** — nova stavka u meniju (sekcija MATERIJALNO KNJIGOVODSTVO), po uzoru na postojeću Robnu radnu tablu: vrednost zaliha materijala, broj materijala na zalihi, upozorenje na negativna stanja, poslednji ulazi/trebovanja i brze akcije (Novi ulaz, Novo trebovanje, Nova primopredaja).
+- **Filter Svi / Proknjiženi / Neproknjiženi u Robnom knjigovodstvu** — dodat na sve tabove gde se knjiži: Zaduženja, Razduženja, Primopredaje, Kalkulacije (veleprodaja i maloprodaja), Računi-Otpremnice i Nivelacije cena. Isti filter je već postojao u Materijalnom (Ulazi/Trebovanja/Primopredaje).
+
+### 📚 Dokumentacija
+- Ažurirani README.md i ugrađena Pomoć (`PomocView`) sa opisom rasknjižavanja i filtera u Robnom/Materijalnom knjigovodstvu i novih radnih tabli.
+
+---
+
+## [1.0.34] - 2026-07-31
+
+### 🚀 Nove funkcionalnosti
+- **Rasknjižavanje dokumenata u Robnom i Materijalnom knjigovodstvu** — po uzoru na Glavnu knjigu: klik na 'Izmeni' nad proknjiženim dokumentom sada nudi pitanje "Da li želite da rasknjižite radi izmene?" umesto samo blokirajuće poruke, na svim tabovima gde se knjiži:
+  - Robno: Zaduženja, Razduženja, Primopredaje, Kalkulacije, Računi-Otpremnice, Nivelacije cena.
+  - Materijalno: Ulazi, Trebovanja, Primopredaje.
+  - Dostupno isključivo administratorima. Rasknjižavanje bezbedno uklanja samo redove materijalne kartice koje je dati dokument upisao (LIFO provera protiv kasnijih knjiženja za isti artikal/magacin — u suprotnom se odbija radi zaštite tačnosti prosečne cene zaliha) i vraća/briše povezane naloge Glavne knjige i cene artikala gde je primenljivo (Računi-Otpremnice, Nivelacije).
+- **Ekranski pregled izveštaja** — novi preview prozori za Dnevnik glavne knjige, Bruto bilans analitike i Vrednovanje zaliha (`IzvestajiView`).
+
+### 🐛 Ispravke i Validacije
+- **Uvoz KALKULAC.DBF (veleprodajne kalkulacije)** — ispravljeno mapiranje kolone magacina: legacy fajl koristi `MAG_PRIMA`, a ne `MAGACIN`/`MAG` kako je uvoznik ranije tražio, zbog čega je magacin ostajao prazan na **svim** uvezenim kalkulacijama (onemogućavalo rasknjižavanje uz grešku "nema magacin"). Dodatno mapirane i ranije nemapirane kolone `OTPREM_BR`/`OTPREM_DAT`/`RACUN_BR`/`RACUN_DAT`/`TRANS_TROS` i raspodela troškova (`TROS_USKL`/`UTOV_ISTOV`/`TR_OSIGUR`/`OSTALI`).
+
+---
+
+## [1.0.33] - 2026-07-31
+
+### 🎨 UI / UX
+- Dodate ikonice za štampu/PDF na dugmadima u više modula (Bilansi, Izveštaji, Konta, Magacin, Nalozi, Partneri, PDV Evidencija).
+- Dodata kolona Naziv artikla i J.M. u tabelama Trgovine.
+
+---
+
 ## [1.0.32] - 2026-07-31
 
 ### 🚀 Nove funkcionalnosti

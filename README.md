@@ -27,8 +27,11 @@
 - ⚖️ **POPDV Rekapitulacija Obaveze** — Obračun PDV obaveze za uplatu ili prava na povraćaj.
 
 ### Magacin i Trgovina (MAT & ROB)
+- 📊 **Radna tabla (Robno i Materijalno)** — po jedna namenska radna tabla za svaki modul (vrednost zaliha VP/MP odnosno materijala, upozorenje na negativna stanja, poslednji dokumenti i brze akcije za nov unos).
 - 📦 **Magacin i zalihe** — Materijalne kartice po ponderisanoj prosečnoj ceni (`M1`), unos/izmena materijala (`MaterijalEditWindow`), provera i rekalkulacija salda zaliha (`ProveraKarticaWindow`), Ulazi (`M2`), Trebovanja (`M3`) i **Primopredaje / Interni prenosi (`M4`)** (razlikuje Primopredaja/Zaduženje/Razduženje).
 - 🛒 **Trgovina i Fakture** — Veleprodajne (`MAT6`) i Maloprodajne (`MAT3`) kalkulacije (sa direktnom PDF štampom), **Računi-Otpremnice / Fakture (`MAT5`)** sa rokom dospelosti, rabatom i PDV-om (unos stavki po šifri artikla), i **Nivelacije cena (`MAT7`)** sa automatskom generacijom svođenjem na prosečnu nabavnu cenu, zbirnom PDF štampom i masovnim knjiženjem.
+- 🔎 **Filter Svi / Proknjiženi / Neproknjiženi** — dostupan na svim tabovima gde se knjiži, i u Robnom (Zaduženja, Razduženja, Primopredaje, Kalkulacije, Računi-Otpremnice, Nivelacije) i u Materijalnom (Ulazi, Trebovanja, Primopredaje) knjigovodstvu.
+- 🔓 **Rasknjižavanje dokumenata (Robno i Materijalno)** — kao i kod naloga glavne knjige: klik na 'Izmeni' nad proknjiženim dokumentom nudi rasknjižavanje (samo Administrator), sa bezbednosnom proverom da za taj artikal/magacin nije u međuvremenu knjiženo nešto kasnije (štiti tačnost prosečne cene zaliha).
 - 🧾 **Poreske tarife** — samostalan šifarnik poreskih stopa (tarifni broj, porez %, poseban porez %) sa CRUD ekranom i PDF štampom.
 - 📊 **Robni i Materijalni Bruto Bilans (`BRUTO BILANS MATERIJALNOG KNJIGOVODSTVA`)** — početno stanje/ulaz/izlaz/stanje po magacinu i artiklu, količinski i vrednosno sa slažećim zbirom u paru sa Clipper izveštajima (`M1.PRG` / `st_mat_bruto()`), višestrukom štampom robnih kartica (više artikala ili svi magacini), izveštajem „Raspored artikala (analitika MAT91)” i sintetičkim izveštajem „Stanje po artiklima (sintetika MAT92)”.
 - 📊 **Excel (XLSX) Izvoz** — jednim klikom izvoz svih 15 tabova robnog i materijalnog poslovanja u Excel sa udesno poravnatim numeričkim kolonama i automatskim `=SUM(...)` zbirnim formulama.

@@ -126,10 +126,22 @@ public partial class MainWindow : Window
         MainContentHost.Content = new MagacinView();
     }
 
+    private void NavMaterijalnoDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "📊 Radna tabla — Materijalno knjigovodstvo";
+        MainContentHost.Content = new MaterijalnoDashboardView();
+    }
+
     private void NavKalkulacije_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📦 Robno knjigovodstvo (Kalkulacije, Otpremnice, Nivelacije, Robne kartice, Računopolagači)";
         MainContentHost.Content = new TrgovinaView();
+    }
+
+    private void NavRobnoDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "📊 Radna tabla — Robno knjigovodstvo";
+        MainContentHost.Content = new RobnoDashboardView();
     }
 
     public void NavIzvestaji_Click(object sender, RoutedEventArgs e)

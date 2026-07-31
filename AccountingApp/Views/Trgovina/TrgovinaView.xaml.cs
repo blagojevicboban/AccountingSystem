@@ -45,6 +45,12 @@ public partial class TrgovinaView : UserControl
     {
         InitializeComponent();
         ChkSamoSaKarticom.IsChecked = true;
+        RbSviKalkulacije.IsChecked = true;
+        RbSviRacuni.IsChecked = true;
+        RbSviNivelacije.IsChecked = true;
+        RbSviZaduzenja.IsChecked = true;
+        RbSviRazduzenja.IsChecked = true;
+        RbSviPrimopredajeTrg.IsChecked = true;
         LoadAllData();
     }
 
@@ -89,27 +95,43 @@ public partial class TrgovinaView : UserControl
         if (DgKalkulacije == null) return;
         var search = TxtPretraga.Text.Trim().ToLower();
         bool isVeleprodaja = CmbTipKalkulacije?.SelectedIndex != 1;
+        bool samoProknjizeni = RbProknjizeniKalkulacije?.IsChecked == true;
+        bool samoNeproknjizeni = RbNeproknjizeniKalkulacije?.IsChecked == true;
 
         if (isVeleprodaja)
         {
-            DgKalkulacije.ItemsSource = string.IsNullOrEmpty(search)
-                ? _sveKalkulacije
-                : _sveKalkulacije.Where(k => k.BrojKalkulacije.ToString().Contains(search) || (k.SifraDobavljaca != null && k.SifraDobavljaca.ToLower().Contains(search))).ToList();
+            DgKalkulacije.ItemsSource = _sveKalkulacije.Where(k =>
+                (string.IsNullOrEmpty(search) || k.BrojKalkulacije.ToString().Contains(search) || (k.SifraDobavljaca != null && k.SifraDobavljaca.ToLower().Contains(search))) &&
+                (!samoProknjizeni || k.IsKnjizen) &&
+                (!samoNeproknjizeni || !k.IsKnjizen)
+            ).ToList();
         }
         else
         {
-            DgKalkulacije.ItemsSource = string.IsNullOrEmpty(search)
-                ? _sveMaloprodajneKalkulacije
-                : _sveMaloprodajneKalkulacije.Where(k => k.BrojKalkulacije.ToString().Contains(search)).ToList();
+            DgKalkulacije.ItemsSource = _sveMaloprodajneKalkulacije.Where(k =>
+                (string.IsNullOrEmpty(search) || k.BrojKalkulacije.ToString().Contains(search)) &&
+                (!samoProknjizeni || k.IsKnjizen) &&
+                (!samoNeproknjizeni || !k.IsKnjizen)
+            ).ToList();
         }
     }
 
     private void TxtPretraga_TextChanged(object sender, TextChangedEventArgs e) => FiltrirajKalkulacije();
+    private void Filter_Kalkulacije_Changed(object sender, RoutedEventArgs e) => FiltrirajKalkulacije();
 
     private void BtnNovaKalkulacija_Click(object sender, RoutedEventArgs e)
     {
-        var dijalog = new KalkulacijaEditWindow { Owner = Window.GetWindow(this) };
-        if (dijalog.ShowDialog() == true) LoadKalkulacije();
+        bool isVeleprodaja = CmbTipKalkulacije?.SelectedIndex != 1;
+        if (isVeleprodaja)
+        {
+            var dijalog = new KalkulacijaEditWindow { Owner = Window.GetWindow(this) };
+            if (dijalog.ShowDialog() == true) LoadKalkulacije();
+        }
+        else
+        {
+            var dijalog = new MaloprodajnaKalkulacijaEditWindow { Owner = Window.GetWindow(this) };
+            if (dijalog.ShowDialog() == true) LoadKalkulacije();
+        }
     }
 
     private void BtnIzmeniKalkulaciju_Click(object sender, RoutedEventArgs e) => OtvoriIzmenuKalkulacije();
@@ -118,6 +140,38 @@ public partial class TrgovinaView : UserControl
 
     private async void PrikaziStavkeKalkulacije()
     {
+        if (DgKalkulacije.SelectedItem is MaloprodajnaKalkulacija selektovanaMp)
+        {
+            try
+            {
+                var opcijeMp = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var dbMp = new AccountingDbContext(opcijeMp);
+
+                var punaMp = await dbMp.MaloprodajneKalkulacije
+                    .Include(k => k.Stavke)
+                    .FirstOrDefaultAsync(k => k.MaloprodajnaKalkulacijaId == selektovanaMp.MaloprodajnaKalkulacijaId);
+
+                if (punaMp != null)
+                {
+                    var artikliDictMp = await dbMp.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a);
+                    foreach (var st in punaMp.Stavke)
+                    {
+                        if (artikliDictMp.TryGetValue(st.SifraArtikla, out var art))
+                        {
+                            st.NazivArtikla = art.Naziv;
+                            st.JedinicaMere = art.JedinicaMere;
+                        }
+                    }
+                    DgKalkulacijaStavke.ItemsSource = punaMp.Stavke;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri učitavanju stavki: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            return;
+        }
+
         if (DgKalkulacije.SelectedItem is not Kalkulacija selektovana)
         {
             DgKalkulacijaStavke.ItemsSource = null;
@@ -155,6 +209,66 @@ public partial class TrgovinaView : UserControl
 
     private async void OtvoriIzmenuKalkulacije()
     {
+        if (DgKalkulacije.SelectedItem is MaloprodajnaKalkulacija selektovanaMp)
+        {
+            if (selektovanaMp.IsKnjizen)
+            {
+                var odgovorMp = MessageBox.Show(
+                    $"Kalkulacija #{selektovanaMp.BrojKalkulacije} je proknjižena i ne može se menjati u ovom statusu.\n\nDa li želite da je rasknjižite radi izmene?",
+                    "Proknjižena kalkulacija", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (odgovorMp != MessageBoxResult.Yes) return;
+
+                if (!AppSession.IsAdministrator)
+                {
+                    MessageBox.Show("Rasknjižavanje kalkulacije dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                try
+                {
+                    var opcijeRMp = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                    using var dbRMp = new AccountingDbContext(opcijeRMp);
+                    var servisRMp = new MaloprodajnaKalkulacijaService(dbRMp);
+                    await servisRMp.RasknjiziKalkulacijuAsync(selektovanaMp.MaloprodajnaKalkulacijaId);
+
+                    LoadKalkulacije();
+
+                    var osvezenaMp = await dbRMp.MaloprodajneKalkulacije.Include(k => k.Stavke).FirstOrDefaultAsync(k => k.MaloprodajnaKalkulacijaId == selektovanaMp.MaloprodajnaKalkulacijaId);
+                    if (osvezenaMp != null)
+                    {
+                        var dijalogRMp = new MaloprodajnaKalkulacijaEditWindow(osvezenaMp) { Owner = Window.GetWindow(this) };
+                        if (dijalogRMp.ShowDialog() == true) LoadKalkulacije();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Greška pri rasknjižavanju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                return;
+            }
+
+            try
+            {
+                var opcijeMp = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var dbMp = new AccountingDbContext(opcijeMp);
+                var punaMp = await dbMp.MaloprodajneKalkulacije.Include(k => k.Stavke).FirstOrDefaultAsync(k => k.MaloprodajnaKalkulacijaId == selektovanaMp.MaloprodajnaKalkulacijaId);
+                if (punaMp == null)
+                {
+                    MessageBox.Show("Kalkulacija nije pronađena.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var dijalogMp = new MaloprodajnaKalkulacijaEditWindow(punaMp) { Owner = Window.GetWindow(this) };
+                if (dijalogMp.ShowDialog() == true) LoadKalkulacije();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri otvaranju kalkulacije: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            return;
+        }
+
         if (DgKalkulacije.SelectedItem is not Kalkulacija selektovana)
         {
             MessageBox.Show("Izaberite kalkulaciju sa liste.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -220,6 +334,30 @@ public partial class TrgovinaView : UserControl
 
     private async void BtnKnjiziKalkulaciju_Click(object sender, RoutedEventArgs e)
     {
+        if (DgKalkulacije.SelectedItem is MaloprodajnaKalkulacija selektovanaMp)
+        {
+            if (selektovanaMp.IsKnjizen)
+            {
+                MessageBox.Show($"Kalkulacija #{selektovanaMp.BrojKalkulacije} je već proknjižena!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                var opcijeMp = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var dbMp = new AccountingDbContext(opcijeMp);
+                var servisMp = new MaloprodajnaKalkulacijaService(dbMp);
+                await servisMp.KnjiziKalkulacijuAsync(selektovanaMp.MaloprodajnaKalkulacijaId);
+                MessageBox.Show($"Kalkulacija #{selektovanaMp.BrojKalkulacije} je uspešno proknjižena!", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+                LoadKalkulacije();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri knjiženju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            return;
+        }
+
         if (DgKalkulacije.SelectedItem is not Kalkulacija selektovana)
         {
             MessageBox.Show("Molimo izaberite kalkulaciju sa liste.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -296,12 +434,25 @@ public partial class TrgovinaView : UserControl
                     return;
                 }
 
-                var dobavljac = await db.Partneri.FirstOrDefaultAsync(p => p.SifraPartnera == selektovana.SifraDobavljaca);
-                var magacinDaje = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovana.SifraMagacinaDaje);
-                var magacinPrima = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == selektovana.SifraMagacinaPrima);
+                var punaMp = await db.MaloprodajneKalkulacije.Include(k => k.Stavke).FirstOrDefaultAsync(k => k.MaloprodajnaKalkulacijaId == selektovana.MaloprodajnaKalkulacijaId);
+                if (punaMp == null) return;
 
-                pdfBytes = Services.PdfReportService.GenerisiMaloprodajnuKalkulacijuPdf(firma, selektovana, dobavljac, magacinDaje, magacinPrima);
-                brojZaFajl = selektovana.BrojKalkulacije.ToString();
+                var artikliDictMp = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a);
+                foreach (var st in punaMp.Stavke)
+                {
+                    if (artikliDictMp.TryGetValue(st.SifraArtikla, out var art))
+                    {
+                        st.NazivArtikla = art.Naziv;
+                        st.JedinicaMere = art.JedinicaMere;
+                    }
+                }
+
+                var dobavljac = await db.Partneri.FirstOrDefaultAsync(p => p.SifraPartnera == punaMp.SifraDobavljaca);
+                var magacinDaje = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == punaMp.SifraMagacinaDaje);
+                var magacinPrima = await db.Magacini.FirstOrDefaultAsync(m => m.SifraMagacina == punaMp.SifraMagacinaPrima);
+
+                pdfBytes = Services.PdfReportService.GenerisiMaloprodajnuKalkulacijuPdf(firma, punaMp, dobavljac, magacinDaje, magacinPrima);
+                brojZaFajl = punaMp.BrojKalkulacije.ToString();
             }
 
             string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Kalkulacija_{brojZaFajl}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
@@ -337,18 +488,25 @@ public partial class TrgovinaView : UserControl
 
     private void FiltrirajRacune()
     {
+        if (DgRacuni == null) return;
         var search = TxtPretragaRacuna.Text.Trim().ToLower();
-        DgRacuni.ItemsSource = string.IsNullOrEmpty(search)
-            ? _sviRacuni
-            : _sviRacuni.Where(r => r.BrojRacuna.ToString().Contains(search) ||
+        bool samoProknjizeni = RbProknjizeniRacuni?.IsChecked == true;
+        bool samoNeproknjizeni = RbNeproknjizeniRacuni?.IsChecked == true;
+
+        DgRacuni.ItemsSource = _sviRacuni.Where(r =>
+            (string.IsNullOrEmpty(search) || r.BrojRacuna.ToString().Contains(search) ||
                                    (r.BrojOtpremnice != null && r.BrojOtpremnice.ToLower().Contains(search)) ||
-                                   r.KontoKupca.ToLower().Contains(search)).ToList();
+                                   r.KontoKupca.ToLower().Contains(search)) &&
+            (!samoProknjizeni || r.IsKnjizen) &&
+            (!samoNeproknjizeni || !r.IsKnjizen)
+        ).ToList();
 
         if (DgRacuni.Items.Count > 0) DgRacuni.SelectedIndex = 0;
         else DgRacunStavke.ItemsSource = null;
     }
 
     private void TxtPretragaRacuna_TextChanged(object sender, TextChangedEventArgs e) => FiltrirajRacune();
+    private void Filter_Racuni_Changed(object sender, RoutedEventArgs e) => FiltrirajRacune();
 
     private async void DgRacuni_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -1404,15 +1562,18 @@ public partial class TrgovinaView : UserControl
         }
     }
 
-    private void ApplyFilterZaduzenja() => FiltrirajPrimopredajeTab("Zaduženje", DgZaduzenja, DgZaduzenjaStavke, TxtPretragaZaduzenja);
-    private void ApplyFilterRazduzenja() => FiltrirajPrimopredajeTab("Razduženje", DgRazduzenja, DgRazduzenjaStavke, TxtPretragaRazduzenja);
-    private void ApplyFilterPrimopredaje() => FiltrirajPrimopredajeTab("Primopredaja", DgPrimopredaje, DgPrimopredajaStavke, TxtPretragaPrimopredaja);
+    private void ApplyFilterZaduzenja() => FiltrirajPrimopredajeTab("Zaduženje", DgZaduzenja, DgZaduzenjaStavke, TxtPretragaZaduzenja, RbProknjizeniZaduzenja, RbNeproknjizeniZaduzenja);
+    private void ApplyFilterRazduzenja() => FiltrirajPrimopredajeTab("Razduženje", DgRazduzenja, DgRazduzenjaStavke, TxtPretragaRazduzenja, RbProknjizeniRazduzenja, RbNeproknjizeniRazduzenja);
+    private void ApplyFilterPrimopredaje() => FiltrirajPrimopredajeTab("Primopredaja", DgPrimopredaje, DgPrimopredajaStavke, TxtPretragaPrimopredaja, RbProknjizeniPrimopredajeTrg, RbNeproknjizeniPrimopredajeTrg);
 
-    private void FiltrirajPrimopredajeTab(string vrsta, DataGrid dgNalozi, DataGrid dgStavke, TextBox txtPretraga)
+    private void FiltrirajPrimopredajeTab(string vrsta, DataGrid dgNalozi, DataGrid dgStavke, TextBox txtPretraga, RadioButton rbProknjizeni, RadioButton rbNeproknjizeni)
     {
         if (dgNalozi == null) return;
 
         string search = txtPretraga.Text.Trim().ToLower();
+        bool samoProknjizeni = rbProknjizeni?.IsChecked == true;
+        bool samoNeproknjizeni = rbNeproknjizeni?.IsChecked == true;
+
         IEnumerable<PrimopredajaNalog> izvor = _svePrimopredaje.Where(p => string.Equals(p.VrstaDokumenta, vrsta, StringComparison.OrdinalIgnoreCase));
         if (!string.IsNullOrEmpty(search))
         {
@@ -1420,6 +1581,8 @@ public partial class TrgovinaView : UserControl
                                       p.SifraMagacinaDaje.ToLower().Contains(search) ||
                                       p.SifraMagacinaPrima.ToLower().Contains(search));
         }
+        if (samoProknjizeni) izvor = izvor.Where(p => p.IsKnjizen);
+        if (samoNeproknjizeni) izvor = izvor.Where(p => !p.IsKnjizen);
 
         dgNalozi.ItemsSource = izvor.ToList();
 
@@ -1430,6 +1593,9 @@ public partial class TrgovinaView : UserControl
     private void TxtPretragaZaduzenja_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterZaduzenja();
     private void TxtPretragaRazduzenja_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterRazduzenja();
     private void TxtPretragaPrimopredaja_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterPrimopredaje();
+    private void Filter_Zaduzenja_Changed(object sender, RoutedEventArgs e) => ApplyFilterZaduzenja();
+    private void Filter_Razduzenja_Changed(object sender, RoutedEventArgs e) => ApplyFilterRazduzenja();
+    private void Filter_PrimopredajeTrg_Changed(object sender, RoutedEventArgs e) => ApplyFilterPrimopredaje();
 
     private void DgZaduzenja_SelectionChanged(object sender, SelectionChangedEventArgs e) => PrikaziStavkePrimopredaje(DgZaduzenja, DgZaduzenjaStavke);
     private void DgRazduzenja_SelectionChanged(object sender, SelectionChangedEventArgs e) => PrikaziStavkePrimopredaje(DgRazduzenja, DgRazduzenjaStavke);
@@ -1710,9 +1876,14 @@ public partial class TrgovinaView : UserControl
     {
         if (DgNivelacije == null) return;
         var search = TxtPretragaNivelacija?.Text.Trim().ToLower() ?? "";
-        var filtrirane = string.IsNullOrEmpty(search)
-            ? _sveNivelacije
-            : _sveNivelacije.Where(n => n.BrojNivelacije.ToString().Contains(search) || (n.Opis != null && n.Opis.ToLower().Contains(search))).ToList();
+        bool samoProknjizeni = RbProknjizeniNivelacije?.IsChecked == true;
+        bool samoNeproknjizeni = RbNeproknjizeniNivelacije?.IsChecked == true;
+
+        var filtrirane = _sveNivelacije.Where(n =>
+            (string.IsNullOrEmpty(search) || n.BrojNivelacije.ToString().Contains(search) || (n.Opis != null && n.Opis.ToLower().Contains(search))) &&
+            (!samoProknjizeni || n.IsKnjizen) &&
+            (!samoNeproknjizeni || !n.IsKnjizen)
+        ).ToList();
 
         DgNivelacije.ItemsSource = filtrirane;
         if (filtrirane.Count > 0)
@@ -1726,6 +1897,7 @@ public partial class TrgovinaView : UserControl
     }
 
     private void TxtPretragaNivelacija_TextChanged(object sender, TextChangedEventArgs e) => FiltrirajNivelacije();
+    private void Filter_Nivelacije_Changed(object sender, RoutedEventArgs e) => FiltrirajNivelacije();
 
     private void DgNivelacije_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {

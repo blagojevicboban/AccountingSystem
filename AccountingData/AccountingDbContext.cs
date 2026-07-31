@@ -25,6 +25,7 @@ public class AccountingDbContext : DbContext
     public DbSet<Kalkulacija> Kalkulacije => Set<Kalkulacija>();
     public DbSet<KalkulacijaStavka> KalkulacijaStavke => Set<KalkulacijaStavka>();
     public DbSet<MaloprodajnaKalkulacija> MaloprodajneKalkulacije => Set<MaloprodajnaKalkulacija>();
+    public DbSet<MaloprodajnaKalkulacijaStavka> MaloprodajnaKalkulacijaStavke => Set<MaloprodajnaKalkulacijaStavka>();
     public DbSet<KarticaKonta> KarticeKonta => Set<KarticaKonta>();
     public DbSet<KamatnaStopa> KamatneStope => Set<KamatnaStopa>();
     public DbSet<Promena> Promene => Set<Promena>();

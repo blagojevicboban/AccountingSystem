@@ -3,6 +3,7 @@ using System;
 using AccountingData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AccountingData.Migrations
 {
     [DbContext(typeof(AccountingDbContext))]
-    partial class AccountingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731155440_DodajProcenteMaloprodajnojKalkulaciji")]
+    partial class DodajProcenteMaloprodajnojKalkulaciji
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
@@ -565,57 +568,6 @@ namespace AccountingData.Migrations
                     b.HasIndex("BrojKalkulacije");
 
                     b.ToTable("MaloprodajneKalkulacije");
-                });
-
-            modelBuilder.Entity("AccountingData.Models.MaloprodajnaKalkulacijaStavka", b =>
-                {
-                    b.Property<int>("MaloprodajnaKalkulacijaStavkaId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("Iznos")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("Kolicina")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<int>("MaloprodajnaKalkulacijaId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("NabavnaCena")
-                        .HasColumnType("decimal(18, 4)");
-
-                    b.Property<decimal>("NabavnaVrednost")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("PorezIznos")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("ProdajnaCena")
-                        .HasColumnType("decimal(18, 4)");
-
-                    b.Property<decimal>("ProdajnaVrednost")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("RazlikaIznos")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<int>("RedniBroj")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SifraArtikla")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Troskovi")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.HasKey("MaloprodajnaKalkulacijaStavkaId");
-
-                    b.HasIndex("MaloprodajnaKalkulacijaId");
-
-                    b.ToTable("MaloprodajnaKalkulacijaStavke");
                 });
 
             modelBuilder.Entity("AccountingData.Models.Materijal", b =>
@@ -1290,17 +1242,6 @@ namespace AccountingData.Migrations
                     b.Navigation("Kalkulacija");
                 });
 
-            modelBuilder.Entity("AccountingData.Models.MaloprodajnaKalkulacijaStavka", b =>
-                {
-                    b.HasOne("AccountingData.Models.MaloprodajnaKalkulacija", "MaloprodajnaKalkulacija")
-                        .WithMany("Stavke")
-                        .HasForeignKey("MaloprodajnaKalkulacijaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MaloprodajnaKalkulacija");
-                });
-
             modelBuilder.Entity("AccountingData.Models.NivelacijaCena", b =>
                 {
                     b.HasOne("AccountingData.Models.Magacin", "Magacin")
@@ -1422,11 +1363,6 @@ namespace AccountingData.Migrations
                 });
 
             modelBuilder.Entity("AccountingData.Models.Kalkulacija", b =>
-                {
-                    b.Navigation("Stavke");
-                });
-
-            modelBuilder.Entity("AccountingData.Models.MaloprodajnaKalkulacija", b =>
                 {
                     b.Navigation("Stavke");
                 });
