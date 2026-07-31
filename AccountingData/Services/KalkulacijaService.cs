@@ -102,7 +102,45 @@ public class KalkulacijaService
         }
         else
         {
-            _db.Kalkulacije.Update(kalkulacija);
+            var existing = await _db.Kalkulacije
+                .Include(k => k.Stavke)
+                .FirstOrDefaultAsync(k => k.KalkulacijaId == kalkulacija.KalkulacijaId);
+
+            if (existing == null)
+            {
+                throw new InvalidOperationException("Kalkulacija nije pronađena.");
+            }
+            if (existing.IsKnjizen)
+            {
+                throw new InvalidOperationException("Proknjižena kalkulacija se ne može menjati.");
+            }
+
+            existing.BrojKalkulacije = kalkulacija.BrojKalkulacije;
+            existing.Datum = kalkulacija.Datum;
+            existing.SifraDobavljaca = kalkulacija.SifraDobavljaca;
+            existing.BrojRacuna = kalkulacija.BrojRacuna;
+            existing.DatumRacuna = kalkulacija.DatumRacuna;
+            existing.BrojOtpremnice = kalkulacija.BrojOtpremnice;
+            existing.DatumOtpremnice = kalkulacija.DatumOtpremnice;
+            existing.SifraMagacina = kalkulacija.SifraMagacina;
+            existing.NabavnaVrednost = kalkulacija.NabavnaVrednost;
+            existing.TransportniTroskovi = kalkulacija.TransportniTroskovi;
+            existing.TroskoviUskladistenja = kalkulacija.TroskoviUskladistenja;
+            existing.UtovarIstovar = kalkulacija.UtovarIstovar;
+            existing.TransportnoOsiguranje = kalkulacija.TransportnoOsiguranje;
+            existing.OstaliTroskovi = kalkulacija.OstaliTroskovi;
+            existing.SvegaTroskovi = kalkulacija.SvegaTroskovi;
+            existing.SvegaNabavno = kalkulacija.SvegaNabavno;
+            existing.Razlika = kalkulacija.Razlika;
+            existing.MarzaProcenat = kalkulacija.MarzaProcenat;
+            existing.Porez = kalkulacija.Porez;
+            existing.PoreskaStopaProcenat = kalkulacija.PoreskaStopaProcenat;
+            existing.ProdajnaVrednost = kalkulacija.ProdajnaVrednost;
+
+            _db.KalkulacijaStavke.RemoveRange(existing.Stavke);
+            existing.Stavke = kalkulacija.Stavke;
+
+            kalkulacija = existing;
         }
 
         await _db.SaveChangesAsync();

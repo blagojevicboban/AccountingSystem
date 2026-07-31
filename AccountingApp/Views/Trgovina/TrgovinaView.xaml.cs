@@ -4,6 +4,9 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Text.RegularExpressions;
 using AccountingApp.Services;
 using AccountingData;
 using AccountingData.Models;
@@ -11,6 +14,24 @@ using AccountingData.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountingApp.Views.Trgovina;
+
+public class ArtikalIzbor : INotifyPropertyChanged
+{
+    public Artikal Artikal { get; }
+    public ArtikalIzbor(Artikal artikal) => Artikal = artikal;
+
+    public string SifraArtikla => Artikal.SifraArtikla;
+    public string Naziv => Artikal.Naziv;
+
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set { _isSelected = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected))); }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
 
 public partial class TrgovinaView : UserControl
 {
@@ -89,6 +110,81 @@ public partial class TrgovinaView : UserControl
     {
         var dijalog = new KalkulacijaEditWindow { Owner = Window.GetWindow(this) };
         if (dijalog.ShowDialog() == true) LoadKalkulacije();
+    }
+
+    private void BtnIzmeniKalkulaciju_Click(object sender, RoutedEventArgs e) => OtvoriIzmenuKalkulacije();
+    private void DgKalkulacije_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => OtvoriIzmenuKalkulacije();
+    private void DgKalkulacije_SelectionChanged(object sender, SelectionChangedEventArgs e) => PrikaziStavkeKalkulacije();
+
+    private async void PrikaziStavkeKalkulacije()
+    {
+        if (DgKalkulacije.SelectedItem is not Kalkulacija selektovana)
+        {
+            DgKalkulacijaStavke.ItemsSource = null;
+            return;
+        }
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+
+            var puna = await db.Kalkulacije
+                .Include(k => k.Stavke)
+                .FirstOrDefaultAsync(k => k.KalkulacijaId == selektovana.KalkulacijaId);
+
+            if (puna != null)
+            {
+                var artikliDict = await db.Artikli.ToDictionaryAsync(a => a.SifraArtikla, a => a);
+                foreach (var st in puna.Stavke)
+                {
+                    if (artikliDict.TryGetValue(st.SifraArtikla, out var art))
+                    {
+                        st.NazivArtikla = art.Naziv;
+                        st.JedinicaMere = art.JedinicaMere;
+                    }
+                }
+                DgKalkulacijaStavke.ItemsSource = puna.Stavke;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri učitavanju stavki: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void OtvoriIzmenuKalkulacije()
+    {
+        if (DgKalkulacije.SelectedItem is not Kalkulacija selektovana)
+        {
+            MessageBox.Show("Izaberite kalkulaciju sa liste.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (selektovana.IsKnjizen)
+        {
+            MessageBox.Show("Proknjižena kalkulacija se ne može menjati.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+            var puna = await db.Kalkulacije.Include(k => k.Stavke).FirstOrDefaultAsync(k => k.KalkulacijaId == selektovana.KalkulacijaId);
+            if (puna == null)
+            {
+                MessageBox.Show("Kalkulacija nije pronađena.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dijalog = new KalkulacijaEditWindow(puna) { Owner = Window.GetWindow(this) };
+            if (dijalog.ShowDialog() == true) LoadKalkulacije();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju kalkulacije: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private async void BtnKnjiziKalkulaciju_Click(object sender, RoutedEventArgs e)
@@ -455,8 +551,78 @@ public partial class TrgovinaView : UserControl
         if (!string.IsNullOrEmpty(search))
             izvor = izvor.Where(a => a.Naziv.ToLower().Contains(search) || a.SifraArtikla.ToLower().Contains(search));
 
-        LstArtikliRobno.ItemsSource = izvor.ToList();
+        var izbori = izvor.Select(a => new ArtikalIzbor(a)).ToList();
+        foreach (var izbor in izbori) izbor.PropertyChanged += ArtikalIzborRobno_PropertyChanged;
+        LstArtikliRobno.ItemsSource = izbori;
+        UpdateBtnStampajRobnaKarticaState();
     }
+
+    private void ArtikalIzborRobno_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ArtikalIzbor.IsSelected))
+        {
+            UpdateBtnStampajRobnaKarticaState();
+        }
+    }
+
+    private bool _updatingChkSviArtikliRobno;
+
+    private void UpdateBtnStampajRobnaKarticaState()
+    {
+        var izbori = LstArtikliRobno.ItemsSource as List<ArtikalIzbor>;
+        bool imaCekiranih = izbori?.Any(i => i.IsSelected) ?? false;
+        bool imaPrikazanuKarticu = LstArtikliRobno.SelectedItem is ArtikalIzbor && _trenutnaRobnaKartica.Count > 0;
+        BtnStampajRobnaKartica.IsEnabled = imaCekiranih || imaPrikazanuKarticu;
+
+        if (ChkSviArtikliRobno == null) return;
+
+        _updatingChkSviArtikliRobno = true;
+        if (izbori == null || izbori.Count == 0)
+            ChkSviArtikliRobno.IsChecked = false;
+        else if (izbori.All(i => i.IsSelected))
+            ChkSviArtikliRobno.IsChecked = true;
+        else if (izbori.All(i => !i.IsSelected))
+            ChkSviArtikliRobno.IsChecked = false;
+        else
+            ChkSviArtikliRobno.IsChecked = null;
+        _updatingChkSviArtikliRobno = false;
+    }
+
+    private void ChkSviArtikliRobno_Checked(object sender, RoutedEventArgs e) => SetSviArtikliRobnoIzabrani(true);
+
+    private void ChkSviArtikliRobno_Unchecked(object sender, RoutedEventArgs e) => SetSviArtikliRobnoIzabrani(false);
+
+    private void SetSviArtikliRobnoIzabrani(bool izabrano)
+    {
+        if (_updatingChkSviArtikliRobno) return;
+        if (LstArtikliRobno.ItemsSource is not List<ArtikalIzbor> izbori) return;
+
+        foreach (var izbor in izbori) izbor.IsSelected = izabrano;
+        UpdateBtnStampajRobnaKarticaState();
+    }
+
+    private void LstArtikliRobno_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var red = FindAncestor<DataGridRow>(e.OriginalSource as DependencyObject);
+        if (red?.Item is ArtikalIzbor izbor)
+        {
+            LstArtikliRobno.SelectedItem = izbor;
+        }
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
+    {
+        while (current != null)
+        {
+            if (current is T match) return match;
+            current = VisualTreeHelper.GetParent(current);
+        }
+        return null;
+    }
+
+    private void CtxStampajRobnuKarticu_Click(object sender, RoutedEventArgs e) => BtnStampajRobnaKartica_Click(sender, e);
+
+    private void CtxExportExcelRobnaKartica_Click(object sender, RoutedEventArgs e) => BtnExportExcelRobnaKartica_Click(sender, e);
 
     private void TxtPretragaArtiklaRobno_TextChanged(object sender, TextChangedEventArgs e) => FiltrirajArtikleRobno();
     private void ChkSamoSaKarticom_Changed(object sender, RoutedEventArgs e) => FiltrirajArtikleRobno();
@@ -527,27 +693,23 @@ public partial class TrgovinaView : UserControl
             TxtStanjeArtiklaRobno.Text = "";
             DgRobnaKartica.ItemsSource = null;
             _trenutnaRobnaKartica.Clear();
+            PrikaziSumeRobno();
+            UpdateBtnStampajRobnaKarticaState();
             return;
         }
 
-        if (LstArtikliRobno.SelectedItems.Count > 1)
-        {
-            TxtNaslovArtiklaRobno.Text = $"{LstArtikliRobno.SelectedItems.Count} artikala izabrano";
-            TxtStanjeArtiklaRobno.Text = "Koristite 'Štampaj karticu (PDF)' za štampu kartica svih izabranih artikala.";
-            DgRobnaKartica.ItemsSource = null;
-            _trenutnaRobnaKartica.Clear();
-            return;
-        }
-
-        if (LstArtikliRobno.SelectedItem is not Artikal artikal)
+        if (LstArtikliRobno.SelectedItem is not ArtikalIzbor izbor)
         {
             TxtNaslovArtiklaRobno.Text = "Izaberite magacin i artikal sa liste";
             TxtStanjeArtiklaRobno.Text = "";
             DgRobnaKartica.ItemsSource = null;
             _trenutnaRobnaKartica.Clear();
+            PrikaziSumeRobno();
+            UpdateBtnStampajRobnaKarticaState();
             return;
         }
 
+        var artikal = izbor.Artikal;
         try
         {
             var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
@@ -562,12 +724,13 @@ public partial class TrgovinaView : UserControl
                 .ToListAsync();
 
             DgRobnaKartica.ItemsSource = _trenutnaRobnaKartica;
+            PrikaziSumeRobno();
 
             decimal zadnjeStanje = _trenutnaRobnaKartica.LastOrDefault()?.Stanje ?? 0m;
-            decimal zadnjiSaldo = _trenutnaRobnaKartica.LastOrDefault()?.Saldo ?? 0m;
 
             TxtNaslovArtiklaRobno.Text = $"{artikal.Naziv} ({artikal.SifraArtikla}) - Magacin: {magacin.NazivMagacina}";
-            TxtStanjeArtiklaRobno.Text = $"Zaliha: {zadnjeStanje:N2} {artikal.JedinicaMere} | Saldo: {zadnjiSaldo:N2} RSD | Prodajna cena: {artikal.ProdajnaCena:N2} RSD | Stavki prometa: {_trenutnaRobnaKartica.Count}";
+            TxtStanjeArtiklaRobno.Text = $"Zaliha: {zadnjeStanje:N2} {artikal.JedinicaMere} | Prodajna cena: {artikal.ProdajnaCena:N2} RSD | Stavki prometa: {_trenutnaRobnaKartica.Count}";
+            UpdateBtnStampajRobnaKarticaState();
         }
         catch (Exception ex)
         {
@@ -575,13 +738,97 @@ public partial class TrgovinaView : UserControl
         }
     }
 
-    private async void BtnStampajRobnuKarticu_Click(object sender, RoutedEventArgs e)
+    private void PrikaziSumeRobno()
     {
-        var izabraniArtikli = LstArtikliRobno.SelectedItems.Cast<Artikal>().ToList();
-        if (izabraniArtikli.Count == 0 || CmbMagacinRobno.SelectedItem is not AccountingData.Models.Magacin magacin)
+        TxtSumaUlazRobno.Text = _trenutnaRobnaKartica.Sum(k => k.Ulaz).ToString("N2");
+        TxtSumaIzlazRobno.Text = _trenutnaRobnaKartica.Sum(k => k.Izlaz).ToString("N2");
+        TxtSumaDugujeRobno.Text = _trenutnaRobnaKartica.Sum(k => k.Duguje).ToString("N2");
+        TxtSumaPotrazujeRobno.Text = _trenutnaRobnaKartica.Sum(k => k.Potrazuje).ToString("N2");
+        TxtSumaSaldoRobno.Text = (_trenutnaRobnaKartica.Count > 0 ? _trenutnaRobnaKartica[^1].Saldo : 0m).ToString("N2");
+    }
+
+    private async void DgRobnaKartica_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (DgRobnaKartica.SelectedItem is not MaterijalnaKartica red)
         {
-            MessageBox.Show("Izaberite magacin i bar jedan artikal sa liste za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
+        }
+
+        string opis = red.OpisPromene ?? "";
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+
+            var mKalk = Regex.Match(opis, @"^Kalkulacija (\d+)$");
+            if (mKalk.Success && int.TryParse(mKalk.Groups[1].Value, out int brojKalk))
+            {
+                var kalkulacija = await db.Kalkulacije.Include(k => k.Stavke)
+                    .FirstOrDefaultAsync(k => k.BrojKalkulacije == brojKalk && k.SifraMagacina == red.SifraMagacina);
+                if (kalkulacija != null)
+                {
+                    var sb = new System.Text.StringBuilder();
+                    sb.AppendLine($"Kalkulacija #{kalkulacija.BrojKalkulacije} od {kalkulacija.Datum:dd.MM.yyyy}");
+                    sb.AppendLine($"Magacin: {red.SifraMagacina}   Proknjižena: {(kalkulacija.IsKnjizen ? "Da" : "Ne")}");
+                    sb.AppendLine();
+                    foreach (var s in kalkulacija.Stavke)
+                    {
+                        sb.AppendLine($"{s.SifraArtikla}   {s.Kolicina:N2} × {s.NabavnaCena:N2} = {s.Iznos:N2}");
+                    }
+                    sb.AppendLine();
+                    sb.AppendLine($"Svega nabavno: {kalkulacija.SvegaNabavno:N2} RSD   Prodajna vrednost: {kalkulacija.ProdajnaVrednost:N2} RSD");
+                    MessageBox.Show(sb.ToString(), "Izvorni dokument — Kalkulacija", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+            }
+
+            var mPP = Regex.Match(opis, @"^Primopredaja br\. (\d+)");
+            if (mPP.Success && int.TryParse(mPP.Groups[1].Value, out int brojPP))
+            {
+                var primopredaja = await db.PrimopredajaNalozi.Include(p => p.Stavke)
+                    .FirstOrDefaultAsync(p => p.BrojNaloga == brojPP &&
+                        (p.SifraMagacinaDaje == red.SifraMagacina || p.SifraMagacinaPrima == red.SifraMagacina));
+                if (primopredaja != null)
+                {
+                    var sb = new System.Text.StringBuilder();
+                    sb.AppendLine($"Primopredaja #{primopredaja.BrojNaloga} od {primopredaja.Datum:dd.MM.yyyy}");
+                    sb.AppendLine($"Iz magacina {primopredaja.SifraMagacinaDaje} u magacin {primopredaja.SifraMagacinaPrima}");
+                    sb.AppendLine($"Proknjižena: {(primopredaja.IsKnjizen ? "Da" : "Ne")}");
+                    sb.AppendLine();
+                    foreach (var s in primopredaja.Stavke)
+                    {
+                        sb.AppendLine($"{s.SifraArtikla}   {s.Kolicina:N2} × {s.Cena:N2} = {s.Iznos:N2}");
+                    }
+                    MessageBox.Show(sb.ToString(), "Izvorni dokument — Primopredaja", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+            }
+
+            MessageBox.Show(
+                "Izvorni dokument nije pronađen za ovu stavku (verovatno je uvezena iz starih/legacy podataka).",
+                "Izvorni dokument", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri traženju izvornog dokumenta: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnStampajRobnaKartica_Click(object sender, RoutedEventArgs e)
+    {
+        if (CmbMagacinRobno.SelectedItem is not AccountingData.Models.Magacin magacin)
+        {
+            MessageBox.Show("Izaberite magacin za štampu kartice.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var izbori = LstArtikliRobno.ItemsSource as List<ArtikalIzbor> ?? new();
+        var izabraniArtikli = izbori.Where(i => i.IsSelected).Select(i => i.Artikal).ToList();
+
+        if (izabraniArtikli.Count == 0 && LstArtikliRobno.SelectedItem is ArtikalIzbor trenutni)
+        {
+            izabraniArtikli.Add(trenutni.Artikal);
         }
 
         try
@@ -591,7 +838,23 @@ public partial class TrgovinaView : UserControl
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
 
             byte[] pdfBytes;
-            if (izabraniArtikli.Count == 1 && !JeSviMagacini(magacin))
+            string sifraZaNaziv;
+
+            if (izabraniArtikli.Count == 0)
+            {
+                var potvrda = MessageBox.Show("Nijedan artikal nije čekiran. Da li želite da štampate kartice SVIH artikala?", "Štampa svih kartica", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (potvrda != MessageBoxResult.Yes) return;
+
+                var sveSekcije = await PrikupiRobneKarticeAsync(db, magacinFilter: JeSviMagacini(magacin) ? null : magacin, artikliFilter: null);
+                if (sveSekcije.Count == 0)
+                {
+                    MessageBox.Show($"Nema prometa ni na jednoj robnoj kartici{(JeSviMagacini(magacin) ? "" : $" u magacinu '{magacin.NazivMagacina}'")}.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                pdfBytes = Services.PdfReportService.GenerisiSveRobneKarticePdf(firma, sveSekcije);
+                sifraZaNaziv = "SVI_ARTIKLI";
+            }
+            else if (izabraniArtikli.Count == 1 && !JeSviMagacini(magacin))
             {
                 if (_trenutnaRobnaKartica.Count == 0)
                 {
@@ -599,6 +862,7 @@ public partial class TrgovinaView : UserControl
                     return;
                 }
                 pdfBytes = Services.PdfReportService.GenerisiRobnuKarticuPdf(firma, magacin, izabraniArtikli[0], _trenutnaRobnaKartica);
+                sifraZaNaziv = izabraniArtikli[0].SifraArtikla;
             }
             else
             {
@@ -609,9 +873,9 @@ public partial class TrgovinaView : UserControl
                     return;
                 }
                 pdfBytes = Services.PdfReportService.GenerisiSveRobneKarticePdf(firma, sekcije);
+                sifraZaNaziv = $"{izabraniArtikli.Count}_artikala";
             }
 
-            string sifraZaNaziv = izabraniArtikli.Count == 1 ? izabraniArtikli[0].SifraArtikla : $"{izabraniArtikli.Count}_artikala";
             string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Robna_Kartica_{SifraZaFajl(magacin)}_{sifraZaNaziv}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
 
@@ -624,45 +888,6 @@ public partial class TrgovinaView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri štampi robne kartice: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private async void BtnStampajSveKartice_Click(object sender, RoutedEventArgs e)
-    {
-        if (CmbMagacinRobno.SelectedItem is not AccountingData.Models.Magacin magacin)
-        {
-            MessageBox.Show("Izaberite magacin za štampu svih kartica.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-
-        try
-        {
-            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
-            using var db = new AccountingDbContext(options);
-
-            var sekcije = await PrikupiRobneKarticeAsync(db, magacinFilter: JeSviMagacini(magacin) ? null : magacin, artikliFilter: null);
-
-            if (sekcije.Count == 0)
-            {
-                MessageBox.Show($"Nema prometa ni na jednoj robnoj kartici{(JeSviMagacini(magacin) ? "" : $" u magacinu '{magacin.NazivMagacina}'")}.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
-            var pdfBytes = Services.PdfReportService.GenerisiSveRobneKarticePdf(firma, sekcije);
-
-            string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Robne_Kartice_{SifraZaFajl(magacin)}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
-            await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
-
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = tempFile,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Greška pri štampi svih robnih kartica: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -1090,7 +1315,11 @@ public partial class TrgovinaView : UserControl
         }
     }
 
-    // ===================== PRIMOPREDAJE ROBE (MAT4) =====================
+    // ===================== ZADUŽENJA / RAZDUŽENJA / PRIMOPREDAJE ROBE (MAT4) =====================
+    // U legacy sistemu ovo su tri odvojena dokumenta (ZADUZ.DBF, RAZDUZ.DBF, MAT_NAL.DBF), sve tri
+    // se čuvaju u istoj PrimopredajaNalog tabeli, razlikovane preko VrstaDokumenta ("Zaduženje" /
+    // "Razduženje" / "Primopredaja"). Otuda tri taba nad istim učitanim spiskom (_svePrimopredaje),
+    // svaki filtriran na svoju vrstu preko deljenih parametrizovanih metoda ispod.
 
     private List<PrimopredajaNalog> _svePrimopredaje = new();
 
@@ -1103,6 +1332,8 @@ public partial class TrgovinaView : UserControl
             var service = new PrimopredajaService(db);
 
             _svePrimopredaje = await service.GetPrimopredajeAsync();
+            ApplyFilterZaduzenja();
+            ApplyFilterRazduzenja();
             ApplyFilterPrimopredaje();
         }
         catch (Exception ex)
@@ -1111,26 +1342,42 @@ public partial class TrgovinaView : UserControl
         }
     }
 
-    private void ApplyFilterPrimopredaje()
-    {
-        string search = TxtPretragaPrimopredaja.Text.Trim().ToLower();
-        DgPrimopredaje.ItemsSource = string.IsNullOrEmpty(search)
-            ? _svePrimopredaje
-            : _svePrimopredaje.Where(p => p.BrojNaloga.ToString().Contains(search) ||
-                                           p.SifraMagacinaDaje.ToLower().Contains(search) ||
-                                           p.SifraMagacinaPrima.ToLower().Contains(search)).ToList();
+    private void ApplyFilterZaduzenja() => FiltrirajPrimopredajeTab("Zaduženje", DgZaduzenja, DgZaduzenjaStavke, TxtPretragaZaduzenja);
+    private void ApplyFilterRazduzenja() => FiltrirajPrimopredajeTab("Razduženje", DgRazduzenja, DgRazduzenjaStavke, TxtPretragaRazduzenja);
+    private void ApplyFilterPrimopredaje() => FiltrirajPrimopredajeTab("Primopredaja", DgPrimopredaje, DgPrimopredajaStavke, TxtPretragaPrimopredaja);
 
-        if (DgPrimopredaje.Items.Count > 0) DgPrimopredaje.SelectedIndex = 0;
-        else DgPrimopredajaStavke.ItemsSource = null;
+    private void FiltrirajPrimopredajeTab(string vrsta, DataGrid dgNalozi, DataGrid dgStavke, TextBox txtPretraga)
+    {
+        if (dgNalozi == null) return;
+
+        string search = txtPretraga.Text.Trim().ToLower();
+        IEnumerable<PrimopredajaNalog> izvor = _svePrimopredaje.Where(p => string.Equals(p.VrstaDokumenta, vrsta, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrEmpty(search))
+        {
+            izvor = izvor.Where(p => p.BrojNaloga.ToString().Contains(search) ||
+                                      p.SifraMagacinaDaje.ToLower().Contains(search) ||
+                                      p.SifraMagacinaPrima.ToLower().Contains(search));
+        }
+
+        dgNalozi.ItemsSource = izvor.ToList();
+
+        if (dgNalozi.Items.Count > 0) dgNalozi.SelectedIndex = 0;
+        else dgStavke.ItemsSource = null;
     }
 
+    private void TxtPretragaZaduzenja_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterZaduzenja();
+    private void TxtPretragaRazduzenja_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterRazduzenja();
     private void TxtPretragaPrimopredaja_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilterPrimopredaje();
 
-    private async void DgPrimopredaje_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void DgZaduzenja_SelectionChanged(object sender, SelectionChangedEventArgs e) => PrikaziStavkePrimopredaje(DgZaduzenja, DgZaduzenjaStavke);
+    private void DgRazduzenja_SelectionChanged(object sender, SelectionChangedEventArgs e) => PrikaziStavkePrimopredaje(DgRazduzenja, DgRazduzenjaStavke);
+    private void DgPrimopredaje_SelectionChanged(object sender, SelectionChangedEventArgs e) => PrikaziStavkePrimopredaje(DgPrimopredaje, DgPrimopredajaStavke);
+
+    private async void PrikaziStavkePrimopredaje(DataGrid dgNalozi, DataGrid dgStavke)
     {
-        if (DgPrimopredaje.SelectedItem is not PrimopredajaNalog nalog)
+        if (dgNalozi.SelectedItem is not PrimopredajaNalog nalog)
         {
-            DgPrimopredajaStavke.ItemsSource = null;
+            dgStavke.ItemsSource = null;
             return;
         }
 
@@ -1154,18 +1401,22 @@ public partial class TrgovinaView : UserControl
                         st.JedinicaMere = art.JedinicaMere;
                     }
                 }
-                DgPrimopredajaStavke.ItemsSource = fullNalog.Stavke;
+                dgStavke.ItemsSource = fullNalog.Stavke;
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Greška pri učitavanju stavki primopredaje: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Greška pri učitavanju stavki: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
-    private void BtnNovaPrimopredaja_Click(object sender, RoutedEventArgs e)
+    private void BtnNovoZaduzenje_Click(object sender, RoutedEventArgs e) => NovaPrimopredaja("Zaduženje");
+    private void BtnNovoRazduzenje_Click(object sender, RoutedEventArgs e) => NovaPrimopredaja("Razduženje");
+    private void BtnNovaPrimopredaja_Click(object sender, RoutedEventArgs e) => NovaPrimopredaja("Primopredaja");
+
+    private void NovaPrimopredaja(string vrsta)
     {
-        var win = new PrimopredajaEditWindow { Owner = Window.GetWindow(this) };
+        var win = new PrimopredajaEditWindow(vrstaZaNovu: vrsta) { Owner = Window.GetWindow(this) };
         if (win.ShowDialog() == true)
         {
             LoadPrimopredaje();
@@ -1173,20 +1424,24 @@ public partial class TrgovinaView : UserControl
         }
     }
 
-    private void BtnIzmeniPrimopredaju_Click(object sender, RoutedEventArgs e) => OtvoriIzmenuPrimopredaje();
-    private void DgPrimopredaje_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => OtvoriIzmenuPrimopredaje();
+    private void BtnIzmeniZaduzenje_Click(object sender, RoutedEventArgs e) => OtvoriIzmenuPrimopredaje(DgZaduzenja);
+    private void DgZaduzenja_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => OtvoriIzmenuPrimopredaje(DgZaduzenja);
+    private void BtnIzmeniRazduzenje_Click(object sender, RoutedEventArgs e) => OtvoriIzmenuPrimopredaje(DgRazduzenja);
+    private void DgRazduzenja_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => OtvoriIzmenuPrimopredaje(DgRazduzenja);
+    private void BtnIzmeniPrimopredaju_Click(object sender, RoutedEventArgs e) => OtvoriIzmenuPrimopredaje(DgPrimopredaje);
+    private void DgPrimopredaje_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => OtvoriIzmenuPrimopredaje(DgPrimopredaje);
 
-    private void OtvoriIzmenuPrimopredaje()
+    private void OtvoriIzmenuPrimopredaje(DataGrid dgNalozi)
     {
-        if (DgPrimopredaje.SelectedItem is not PrimopredajaNalog nalog)
+        if (dgNalozi.SelectedItem is not PrimopredajaNalog nalog)
         {
-            MessageBox.Show("Izaberite nalog primopredaje sa liste.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Izaberite nalog sa liste.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
         if (nalog.IsKnjizen)
         {
-            MessageBox.Show("Proknjiženi nalog primopredaje se ne može menjati.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Proknjižen nalog se ne može menjati.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -1198,21 +1453,25 @@ public partial class TrgovinaView : UserControl
         }
     }
 
-    private async void BtnKnjiziPrimopredaju_Click(object sender, RoutedEventArgs e)
+    private void BtnKnjiziZaduzenje_Click(object sender, RoutedEventArgs e) => KnjiziPrimopredaju(DgZaduzenja);
+    private void BtnKnjiziRazduzenje_Click(object sender, RoutedEventArgs e) => KnjiziPrimopredaju(DgRazduzenja);
+    private void BtnKnjiziPrimopredaju_Click(object sender, RoutedEventArgs e) => KnjiziPrimopredaju(DgPrimopredaje);
+
+    private async void KnjiziPrimopredaju(DataGrid dgNalozi)
     {
-        if (DgPrimopredaje.SelectedItem is not PrimopredajaNalog nalog)
+        if (dgNalozi.SelectedItem is not PrimopredajaNalog nalog)
         {
-            MessageBox.Show("Izaberite nalog primopredaje za knjiženje.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Izaberite nalog za knjiženje.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
         if (nalog.IsKnjizen)
         {
-            MessageBox.Show("Izabrani nalog primopredaje je već proknjižen.", "Informacija", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Izabrani nalog je već proknjižen.", "Informacija", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        var potv = MessageBox.Show($"Da li ste sigurni da želite proknjižiti nalog primopredaje br. {nalog.BrojNaloga}?",
+        var potv = MessageBox.Show($"Da li ste sigurni da želite proknjižiti nalog br. {nalog.BrojNaloga}?",
             "Potvrda knjiženja (knjiz_m_naloga - MAT4)", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
         if (potv == MessageBoxResult.Yes)
@@ -1224,7 +1483,7 @@ public partial class TrgovinaView : UserControl
                 var service = new PrimopredajaService(db);
 
                 await service.KnjiziPrimopredajuAsync(nalog.PrimopredajaNalogId);
-                MessageBox.Show($"Nalog primopredaje #{nalog.BrojNaloga} je uspešno proknjižen!", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Nalog #{nalog.BrojNaloga} je uspešno proknjižen!", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 LoadPrimopredaje();
                 LoadMagacineIRobneKartice();
@@ -1236,16 +1495,20 @@ public partial class TrgovinaView : UserControl
         }
     }
 
-    private async void BtnMasovnoKnjizenjePrimopredaja_Click(object sender, RoutedEventArgs e)
+    private void BtnMasovnoKnjizenjeZaduzenja_Click(object sender, RoutedEventArgs e) => MasovnoKnjizenjePrimopredaja("Zaduženje");
+    private void BtnMasovnoKnjizenjeRazduzenja_Click(object sender, RoutedEventArgs e) => MasovnoKnjizenjePrimopredaja("Razduženje");
+    private void BtnMasovnoKnjizenjePrimopredaja_Click(object sender, RoutedEventArgs e) => MasovnoKnjizenjePrimopredaja("Primopredaja");
+
+    private async void MasovnoKnjizenjePrimopredaja(string vrsta)
     {
-        var neknjizeni = _svePrimopredaje.Where(p => !p.IsKnjizen).ToList();
+        var neknjizeni = _svePrimopredaje.Where(p => !p.IsKnjizen && string.Equals(p.VrstaDokumenta, vrsta, StringComparison.OrdinalIgnoreCase)).ToList();
         if (neknjizeni.Count == 0)
         {
-            MessageBox.Show("Nema neknjiženih naloga primopredaje za knjiženje.", "Informacija", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Nema neknjiženih naloga za knjiženje.", "Informacija", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        var potv = MessageBox.Show($"Pronađeno je {neknjizeni.Count} neknjiženih naloga primopredaje.\nDa li želite masovno proknjižiti sve naloge? (knjiz_m_naloga 0 - MAT4)",
+        var potv = MessageBox.Show($"Pronađeno je {neknjizeni.Count} neknjiženih naloga.\nDa li želite masovno proknjižiti sve naloge? (knjiz_m_naloga 0 - MAT4)",
             "Masovno knjiženje", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
         if (potv == MessageBoxResult.Yes)
@@ -1263,7 +1526,7 @@ public partial class TrgovinaView : UserControl
                     uspesno++;
                 }
 
-                MessageBox.Show($"Uspešno je proknjiženo {uspesno} naloga primopredaje u robnom knjigovodstvu!", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Uspešno je proknjiženo {uspesno} naloga u robnom knjigovodstvu!", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadPrimopredaje();
                 LoadMagacineIRobneKartice();
             }
@@ -1274,11 +1537,15 @@ public partial class TrgovinaView : UserControl
         }
     }
 
-    private async void BtnStampajPrimopredaju_Click(object sender, RoutedEventArgs e)
+    private void BtnStampajZaduzenje_Click(object sender, RoutedEventArgs e) => StampajPrimopredaju(DgZaduzenja);
+    private void BtnStampajRazduzenje_Click(object sender, RoutedEventArgs e) => StampajPrimopredaju(DgRazduzenja);
+    private void BtnStampajPrimopredaju_Click(object sender, RoutedEventArgs e) => StampajPrimopredaju(DgPrimopredaje);
+
+    private async void StampajPrimopredaju(DataGrid dgNalozi)
     {
-        if (DgPrimopredaje.SelectedItem is not PrimopredajaNalog nalog)
+        if (dgNalozi.SelectedItem is not PrimopredajaNalog nalog)
         {
-            MessageBox.Show("Izaberite nalog primopredaje za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Izaberite nalog za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -1320,7 +1587,7 @@ public partial class TrgovinaView : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Greška pri štampi naloga primopredaje: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Greška pri štampi naloga: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -1681,6 +1948,12 @@ public partial class TrgovinaView : UserControl
 
     private void BtnExportExcelTarife_Click(object sender, RoutedEventArgs e)
         => Services.ExcelExportService.ExportDataGridToExcel(DgPoreskeTarife, "Poreske tarife", "Poreske_Tarife");
+
+    private void BtnExportExcelZaduzenja_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgZaduzenja, "Zaduženja", "Zaduzenja");
+
+    private void BtnExportExcelRazduzenja_Click(object sender, RoutedEventArgs e)
+        => Services.ExcelExportService.ExportDataGridToExcel(DgRazduzenja, "Razduženja", "Razduzenja");
 
     private void BtnExportExcelPrimopredajeTrg_Click(object sender, RoutedEventArgs e)
         => Services.ExcelExportService.ExportDataGridToExcel(DgPrimopredaje, "Primopredaje robe", "Primopredaje_Robe");

@@ -4,6 +4,25 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.32] - 2026-07-31
+
+### 🚀 Nove funkcionalnosti
+- **Modul Trgovina (Robno Knjigovodstvo)**:
+  - Omogućeno **masovno knjiženje** za dokumente po specifičnim tipovima: Zaduženja, Razduženja i Primopredaja.
+  - Implementirana **štampa** po navedenim tipovima naloga.
+  - Dodat **Export u Excel** za tabele Zaduženja, Razduženja i Primopredaje.
+- **Kalkulacije**:
+  - Implementirana **izmena (editovanje)** postojećih (neproknjiženih) kalkulacija preko prozora `KalkulacijaEditWindow` uz očuvanje svih referenci na stavke u bazi.
+
+### 🎨 UI / UX i Odzivnost
+- Primenjen širi paket vizuelnih poboljšanja: povećani fontovi i poboljšana poravnanja u `DataGrid` tabelama radi bolje čitljivosti preko glavnih modula (Bilansi, Firme, Izveštaji, Kartice, Konta, Magacin, Nalozi, Partneri, PDV Evidencija, Trgovina).
+- Podešavanja na početnom `Dashboard` prikazu.
+
+### 🐛 Ispravke i Validacije
+- **Kartice**: Mapirano polje `NalogId` u `KarticaRed` radi ispravnog prikaza porekla promene kod robnih/materijalnih kartica.
+- Manji refaktoring koda u `PrimopredajaEditWindow` i proveri proknjiženosti kod izmene naloga.
+
+---
 ## [1.0.29] - 2026-07-30
 
 ### 🚀 Nove Funkcionalnosti & Obračun Zatezne Kamate

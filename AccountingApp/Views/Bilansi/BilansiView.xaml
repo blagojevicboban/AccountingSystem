@@ -71,7 +71,7 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
-                        <Button DockPanel.Dock="Right" Content="📊 Excel" Click="BtnExportExcelBilansStanja_Click" Padding="10,5" Margin="0,0,8,0" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                        <Button DockPanel.Dock="Right" Content="X" Click="BtnExportExcelBilansStanja_Click" Padding="0" Width="36" Margin="0,0,8,0" Background="#059669" Foreground="White" FontWeight="Bold" FontSize="20" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right" ToolTip="Izvoz u Excel">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="4"/>
@@ -138,7 +138,7 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
-                        <Button DockPanel.Dock="Right" Content="📊 Excel" Click="BtnExportExcelBilansUspeha_Click" Padding="10,5" Margin="0,0,8,0" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                        <Button DockPanel.Dock="Right" Content="X" Click="BtnExportExcelBilansUspeha_Click" Padding="0" Width="36" Margin="0,0,8,0" Background="#059669" Foreground="White" FontWeight="Bold" FontSize="20" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right" ToolTip="Izvoz u Excel">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="4"/>

@@ -5,6 +5,7 @@ namespace AccountingData.Services;
 
 public class KarticaRed
 {
+    public int NalogId { get; set; }
     public DateTime Datum { get; set; }
     public int BrojNaloga { get; set; }
     public string? Opis { get; set; }
@@ -120,7 +121,8 @@ public class KarticaService
 
             rezultat.Add(new KarticaRed
             {
-                Datum = s.Nalog!.DatumNaloga,
+                NalogId = s.Nalog!.NalogId,
+                Datum = s.Nalog.DatumNaloga,
                 BrojNaloga = s.Nalog.BrojNaloga,
                 Opis = prikazOpis,
                 OpisPromene = opisPromene,

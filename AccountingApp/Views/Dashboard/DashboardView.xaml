@@ -41,7 +41,7 @@
             <!-- 💳 RED 1: FINANSIJSKA LIKVIDNOST I OTVORENE STAVKE (IOS KPIs) -->
             <StackPanel Grid.Row="1" Margin="0,0,0,20">
                 <TextBlock Text="FINANSIJSKA LIKVIDNOST I OTVORENE STAVKE (IOS)" FontSize="12" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,10"/>
-                <UniformGrid Columns="4">
+                <UniformGrid Columns="3">
                     <!-- Potraživanja od Kupaca -->
                     <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,8,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <StackPanel>
@@ -61,20 +61,11 @@
                     </Border>
 
                     <!-- Neto Saldo Likvidnosti -->
-                    <Border Background="White" CornerRadius="12" Padding="18,16" Margin="8,0,8,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Border Background="White" CornerRadius="12" Padding="18,16" Margin="8,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <StackPanel>
                             <TextBlock Text="NETO LIKVIDNOST (KUPCI - DOBAVLJAČI)" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
                             <TextBlock x:Name="TxtNetoSaldoLikvidnost" Text="0 RSD" FontSize="22" FontWeight="Bold" Foreground="#059669" Margin="0,6,0,0"/>
                             <TextBlock x:Name="TxtNetoOpis" Text="Pozitivan neto priliv" FontSize="11" Foreground="#10B981" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Vrednost Zaliha na Lageru -->
-                    <Border Background="White" CornerRadius="12" Padding="18,16" Margin="8,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                        <StackPanel>
-                            <TextBlock Text="VREDNOST ZALIHA I LAGER" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
-                            <TextBlock x:Name="TxtVrednostZaliha" Text="0 RSD" FontSize="22" FontWeight="Bold" Foreground="#D97706" Margin="0,6,0,0"/>
-                            <TextBlock x:Name="TxtZaliheDetalji" Text="0 artikala na zalihi" FontSize="11" Foreground="#F59E0B" Margin="0,4,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
                 </UniformGrid>

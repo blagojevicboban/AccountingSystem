@@ -12,24 +12,24 @@ namespace AccountingApp.Views.Trgovina;
 public partial class KalkulacijaEditWindow : Window
 {
     private readonly ObservableCollection<KalkulacijaStavka> _stavke = new();
+    private readonly Kalkulacija? _existingKalkulacija;
     private bool _updating;
 
-    public KalkulacijaEditWindow()
+    public KalkulacijaEditWindow(Kalkulacija? existingKalkulacija = null)
     {
         InitializeComponent();
+        _existingKalkulacija = existingKalkulacija;
         DgStavke.ItemsSource = _stavke;
-        DpDatum.SelectedDate = DateTime.Now;
         // Podrazumevane vrednosti se postavljaju ovde (posle InitializeComponent), ne
         // kao XAML Text="..." literali — Text="0"/"20" bi okinulo TextChanged tokom
         // same InitializeComponent() (kada TextBox biva konstruisan), pre nego što su
         // kasnije deklarisani elementi (TxtSvegaTroskovi i dr. u "Obračun" sekciji)
         // uopšte kreirani, izazivajući NullReferenceException u Prikazi().
         TxtPoreskaStopaProcenat.Text = "20";
-        LoadMagaciniIPredlogBroja();
-        Prikazi();
+        LoadData();
     }
 
-    private async void LoadMagaciniIPredlogBroja()
+    private async void LoadData()
     {
         try
         {
@@ -39,15 +39,63 @@ public partial class KalkulacijaEditWindow : Window
 
             var magacini = await kartice.GetMagaciniAsync();
             CmbMagacin.ItemsSource = magacini;
-            if (magacini.Count > 0) CmbMagacin.SelectedIndex = 0;
 
-            int max = await db.Kalkulacije.Select(k => k.BrojKalkulacije).DefaultIfEmpty(0).MaxAsync();
-            TxtBrojKalkulacije.Text = (max + 1).ToString();
+            if (_existingKalkulacija != null)
+            {
+                Title = $"Izmena kalkulacije #{_existingKalkulacija.BrojKalkulacije}";
+                TxtBrojKalkulacije.Text = _existingKalkulacija.BrojKalkulacije.ToString();
+                DpDatum.SelectedDate = _existingKalkulacija.Datum;
+                TxtSifraDobavljaca.Text = _existingKalkulacija.SifraDobavljaca;
+                TxtBrojRacuna.Text = _existingKalkulacija.BrojRacuna;
+                TxtBrojOtpremnice.Text = _existingKalkulacija.BrojOtpremnice;
+                CmbMagacin.SelectedItem = magacini.FirstOrDefault(m => m.SifraMagacina == _existingKalkulacija.SifraMagacina);
+                TxtTransportniTroskovi.Text = _existingKalkulacija.TransportniTroskovi.ToString("N2");
+                TxtTroskoviUskladistenja.Text = _existingKalkulacija.TroskoviUskladistenja.ToString("N2");
+                TxtUtovarIstovar.Text = _existingKalkulacija.UtovarIstovar.ToString("N2");
+                TxtTransportnoOsiguranje.Text = _existingKalkulacija.TransportnoOsiguranje.ToString("N2");
+                TxtOstaliTroskovi.Text = _existingKalkulacija.OstaliTroskovi.ToString("N2");
+                TxtMarzaProcenat.Text = _existingKalkulacija.MarzaProcenat.ToString("N2");
+                TxtPoreskaStopaProcenat.Text = _existingKalkulacija.PoreskaStopaProcenat.ToString("N2");
+
+                if (_existingKalkulacija.Stavke.Count == 0)
+                {
+                    TxtNabavnaVrednost.Text = _existingKalkulacija.NabavnaVrednost.ToString("N2");
+                }
+
+                // Nove KalkulacijaStavka instance (bez originalnog Id-ja) — SaveKalkulacijuAsync
+                // pri izmeni briše sve postojeće stavke i upisuje ceo tekući spisak iznova, pa
+                // čuvanje starog Id-ja ovde nema svrhe i samo bi otvorilo rizik od konflikta.
+                foreach (var s in _existingKalkulacija.Stavke.OrderBy(s => s.RedniBroj))
+                {
+                    _stavke.Add(new KalkulacijaStavka
+                    {
+                        RedniBroj = s.RedniBroj,
+                        SifraArtikla = s.SifraArtikla,
+                        Kolicina = s.Kolicina,
+                        NabavnaCena = s.NabavnaCena,
+                        ProdajnaCena = s.ProdajnaCena
+                    });
+                }
+            }
+            else
+            {
+                DpDatum.SelectedDate = DateTime.Now;
+                if (magacini.Count > 0) CmbMagacin.SelectedIndex = 0;
+
+                int max = await db.Kalkulacije.Select(k => k.BrojKalkulacije).DefaultIfEmpty(0).MaxAsync();
+                TxtBrojKalkulacije.Text = (max + 1).ToString();
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // Predlog broja/magacina je pogodnost — nije blokirajuće ako ne uspe.
+            if (_existingKalkulacija != null)
+            {
+                MessageBox.Show($"Greška pri učitavanju kalkulacije: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            // Za novu kalkulaciju, predlog broja/magacina je pogodnost — nije blokirajuće ako ne uspe.
         }
+
+        Prikazi();
     }
 
     private static decimal ParseUneto(string text)
@@ -61,6 +109,7 @@ public partial class KalkulacijaEditWindow : Window
     {
         return new Kalkulacija
         {
+            KalkulacijaId = _existingKalkulacija?.KalkulacijaId ?? 0,
             BrojKalkulacije = int.TryParse(TxtBrojKalkulacije.Text.Trim(), out int brojKalk) ? brojKalk : 0,
             Datum = DpDatum.SelectedDate ?? DateTime.Now,
             SifraDobavljaca = TxtSifraDobavljaca.Text.Trim(),

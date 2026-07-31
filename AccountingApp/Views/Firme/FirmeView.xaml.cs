@@ -40,8 +40,8 @@ public partial class FirmeView : UserControl
         InitializeComponent();
         Loaded += (s, e) =>
         {
-            UcitajFirme();
             PostaviRezimPregleda();
+            UcitajFirme();
         };
     }
 

@@ -1,11 +1,32 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountingApp.Views.Magacin;
+
+public class MaterijalIzbor : INotifyPropertyChanged
+{
+    public Materijal Materijal { get; }
+    public MaterijalIzbor(Materijal materijal) => Materijal = materijal;
+
+    public string SifraArtikla => Materijal.SifraArtikla;
+    public string Naziv => Materijal.Naziv;
+
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set { _isSelected = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected))); }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
 
 public partial class MagacinView : UserControl
 {
@@ -233,8 +254,78 @@ public partial class MagacinView : UserControl
         if (!string.IsNullOrEmpty(search))
             izvor = izvor.Where(a => a.SifraArtikla.ToLower().Contains(search) || a.Naziv.ToLower().Contains(search));
 
-        LstArtikli.ItemsSource = izvor.ToList();
+        var izbori = izvor.Select(a => new MaterijalIzbor(a)).ToList();
+        foreach (var izbor in izbori) izbor.PropertyChanged += MaterijalIzbor_PropertyChanged;
+        LstArtikli.ItemsSource = izbori;
+        UpdateBtnStampajKarticuState();
     }
+
+    private void MaterijalIzbor_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MaterijalIzbor.IsSelected))
+        {
+            UpdateBtnStampajKarticuState();
+        }
+    }
+
+    private bool _updatingChkSviArtikli;
+
+    private void UpdateBtnStampajKarticuState()
+    {
+        var izbori = LstArtikli.ItemsSource as List<MaterijalIzbor>;
+        bool imaCekiranih = izbori?.Any(i => i.IsSelected) ?? false;
+        bool imaPrikazanuKarticu = LstArtikli.SelectedItem is MaterijalIzbor && _trenutnaKarticaMaterijala.Count > 0;
+        BtnStampajKarticu.IsEnabled = imaCekiranih || imaPrikazanuKarticu;
+
+        if (ChkSviArtikli == null) return;
+
+        _updatingChkSviArtikli = true;
+        if (izbori == null || izbori.Count == 0)
+            ChkSviArtikli.IsChecked = false;
+        else if (izbori.All(i => i.IsSelected))
+            ChkSviArtikli.IsChecked = true;
+        else if (izbori.All(i => !i.IsSelected))
+            ChkSviArtikli.IsChecked = false;
+        else
+            ChkSviArtikli.IsChecked = null;
+        _updatingChkSviArtikli = false;
+    }
+
+    private void ChkSviArtikli_Checked(object sender, RoutedEventArgs e) => SetSviArtikliIzabrani(true);
+
+    private void ChkSviArtikli_Unchecked(object sender, RoutedEventArgs e) => SetSviArtikliIzabrani(false);
+
+    private void SetSviArtikliIzabrani(bool izabrano)
+    {
+        if (_updatingChkSviArtikli) return;
+        if (LstArtikli.ItemsSource is not List<MaterijalIzbor> izbori) return;
+
+        foreach (var izbor in izbori) izbor.IsSelected = izabrano;
+        UpdateBtnStampajKarticuState();
+    }
+
+    private void LstArtikli_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var red = FindAncestor<DataGridRow>(e.OriginalSource as DependencyObject);
+        if (red?.Item is MaterijalIzbor izbor)
+        {
+            LstArtikli.SelectedItem = izbor;
+        }
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
+    {
+        while (current != null)
+        {
+            if (current is T match) return match;
+            current = VisualTreeHelper.GetParent(current);
+        }
+        return null;
+    }
+
+    private void CtxStampajKarticu_Click(object sender, RoutedEventArgs e) => BtnStampajKarticu_Click(sender, e);
+
+    private void CtxExportExcelKartica_Click(object sender, RoutedEventArgs e) => BtnExportExcelKartica_Click(sender, e);
 
     private void TxtPretragaArtikla_TextChanged(object sender, TextChangedEventArgs e) => FiltrirajArtikle();
     private void ChkSamoSaKarticom_Changed(object sender, RoutedEventArgs e) => FiltrirajArtikle();
@@ -257,27 +348,23 @@ public partial class MagacinView : UserControl
             TxtStanjeArtikla.Text = "";
             DgKarticaMaterijala.ItemsSource = null;
             _trenutnaKarticaMaterijala.Clear();
+            PrikaziSumeMaterijala();
+            UpdateBtnStampajKarticuState();
             return;
         }
 
-        if (LstArtikli.SelectedItems.Count > 1)
-        {
-            TxtNaslovArtikla.Text = $"{LstArtikli.SelectedItems.Count} materijala izabrano";
-            TxtStanjeArtikla.Text = "Koristite 'Štampaj izabrane kartice (PDF)' za štampu kartica svih izabranih materijala.";
-            DgKarticaMaterijala.ItemsSource = null;
-            _trenutnaKarticaMaterijala.Clear();
-            return;
-        }
-
-        if (LstArtikli.SelectedItem is not Materijal artikal)
+        if (LstArtikli.SelectedItem is not MaterijalIzbor izbor)
         {
             TxtNaslovArtikla.Text = "Izaberite magacin i materijal sa leve strane";
             TxtStanjeArtikla.Text = "";
             DgKarticaMaterijala.ItemsSource = null;
             _trenutnaKarticaMaterijala.Clear();
+            PrikaziSumeMaterijala();
+            UpdateBtnStampajKarticuState();
             return;
         }
 
+        var artikal = izbor.Materijal;
         try
         {
             var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
@@ -292,13 +379,15 @@ public partial class MagacinView : UserControl
                 .ToListAsync();
 
             DgKarticaMaterijala.ItemsSource = _trenutnaKarticaMaterijala;
+            PrikaziSumeMaterijala();
 
             decimal zadnjeStanje = _trenutnaKarticaMaterijala.LastOrDefault()?.Stanje ?? 0m;
             decimal zadnjiSaldo = _trenutnaKarticaMaterijala.LastOrDefault()?.Saldo ?? 0m;
             decimal prosecnaCena = zadnjeStanje != 0 ? zadnjiSaldo / zadnjeStanje : 0;
 
             TxtNaslovArtikla.Text = $"{artikal.Naziv} ({artikal.SifraArtikla}) — {magacin.NazivMagacina}";
-            TxtStanjeArtikla.Text = $"Trenutno stanje: {zadnjeStanje:N2} {artikal.JedinicaMere} | Prosečna cena: {prosecnaCena:N2} RSD | Vrednost zaliha: {zadnjiSaldo:N2} RSD | Stavki prometa: {_trenutnaKarticaMaterijala.Count}";
+            TxtStanjeArtikla.Text = $"Trenutno stanje: {zadnjeStanje:N2} {artikal.JedinicaMere} | Prosečna cena: {prosecnaCena:N2} RSD | Stavki prometa: {_trenutnaKarticaMaterijala.Count}";
+            UpdateBtnStampajKarticuState();
         }
         catch (Exception ex)
         {
@@ -306,13 +395,29 @@ public partial class MagacinView : UserControl
         }
     }
 
+    private void PrikaziSumeMaterijala()
+    {
+        TxtSumaUlazMaterijal.Text = _trenutnaKarticaMaterijala.Sum(k => k.Ulaz).ToString("N2");
+        TxtSumaIzlazMaterijal.Text = _trenutnaKarticaMaterijala.Sum(k => k.Izlaz).ToString("N2");
+        TxtSumaDugujeMaterijal.Text = _trenutnaKarticaMaterijala.Sum(k => k.Duguje).ToString("N2");
+        TxtSumaPotrazujeMaterijal.Text = _trenutnaKarticaMaterijala.Sum(k => k.Potrazuje).ToString("N2");
+        TxtSumaSaldoMaterijal.Text = (_trenutnaKarticaMaterijala.Count > 0 ? _trenutnaKarticaMaterijala[^1].Saldo : 0m).ToString("N2");
+    }
+
     private async void BtnStampajKarticu_Click(object sender, RoutedEventArgs e)
     {
-        var izabraniMaterijali = LstArtikli.SelectedItems.Cast<Materijal>().ToList();
-        if (izabraniMaterijali.Count == 0 || CmbMagacin.SelectedItem is not AccountingData.Models.Magacin magacin)
+        if (CmbMagacin.SelectedItem is not AccountingData.Models.Magacin magacin)
         {
-            MessageBox.Show("Izaberite magacin i bar jedan materijal sa liste za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Izaberite magacin za štampu kartice.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
+        }
+
+        var izbori = LstArtikli.ItemsSource as List<MaterijalIzbor> ?? new();
+        var izabraniMaterijali = izbori.Where(i => i.IsSelected).Select(i => i.Materijal).ToList();
+
+        if (izabraniMaterijali.Count == 0 && LstArtikli.SelectedItem is MaterijalIzbor trenutni)
+        {
+            izabraniMaterijali.Add(trenutni.Materijal);
         }
 
         try
@@ -323,7 +428,23 @@ public partial class MagacinView : UserControl
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
 
             byte[] pdfBytes;
-            if (izabraniMaterijali.Count == 1 && !JeSviMagacini(magacin))
+            string sifraZaNaziv;
+
+            if (izabraniMaterijali.Count == 0)
+            {
+                var potvrda = MessageBox.Show("Nijedan materijal nije čekiran. Da li želite da štampate kartice SVIH materijala?", "Štampa svih kartica", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (potvrda != MessageBoxResult.Yes) return;
+
+                var sveSekcije = await service.PrikupiKarticeAsync(JeSviMagacini(magacin) ? null : magacin.SifraMagacina, null);
+                if (sveSekcije.Count == 0)
+                {
+                    MessageBox.Show($"Nema prometa ni na jednoj materijalnoj kartici{(JeSviMagacini(magacin) ? "" : $" u magacinu '{magacin.NazivMagacina}'")}.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                pdfBytes = Services.PdfReportService.GenerisiSveMaterijalneKarticePdf(firma, sveSekcije);
+                sifraZaNaziv = "SVI_MATERIJALI";
+            }
+            else if (izabraniMaterijali.Count == 1 && !JeSviMagacini(magacin))
             {
                 if (_trenutnaKarticaMaterijala.Count == 0)
                 {
@@ -331,6 +452,7 @@ public partial class MagacinView : UserControl
                     return;
                 }
                 pdfBytes = Services.PdfReportService.GenerisiMaterijalnuKarticuPdf(firma, magacin, izabraniMaterijali[0], _trenutnaKarticaMaterijala);
+                sifraZaNaziv = izabraniMaterijali[0].SifraArtikla;
             }
             else
             {
@@ -341,9 +463,9 @@ public partial class MagacinView : UserControl
                     return;
                 }
                 pdfBytes = Services.PdfReportService.GenerisiSveMaterijalneKarticePdf(firma, sekcije);
+                sifraZaNaziv = $"{izabraniMaterijali.Count}_materijala";
             }
 
-            string sifraZaNaziv = izabraniMaterijali.Count == 1 ? izabraniMaterijali[0].SifraArtikla : $"{izabraniMaterijali.Count}_materijala";
             string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Materijalna_Kartica_{SifraZaFajl(magacin)}_{sifraZaNaziv}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
             await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
 
@@ -356,46 +478,6 @@ public partial class MagacinView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri štampi materijalne kartice: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private async void BtnStampajSveKartice_Click(object sender, RoutedEventArgs e)
-    {
-        if (CmbMagacin.SelectedItem is not AccountingData.Models.Magacin magacin)
-        {
-            MessageBox.Show("Izaberite magacin za štampu svih kartica.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-
-        try
-        {
-            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
-            using var db = new AccountingDbContext(options);
-            var service = new MaterijalnaKarticaService(db);
-
-            var sekcije = await service.PrikupiKarticeAsync(JeSviMagacini(magacin) ? null : magacin.SifraMagacina, null);
-
-            if (sekcije.Count == 0)
-            {
-                MessageBox.Show($"Nema prometa ni na jednoj materijalnoj kartici{(JeSviMagacini(magacin) ? "" : $" u magacinu '{magacin.NazivMagacina}'")}.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "Preduzeće" };
-            var pdfBytes = Services.PdfReportService.GenerisiSveMaterijalneKarticePdf(firma, sekcije);
-
-            string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Materijalne_Kartice_{SifraZaFajl(magacin)}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
-            await System.IO.File.WriteAllBytesAsync(tempFile, pdfBytes);
-
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = tempFile,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Greška pri štampi svih materijalnih kartica: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

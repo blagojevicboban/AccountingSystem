@@ -14,14 +14,16 @@ namespace AccountingApp.Views.Trgovina;
 public partial class PrimopredajaEditWindow : Window
 {
     private readonly PrimopredajaNalog? _existingNalog;
+    private readonly string _vrstaZaNovu;
     private List<AccountingData.Models.Magacin> _magacini = new();
     private List<Artikal> _artikli = new();
     public ObservableCollection<PrimopredajaStavkaModel> StavkeModels { get; set; } = new();
 
-    public PrimopredajaEditWindow(PrimopredajaNalog? existingNalog = null)
+    public PrimopredajaEditWindow(PrimopredajaNalog? existingNalog = null, string vrstaZaNovu = "Primopredaja")
     {
         InitializeComponent();
         _existingNalog = existingNalog;
+        _vrstaZaNovu = vrstaZaNovu;
         LoadData();
     }
 
@@ -43,7 +45,7 @@ public partial class PrimopredajaEditWindow : Window
 
             if (_existingNalog != null)
             {
-                TxtNaslov.Text = $"✏️ Izmena naloga primopredaje #{_existingNalog.BrojNaloga}";
+                TxtNaslov.Text = $"✏️ Izmena — {_existingNalog.VrstaDokumenta} #{_existingNalog.BrojNaloga}";
                 TxtBrojNaloga.Text = _existingNalog.BrojNaloga.ToString();
                 TxtBrojNaloga.IsReadOnly = true;
                 DpDatum.SelectedDate = _existingNalog.Datum;
@@ -66,11 +68,14 @@ public partial class PrimopredajaEditWindow : Window
             }
             else
             {
-                TxtNaslov.Text = "➕ Novi nalog za primopredaju";
+                TxtNaslov.Text = $"➕ Novi nalog — {_vrstaZaNovu}";
                 DpDatum.SelectedDate = DateTime.Now;
 
-                // Generiši sledeći broj naloga
-                int maxBr = await db.PrimopredajaNalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync() + 1;
+                // Generiši sledeći broj naloga — nezavisan brojač po vrsti dokumenta, analogno
+                // odvojenim legacy DBF fajlovima (ZADUZ.DBF / RAZDUZ.DBF / MAT_NAL.DBF).
+                int maxBr = (await db.PrimopredajaNalozi
+                    .Where(n => n.VrstaDokumenta == _vrstaZaNovu)
+                    .MaxAsync(n => (int?)n.BrojNaloga) ?? 0) + 1;
                 TxtBrojNaloga.Text = maxBr.ToString("D5");
 
                 if (_magacini.Count > 0) CmbMagacinDaje.SelectedIndex = 0;
@@ -137,7 +142,7 @@ public partial class PrimopredajaEditWindow : Window
             using var db = new AccountingDbContext(options);
             var service = new PrimopredajaService(db);
 
-            var nalog = _existingNalog ?? new PrimopredajaNalog();
+            var nalog = _existingNalog ?? new PrimopredajaNalog { VrstaDokumenta = _vrstaZaNovu };
             nalog.BrojNaloga = brNaloga;
             nalog.Datum = DpDatum.SelectedDate ?? DateTime.Now;
             nalog.SifraMagacinaDaje = magDaje.SifraMagacina;

@@ -41,7 +41,7 @@
                         <TextBlock x:Name="TxtSaldoPartnera" Text="0,00" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#7C3AED" Margin="0,0,16,0"/>
                         <Button x:Name="BtnStampajIOS" Content="📥 Izvezi IOS (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,2,10,2" Click="BtnStampajIOS_Click"/>
                         <Button x:Name="BtnObracunKamate" Content="💰 Obračun kamate" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,10,2" Click="BtnObracunKamate_Click"/>
-                        <Button x:Name="BtnExportExcelPartneri" Content="📊 Excel" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,2,0,2" Click="BtnExportExcelPartneri_Click"/>
+                        <Button x:Name="BtnExportExcelPartneri" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelPartneri_Click"/>
                     </WrapPanel>
                     <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
                         <TextBlock x:Name="TxtNaslovPartnera" Text="Izaberite partnera sa leve strane" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>

@@ -18,7 +18,7 @@
                     <Button x:Name="BtnStampajPrikazanuIos" Content="📄 Štampaj prikazanu (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Margin="0,0,8,0" Click="BtnStampajPrikazanuIos_Click" IsEnabled="False"/>
                     <Button x:Name="BtnStampajIzabraneIos" Content="🖨️ Štampaj izabrane (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,0,8,0" Click="BtnStampajIzabraneIos_Click" IsEnabled="False"/>
                     <Button x:Name="BtnExportPdfIos" Content="📥 Izvezi sve (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,0,8,0" Click="BtnExportPdfIos_Click"/>
-                    <Button x:Name="BtnExportExcelIos" Content="📊 Excel" Style="{StaticResource ActionButtonStyle}" Background="#059669" Click="BtnExportExcelIos_Click"/>
+                    <Button x:Name="BtnExportExcelIos" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Click="BtnExportExcelIos_Click"/>
                 </StackPanel>
                 <StackPanel>
                     <TextBlock x:Name="TxtNaslov" Text="IZVOD OTVORENIH STAVKI (IOS)" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>

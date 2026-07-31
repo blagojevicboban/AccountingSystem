@@ -14,7 +14,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock x:Name="TxtNaslov" Text="🔄 Nalog za primopredaju robe (MAT4)" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Grid.Row="0" Margin="0,0,0,16"/>
+        <TextBlock x:Name="TxtNaslov" Text="🔄 Nalog za primopredaju robe" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Grid.Row="0" Margin="0,0,0,16"/>
 
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Grid>

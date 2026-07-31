@@ -14,7 +14,7 @@
 
         <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
-                <Button x:Name="BtnExportExcelZakljucniList" DockPanel.Dock="Right" Content="📊 Excel" Style="{StaticResource ActionButtonStyle}" Background="#059669" VerticalAlignment="Center" Click="BtnExportExcelZakljucniList_Click"/>
+                <Button x:Name="BtnExportExcelZakljucniList" DockPanel.Dock="Right" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" VerticalAlignment="Center" Click="BtnExportExcelZakljucniList_Click"/>
                 <StackPanel>
                     <TextBlock x:Name="TxtNaslov" Text="ZAKLJUČNI LIST" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
                     <TextBlock x:Name="TxtPodnaslov" Text="" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>

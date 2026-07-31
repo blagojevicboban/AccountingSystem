@@ -109,24 +109,6 @@ public partial class DashboardView : UserControl
                 TxtNetoOpis.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
             }
 
-            // ===== MATERIJALNO KNJIGOVODSTVO & ZALIHE =====
-            var robniBrutoBilans = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db);
-            decimal vrednostZaliha = robniBrutoBilans.Sum(r => r.SaldoVrednosni);
-            int artikalaNaZalihama = robniBrutoBilans.Where(r => r.SaldoKolicinski > 0).Select(r => r.SifraArtikla).Distinct().Count();
-            int negativnaStanja = robniBrutoBilans.Where(r => r.SaldoKolicinski < 0).Select(r => r.SifraArtikla).Distinct().Count();
-
-            TxtVrednostZaliha.Text = $"{vrednostZaliha:N2} RSD";
-            if (negativnaStanja > 0)
-            {
-                TxtZaliheDetalji.Text = $"{artikalaNaZalihama} artikala • ⚠️ {negativnaStanja} sa negativnim zalihama!";
-                TxtZaliheDetalji.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC2626"));
-            }
-            else
-            {
-                TxtZaliheDetalji.Text = $"{artikalaNaZalihama} artikala na zalihama u magacinima";
-                TxtZaliheDetalji.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
-            }
-
             // ===== RECENT NALOZI =====
             var recentNalozi = await db.Nalozi
                 .OrderByDescending(n => n.NalogId)
