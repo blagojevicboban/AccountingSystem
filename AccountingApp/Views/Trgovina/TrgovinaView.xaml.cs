@@ -163,7 +163,38 @@ public partial class TrgovinaView : UserControl
 
         if (selektovana.IsKnjizen)
         {
-            MessageBox.Show("Proknjižena kalkulacija se ne može menjati.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            var odgovor = MessageBox.Show(
+                $"Kalkulacija #{selektovana.BrojKalkulacije} je proknjižena i ne može se menjati u ovom statusu.\n\nDa li želite da je rasknjižite radi izmene?",
+                "Proknjižena kalkulacija", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (odgovor != MessageBoxResult.Yes) return;
+
+            if (!AppSession.IsAdministrator)
+            {
+                MessageBox.Show("Rasknjižavanje kalkulacije dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var opcijeR = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var dbR = new AccountingDbContext(opcijeR);
+                var servisR = new KalkulacijaService(dbR);
+                await servisR.RasknjiziKalkulacijuAsync(selektovana.KalkulacijaId);
+
+                LoadKalkulacije();
+
+                var osvezena = await dbR.Kalkulacije.Include(k => k.Stavke).FirstOrDefaultAsync(k => k.KalkulacijaId == selektovana.KalkulacijaId);
+                if (osvezena != null)
+                {
+                    var dijalogR = new KalkulacijaEditWindow(osvezena) { Owner = Window.GetWindow(this) };
+                    if (dijalogR.ShowDialog() == true) LoadKalkulacije();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri rasknjižavanju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             return;
         }
 
@@ -366,7 +397,7 @@ public partial class TrgovinaView : UserControl
     private void BtnIzmeniRacun_Click(object sender, RoutedEventArgs e) => OtvoriIzmenuRacuna();
     private void DgRacuni_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => OtvoriIzmenuRacuna();
 
-    private void OtvoriIzmenuRacuna()
+    private async void OtvoriIzmenuRacuna()
     {
         if (DgRacuni.SelectedItem is not RacunOtpremnica selektovani)
         {
@@ -376,7 +407,38 @@ public partial class TrgovinaView : UserControl
 
         if (selektovani.IsKnjizen)
         {
-            MessageBox.Show("Proknjiženi račun se ne može menjati.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            var odgovor = MessageBox.Show(
+                $"Račun-otpremnica #{selektovani.BrojRacuna} je proknjižena i ne može se menjati u ovom statusu.\n\nDa li želite da je rasknjižite radi izmene?",
+                "Proknjižen račun", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (odgovor != MessageBoxResult.Yes) return;
+
+            if (!AppSession.IsAdministrator)
+            {
+                MessageBox.Show("Rasknjižavanje računa dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var db = new AccountingDbContext(options);
+                var service = new RacunOtpremnicaService(db);
+                await service.RasknjiziRacunAsync(selektovani.RacunOtpremnicaId);
+
+                LoadRacune();
+
+                var osvezeni = await service.GetRacunByIdAsync(selektovani.RacunOtpremnicaId);
+                if (osvezeni != null)
+                {
+                    var dijalog = new RacunOtpremnicaEditWindow(osvezeni) { Owner = Window.GetWindow(this) };
+                    if (dijalog.ShowDialog() == true) LoadRacune();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri rasknjižavanju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             return;
         }
 
@@ -1431,7 +1493,7 @@ public partial class TrgovinaView : UserControl
     private void BtnIzmeniPrimopredaju_Click(object sender, RoutedEventArgs e) => OtvoriIzmenuPrimopredaje(DgPrimopredaje);
     private void DgPrimopredaje_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => OtvoriIzmenuPrimopredaje(DgPrimopredaje);
 
-    private void OtvoriIzmenuPrimopredaje(DataGrid dgNalozi)
+    private async void OtvoriIzmenuPrimopredaje(DataGrid dgNalozi)
     {
         if (dgNalozi.SelectedItem is not PrimopredajaNalog nalog)
         {
@@ -1441,7 +1503,43 @@ public partial class TrgovinaView : UserControl
 
         if (nalog.IsKnjizen)
         {
-            MessageBox.Show("Proknjižen nalog se ne može menjati.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            var odgovor = MessageBox.Show(
+                $"Nalog #{nalog.BrojNaloga} je proknjižen i ne može se menjati u ovom statusu.\n\nDa li želite da ga rasknjižite radi izmene?",
+                "Proknjižen nalog", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (odgovor != MessageBoxResult.Yes) return;
+
+            if (!AppSession.IsAdministrator)
+            {
+                MessageBox.Show("Rasknjižavanje naloga dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var db = new AccountingDbContext(options);
+                var service = new PrimopredajaService(db);
+                await service.RasknjiziPrimopredajuAsync(nalog.PrimopredajaNalogId);
+
+                LoadPrimopredaje();
+                LoadMagacineIRobneKartice();
+
+                var osvezeni = _svePrimopredaje.FirstOrDefault(p => p.PrimopredajaNalogId == nalog.PrimopredajaNalogId);
+                if (osvezeni != null)
+                {
+                    var dijalog = new PrimopredajaEditWindow(osvezeni) { Owner = Window.GetWindow(this) };
+                    if (dijalog.ShowDialog() == true)
+                    {
+                        LoadPrimopredaje();
+                        LoadMagacineIRobneKartice();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri rasknjižavanju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             return;
         }
 
@@ -1664,6 +1762,47 @@ public partial class TrgovinaView : UserControl
         if (DgNivelacije.SelectedItem is not NivelacijaCena niv)
         {
             MessageBox.Show("Izaberite nivelaciju cenu za izmenu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (niv.IsKnjizen)
+        {
+            var odgovor = MessageBox.Show(
+                $"Nivelacija #{niv.BrojNivelacije} je proknjižena i ne može se menjati u ovom statusu.\n\nDa li želite da je rasknjižite radi izmene?",
+                "Proknjižena nivelacija", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (odgovor != MessageBoxResult.Yes) return;
+
+            if (!AppSession.IsAdministrator)
+            {
+                MessageBox.Show("Rasknjižavanje nivelacije dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var opcijeR = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var dbR = new AccountingDbContext(opcijeR);
+                await NivelacijaService.RasknjiziNivelacijuAsync(dbR, niv.NivelacijaCenaId);
+
+                LoadNivelacije();
+                LoadMagacineIRobneKartice();
+
+                var osvezena = await NivelacijaService.GetNivelacijaByIdAsync(dbR, niv.NivelacijaCenaId);
+                if (osvezena != null)
+                {
+                    var dijalogR = new NivelacijaEditWindow(dbR, osvezena) { Owner = Window.GetWindow(this) };
+                    if (dijalogR.ShowDialog() == true)
+                    {
+                        await NivelacijaService.SaveNivelacijaAsync(dbR, dijalogR.Nivelacija);
+                        LoadNivelacije();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri rasknjižavanju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             return;
         }
 

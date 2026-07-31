@@ -133,7 +133,7 @@ public class NivelacijaService
             string kontoMagacina = niv.Magacin?.VrstaMagacina == "Maloprodaja" ? "1340" : "1320";
             string kontoRazlike = "1329";
 
-            int sledeciBrojNaloga = await db.Nalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync() + 1;
+            int sledeciBrojNaloga = (await db.Nalozi.Select(n => (int?)n.BrojNaloga).MaxAsync() ?? 0) + 1;
             var nalog = new Nalog
             {
                 BrojNaloga = sledeciBrojNaloga,
@@ -166,6 +166,51 @@ public class NivelacijaService
         }
 
         niv.IsKnjizen = true;
+        await db.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Rasknjiži nivelaciju cena — vraća cene artikala na staru vrednost i briše nalog
+    /// knjiženja razlike u Glavnoj knjizi (ako je kreiran), pa vraća nivelaciju u status
+    /// nacrta radi izmene. Baca grešku ako je cena nekog artikla u međuvremenu ponovo
+    /// menjana (ne odgovara više vrednosti koju je ova nivelacija postavila).
+    /// </summary>
+    public static async Task<bool> RasknjiziNivelacijuAsync(AccountingDbContext db, int id)
+    {
+        var niv = await db.NivelacijeCena
+            .Include(n => n.Stavke)
+                .ThenInclude(s => s.Artikal)
+            .FirstOrDefaultAsync(n => n.NivelacijaCenaId == id);
+
+        if (niv == null || !niv.IsKnjizen) return false;
+
+        foreach (var st in niv.Stavke)
+        {
+            if (st.Artikal != null && st.NovaCena > 0 && st.Artikal.ProdajnaCena != st.NovaCena)
+            {
+                throw new InvalidOperationException(
+                    $"Rasknjiženje nije moguće: cena artikla {st.SifraArtikla} je naknadno menjana " +
+                    "(nakon ove nivelacije), pa se ne može bezbedno vratiti na staru vrednost.");
+            }
+        }
+
+        foreach (var st in niv.Stavke)
+        {
+            if (st.Artikal != null && st.NovaCena > 0)
+            {
+                st.Artikal.ProdajnaCena = st.StaraCena;
+            }
+        }
+
+        if (niv.NalogId.HasValue)
+        {
+            var nalog = await db.Nalozi.FirstOrDefaultAsync(n => n.NalogId == niv.NalogId.Value);
+            if (nalog != null) db.Nalozi.Remove(nalog);
+        }
+
+        niv.IsKnjizen = false;
+        niv.NalogId = null;
         await db.SaveChangesAsync();
         return true;
     }
@@ -225,7 +270,7 @@ public class NivelacijaService
 
         if (artikliStanja.Count == 0) return null;
 
-        int sledeciBroj = await db.NivelacijeCena.Select(n => n.BrojNivelacije).DefaultIfEmpty(0).MaxAsync() + 1;
+        int sledeciBroj = (await db.NivelacijeCena.Select(n => (int?)n.BrojNivelacije).MaxAsync() ?? 0) + 1;
 
         var niv = new NivelacijaCena
         {

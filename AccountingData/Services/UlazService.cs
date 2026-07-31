@@ -100,4 +100,32 @@ public class UlazService
         nalog.IsKnjizen = true;
         await _db.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Rasknjiži ulazni nalog — uklanja redove materijalne kartice koje je ovaj nalog
+    /// upisao (obrnutim redosledom od knjiženja) i vraća nalog u status nacrta radi izmene.
+    /// Baca grešku ako je za neki artikal u međuvremenu knjiženo nešto kasnije.
+    /// </summary>
+    public async Task RasknjiziUlazAsync(int ulazNalogId)
+    {
+        var nalog = await _db.UlazNalozi.Include(n => n.Stavke).FirstOrDefaultAsync(n => n.UlazNalogId == ulazNalogId);
+        if (nalog == null)
+        {
+            throw new InvalidOperationException("Ulazni nalog nije pronađen.");
+        }
+        if (!nalog.IsKnjizen)
+        {
+            throw new InvalidOperationException($"Ulaz {nalog.BrojNaloga} nije proknjižen.");
+        }
+
+        var kartice = new MaterijalnaKarticaService(_db);
+        foreach (var s in nalog.Stavke.AsEnumerable().Reverse())
+        {
+            string opis = s.Kolicina >= 0 ? $"Ulaz {nalog.BrojNaloga}" : $"Ulaz {nalog.BrojNaloga} (storno)";
+            await kartice.UkloniPoslednjiRedAsync(nalog.SifraMagacina, s.SifraArtikla, opis);
+        }
+
+        nalog.IsKnjizen = false;
+        await _db.SaveChangesAsync();
+    }
 }

@@ -91,4 +91,39 @@ public class PrimopredajaService
         nalog.IsKnjizen = true;
         await _db.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Rasknjiži primopredaju (ili zaduženje/razduženje — isti dokument) — uklanja redove
+    /// materijalne kartice koje je ova primopredaja upisala (obrnutim redosledom od
+    /// knjiženja, magacin prima pa magacin daje po stavci) i vraća nalog u status nacrta
+    /// radi izmene. Baca grešku ako je za neki artikal/magacin u međuvremenu knjiženo
+    /// nešto kasnije.
+    /// </summary>
+    public async Task RasknjiziPrimopredajuAsync(int primopredajaNalogId)
+    {
+        var nalog = await _db.PrimopredajaNalozi
+            .Include(p => p.Stavke)
+            .FirstOrDefaultAsync(p => p.PrimopredajaNalogId == primopredajaNalogId);
+
+        if (nalog == null) throw new InvalidOperationException("Primopredaja nije pronađena.");
+        if (!nalog.IsKnjizen) throw new InvalidOperationException("Primopredaja nije proknjižena.");
+
+        var kartice = new MaterijalnaKarticaService(_db);
+
+        foreach (var s in nalog.Stavke.AsEnumerable().Reverse())
+        {
+            await kartice.UkloniPoslednjiRedAsync(
+                nalog.SifraMagacinaPrima,
+                s.SifraArtikla,
+                $"Primopredaja br. {nalog.BrojNaloga} iz magacina {nalog.SifraMagacinaDaje}");
+
+            await kartice.UkloniPoslednjiRedAsync(
+                nalog.SifraMagacinaDaje,
+                s.SifraArtikla,
+                $"Primopredaja br. {nalog.BrojNaloga} u magacin {nalog.SifraMagacinaPrima}");
+        }
+
+        nalog.IsKnjizen = false;
+        await _db.SaveChangesAsync();
+    }
 }

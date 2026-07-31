@@ -184,4 +184,39 @@ public class KalkulacijaService
         kalkulacija.IsKnjizen = true;
         await _db.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Rasknjiži kalkulaciju — uklanja redove materijalne kartice koje je ova kalkulacija
+    /// upisala (obrnutim redosledom od knjiženja) i vraća je u status nacrta radi izmene.
+    /// Baca grešku ako je za neki artikal u međuvremenu knjiženo nešto kasnije.
+    /// </summary>
+    public async Task RasknjiziKalkulacijuAsync(int kalkulacijaId)
+    {
+        var kalkulacija = await _db.Kalkulacije.Include(k => k.Stavke).FirstOrDefaultAsync(k => k.KalkulacijaId == kalkulacijaId);
+        if (kalkulacija == null)
+        {
+            throw new InvalidOperationException("Kalkulacija nije pronađena.");
+        }
+        if (!kalkulacija.IsKnjizen)
+        {
+            throw new InvalidOperationException($"Kalkulacija {kalkulacija.BrojKalkulacije} nije proknjižena.");
+        }
+
+        if (kalkulacija.Stavke.Count > 0)
+        {
+            if (string.IsNullOrWhiteSpace(kalkulacija.SifraMagacina))
+            {
+                throw new InvalidOperationException($"Kalkulacija {kalkulacija.BrojKalkulacije} nema magacin — nije moguće rasknjižiti.");
+            }
+
+            var kartice = new MaterijalnaKarticaService(_db);
+            foreach (var s in kalkulacija.Stavke.AsEnumerable().Reverse())
+            {
+                await kartice.UkloniPoslednjiRedAsync(kalkulacija.SifraMagacina, s.SifraArtikla, $"Kalkulacija {kalkulacija.BrojKalkulacije}");
+            }
+        }
+
+        kalkulacija.IsKnjizen = false;
+        await _db.SaveChangesAsync();
+    }
 }

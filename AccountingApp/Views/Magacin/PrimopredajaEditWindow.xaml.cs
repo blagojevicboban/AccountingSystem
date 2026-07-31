@@ -54,7 +54,7 @@ public partial class PrimopredajaEditWindow : Window
                 .Options;
             using var db = new AccountingDbContext(options);
 
-            int max = await db.PrimopredajaNalozi.Select(p => p.BrojNaloga).DefaultIfEmpty(0).MaxAsync();
+            int max = await db.PrimopredajaNalozi.Select(p => (int?)p.BrojNaloga).MaxAsync() ?? 0;
             TxtBrojNaloga.Text = (max + 1).ToString();
         }
         catch { }

@@ -68,7 +68,7 @@ public partial class TrebovanjeEditWindow : Window
 
             if (_postojeciId == 0)
             {
-                int max = await db.TrebovanjeNalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync();
+                int max = await db.TrebovanjeNalozi.Select(n => (int?)n.BrojNaloga).MaxAsync() ?? 0;
                 TxtBrojNaloga.Text = (max + 1).ToString();
             }
         }

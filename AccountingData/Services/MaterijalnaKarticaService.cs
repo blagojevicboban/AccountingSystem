@@ -192,4 +192,31 @@ public class MaterijalnaKarticaService
         await _db.SaveChangesAsync();
         return iznos;
     }
+
+    /// <summary>
+    /// Uklanja poslednji upisani red kartice za dati magacin/artikal — koristi se pri
+    /// rasknjiženju dokumenta (Ulaz/Trebovanje/Kalkulacija/Primopredaja). Dozvoljeno je
+    /// samo ako je taj red zaista poslednji upisan (RedniBroj) I ako mu odgovara opis
+    /// dokumenta koji se rasknjižava — u suprotnom bi brisanje pokvarilo tekuće stanje/
+    /// saldo (prosečnu cenu) za naloge proknjižene posle njega, pa se baca greška.
+    /// </summary>
+    public async Task UkloniPoslednjiRedAsync(string sifraMagacina, string sifraArtikla, string opis)
+    {
+        var poslednji = await _db.MaterijalneKartice
+            .Where(k => k.SifraMagacina == sifraMagacina && k.SifraArtikla == sifraArtikla)
+            .OrderByDescending(k => k.RedniBroj)
+            .FirstOrDefaultAsync();
+
+        if (poslednji == null) return;
+
+        if (poslednji.OpisPromene != opis)
+        {
+            throw new InvalidOperationException(
+                $"Rasknjiženje nije moguće: za artikal {sifraArtikla} u magacinu {sifraMagacina} postoji kasnije " +
+                "knjiženje, pa se ovaj nalog više ne može bezbedno rasknjižiti a da se ne pokvari stanje zaliha.");
+        }
+
+        _db.MaterijalneKartice.Remove(poslednji);
+        await _db.SaveChangesAsync();
+    }
 }

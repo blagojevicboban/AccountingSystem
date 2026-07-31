@@ -90,4 +90,31 @@ public class TrebovanjeService
         nalog.IsKnjizen = true;
         await _db.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Rasknjiži trebovanje — uklanja redove materijalne kartice koje je ovaj nalog upisao
+    /// (obrnutim redosledom od knjiženja) i vraća nalog u status nacrta radi izmene. Baca
+    /// grešku ako je za neki artikal u međuvremenu knjiženo nešto kasnije.
+    /// </summary>
+    public async Task RasknjiziTrebovanjeAsync(int trebovanjeNalogId)
+    {
+        var nalog = await _db.TrebovanjeNalozi.Include(n => n.Stavke).FirstOrDefaultAsync(n => n.TrebovanjeNalogId == trebovanjeNalogId);
+        if (nalog == null)
+        {
+            throw new InvalidOperationException("Nalog trebovanja nije pronađen.");
+        }
+        if (!nalog.IsKnjizen)
+        {
+            throw new InvalidOperationException($"Trebovanje {nalog.BrojNaloga} nije proknjiženo.");
+        }
+
+        var kartice = new MaterijalnaKarticaService(_db);
+        foreach (var s in nalog.Stavke.AsEnumerable().Reverse())
+        {
+            await kartice.UkloniPoslednjiRedAsync(nalog.SifraMagacina, s.SifraArtikla, $"Trebovanje {nalog.BrojNaloga}");
+        }
+
+        nalog.IsKnjizen = false;
+        await _db.SaveChangesAsync();
+    }
 }

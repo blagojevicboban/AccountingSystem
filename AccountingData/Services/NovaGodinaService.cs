@@ -92,7 +92,7 @@ public class NovaGodinaService
                 "verovatno postoji neispravan proknjižen nalog. Ispravite ga (npr. preko Rasknjiži) pre prenosa u novu godinu.");
         }
 
-        int sledeciBrojNaloga = await _db.Nalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync() + 1;
+        int sledeciBrojNaloga = (await _db.Nalozi.Select(n => (int?)n.BrojNaloga).MaxAsync() ?? 0) + 1;
         var nalog = new Nalog
         {
             BrojNaloga = sledeciBrojNaloga,

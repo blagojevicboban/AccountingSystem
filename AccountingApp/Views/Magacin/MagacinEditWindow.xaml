@@ -1,7 +1,7 @@
 <Window x:Class="AccountingApp.Views.Magacin.MagacinEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Računopolagač / Magacin" Height="380" Width="480"
+        Title="Računopolagač / Magacin" Height="440" Width="480"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="{StaticResource BackgroundBrush}">
@@ -16,7 +16,7 @@
         <TextBlock x:Name="TxtNaslov" Text="🏢 Izmena računopolagača" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Grid.Row="0" Margin="0,0,0,16"/>
 
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-            <StackPanel VerticalAlignment="Center">
+            <StackPanel VerticalAlignment="Top">
                 <Grid Margin="0,0,0,14">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="130"/>

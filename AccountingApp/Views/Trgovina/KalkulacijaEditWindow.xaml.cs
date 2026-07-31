@@ -82,7 +82,7 @@ public partial class KalkulacijaEditWindow : Window
                 DpDatum.SelectedDate = DateTime.Now;
                 if (magacini.Count > 0) CmbMagacin.SelectedIndex = 0;
 
-                int max = await db.Kalkulacije.Select(k => k.BrojKalkulacije).DefaultIfEmpty(0).MaxAsync();
+                int max = await db.Kalkulacije.Select(k => (int?)k.BrojKalkulacije).MaxAsync() ?? 0;
                 TxtBrojKalkulacije.Text = (max + 1).ToString();
             }
         }

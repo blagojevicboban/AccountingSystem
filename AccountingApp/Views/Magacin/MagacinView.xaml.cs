@@ -569,11 +569,48 @@ public partial class MagacinView : UserControl
         }
     }
 
-    private void BtnIzmeniUlaz_Click(object sender, RoutedEventArgs e)
+    private async void BtnIzmeniUlaz_Click(object sender, RoutedEventArgs e)
     {
         if (DgUlazi.SelectedItem is not UlazNalog selektovan)
         {
             MessageBox.Show("Izaberite ulaz za izmenu.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (selektovan.IsKnjizen)
+        {
+            var odgovor = MessageBox.Show(
+                $"Ulaz #{selektovan.BrojNaloga} je proknjižen i ne može se menjati u ovom statusu.\n\nDa li želite da ga rasknjižite radi izmene?",
+                "Proknjižen ulaz", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (odgovor != MessageBoxResult.Yes) return;
+
+            if (!AppSession.IsAdministrator)
+            {
+                MessageBox.Show("Rasknjižavanje ulaza dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var db = new AccountingDbContext(options);
+                var service = new UlazService(db);
+                await service.RasknjiziUlazAsync(selektovan.UlazNalogId);
+
+                LoadUlazi();
+
+                var osvezen = _sviUlazi.FirstOrDefault(u => u.UlazNalogId == selektovan.UlazNalogId);
+                if (osvezen != null)
+                {
+                    var dijalogR = new UlazEditWindow(osvezen) { Owner = Window.GetWindow(this) };
+                    if (dijalogR.ShowDialog() == true) LoadUlazi();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri rasknjižavanju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             return;
         }
 
@@ -699,11 +736,48 @@ public partial class MagacinView : UserControl
         }
     }
 
-    private void BtnIzmeniTrebovanje_Click(object sender, RoutedEventArgs e)
+    private async void BtnIzmeniTrebovanje_Click(object sender, RoutedEventArgs e)
     {
         if (DgTrebovanja.SelectedItem is not TrebovanjeNalog selektovano)
         {
             MessageBox.Show("Izaberite trebovanje za izmenu.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (selektovano.IsKnjizen)
+        {
+            var odgovor = MessageBox.Show(
+                $"Trebovanje #{selektovano.BrojNaloga} je proknjiženo i ne može se menjati u ovom statusu.\n\nDa li želite da ga rasknjižite radi izmene?",
+                "Proknjiženo trebovanje", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (odgovor != MessageBoxResult.Yes) return;
+
+            if (!AppSession.IsAdministrator)
+            {
+                MessageBox.Show("Rasknjižavanje trebovanja dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var db = new AccountingDbContext(options);
+                var service = new TrebovanjeService(db);
+                await service.RasknjiziTrebovanjeAsync(selektovano.TrebovanjeNalogId);
+
+                LoadTrebovanja();
+
+                var osvezeno = _svaTrebovanja.FirstOrDefault(t => t.TrebovanjeNalogId == selektovano.TrebovanjeNalogId);
+                if (osvezeno != null)
+                {
+                    var dijalogR = new TrebovanjeEditWindow(osvezeno) { Owner = Window.GetWindow(this) };
+                    if (dijalogR.ShowDialog() == true) LoadTrebovanja();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri rasknjižavanju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             return;
         }
 
@@ -828,7 +902,7 @@ public partial class MagacinView : UserControl
         }
     }
 
-    private void BtnIzmeniPrimopredaju_Click(object sender, RoutedEventArgs e)
+    private async void BtnIzmeniPrimopredaju_Click(object sender, RoutedEventArgs e)
     {
         if (DgPrimopredaje.SelectedItem is not PrimopredajaNalog selektovano)
         {
@@ -837,7 +911,38 @@ public partial class MagacinView : UserControl
         }
         if (selektovano.IsKnjizen)
         {
-            MessageBox.Show($"Primopredaja #{selektovano.BrojNaloga} je proknjižena i nisu dozvoljene nikakve izmene.", "Izmena nije moguća", MessageBoxButton.OK, MessageBoxImage.Warning);
+            var odgovor = MessageBox.Show(
+                $"Primopredaja #{selektovano.BrojNaloga} je proknjižena i ne može se menjati u ovom statusu.\n\nDa li želite da je rasknjižite radi izmene?",
+                "Proknjižena primopredaja", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (odgovor != MessageBoxResult.Yes) return;
+
+            if (!AppSession.IsAdministrator)
+            {
+                MessageBox.Show("Rasknjižavanje primopredaje dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var db = new AccountingDbContext(options);
+                var service = new PrimopredajaService(db);
+                await service.RasknjiziPrimopredajuAsync(selektovano.PrimopredajaNalogId);
+
+                LoadPrimopredaje();
+
+                var osvezeno = _svePrimopredaje.FirstOrDefault(p => p.PrimopredajaNalogId == selektovano.PrimopredajaNalogId);
+                if (osvezeno != null)
+                {
+                    var dijalogR = new PrimopredajaEditWindow(osvezeno) { Owner = Window.GetWindow(this) };
+                    if (dijalogR.ShowDialog() == true) LoadPrimopredaje();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri rasknjižavanju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             return;
         }
 

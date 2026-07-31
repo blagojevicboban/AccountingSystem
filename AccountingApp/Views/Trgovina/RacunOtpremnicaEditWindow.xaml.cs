@@ -70,7 +70,7 @@ public partial class RacunOtpremnicaEditWindow : Window
                 TxtNaslov.Text = "➕ Novi račun - otpremnica";
                 DpDatum.SelectedDate = DateTime.Now;
 
-                int maxBr = await db.RacuniOtpremnice.Select(r => r.BrojRacuna).DefaultIfEmpty(0).MaxAsync() + 1;
+                int maxBr = (await db.RacuniOtpremnice.Select(r => (int?)r.BrojRacuna).MaxAsync() ?? 0) + 1;
                 TxtBrojRacuna.Text = maxBr.ToString("D5");
                 TxtBrojOtpremnice.Text = maxBr.ToString("D5");
 

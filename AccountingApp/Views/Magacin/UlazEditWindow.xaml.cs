@@ -69,7 +69,7 @@ public partial class UlazEditWindow : Window
 
             if (_postojeciId == 0)
             {
-                int max = await db.UlazNalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync();
+                int max = await db.UlazNalozi.Select(n => (int?)n.BrojNaloga).MaxAsync() ?? 0;
                 TxtBrojNaloga.Text = (max + 1).ToString();
             }
         }

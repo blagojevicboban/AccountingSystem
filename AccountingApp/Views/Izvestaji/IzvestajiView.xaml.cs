@@ -57,6 +57,27 @@ public partial class IzvestajiView : UserControl
         }
     }
 
+    private async void BtnPrikaziDnevnik_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new NaloziService(db);
+            var nalozi = await service.GetNaloziAsync(samoProknjizeni: true);
+
+            var dijalog = new DnevnikPreviewWindow(nalozi) { Owner = Window.GetWindow(this) };
+            dijalog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri prikazu dnevnika: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private int? OdabranaKlasaBrutoBilansa()
     {
         var sadrzaj = (CmbBrutoBilansKlasa.SelectedItem as ComboBoxItem)?.Content as string;
@@ -261,6 +282,47 @@ public partial class IzvestajiView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri generisanju PDF-a: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnPrikaziZalihe_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var redovi = await RobniBrutoBilansService.GetRobniBrutoBilansAsync(db);
+
+            var dijalog = new VrednovanjeZalihaPreviewWindow(redovi) { Owner = Window.GetWindow(this) };
+            dijalog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri prikazu vrednovanja zaliha: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnPrikaziBrutoBilansAnalitike_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new OtvoreneStavkeService(db);
+            var redovi = await service.GetBrutoBilansAnalitikeAsync();
+
+            var dijalog = new BrutoBilansAnalitikePreviewWindow(redovi) { Owner = Window.GetWindow(this) };
+            dijalog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri prikazu bruto bilansa analitike: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

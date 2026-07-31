@@ -104,7 +104,7 @@ public class RacunOtpremnicaService
         if (racun.IsKnjizen) throw new InvalidOperationException("Račun je već proknjižen.");
 
         // Automatsko kreiranje naloga knjiženja u Glavnoj knjizi
-        int sledeciBrojNaloga = await _db.Nalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync() + 1;
+        int sledeciBrojNaloga = (await _db.Nalozi.Select(n => (int?)n.BrojNaloga).MaxAsync() ?? 0) + 1;
         var nalog = new Nalog
         {
             BrojNaloga = sledeciBrojNaloga,
@@ -162,6 +162,32 @@ public class RacunOtpremnicaService
 
         racun.IsKnjizen = true;
         racun.NalogId = nalog.NalogId;
+        await _db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Rasknjiži račun-otpremnicu — briše nalog knjiženja koji je automatski kreiran u
+    /// Glavnoj knjizi pri knjiženju (zajedno sa njegovim stavkama) i vraća račun u status
+    /// nacrta radi izmene. Račun-otpremnica ne dodiruje materijalnu karticu direktno
+    /// (samo generiše finansijski nalog), pa nema potrebe za proverom kasnijih knjiženja.
+    /// </summary>
+    public async Task RasknjiziRacunAsync(int racunOtpremnicaId)
+    {
+        var racun = await _db.RacuniOtpremnice.FirstOrDefaultAsync(r => r.RacunOtpremnicaId == racunOtpremnicaId);
+        if (racun == null) throw new InvalidOperationException("Račun nije pronađen.");
+        if (!racun.IsKnjizen) throw new InvalidOperationException("Račun nije proknjižen.");
+
+        if (racun.NalogId.HasValue)
+        {
+            var nalog = await _db.Nalozi.FirstOrDefaultAsync(n => n.NalogId == racun.NalogId.Value);
+            if (nalog != null)
+            {
+                _db.Nalozi.Remove(nalog);
+            }
+        }
+
+        racun.IsKnjizen = false;
+        racun.NalogId = null;
         await _db.SaveChangesAsync();
     }
 }

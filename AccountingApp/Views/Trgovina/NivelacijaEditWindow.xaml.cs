@@ -22,7 +22,7 @@ public partial class NivelacijaEditWindow : Window
 
         Nivelacija = nivelacija ?? new NivelacijaCena
         {
-            BrojNivelacije = db.NivelacijeCena.Select(n => n.BrojNivelacije).DefaultIfEmpty(0).Max() + 1,
+            BrojNivelacije = (db.NivelacijeCena.Select(n => (int?)n.BrojNivelacije).Max() ?? 0) + 1,
             DatumNivelacije = DateTime.Now
         };
 

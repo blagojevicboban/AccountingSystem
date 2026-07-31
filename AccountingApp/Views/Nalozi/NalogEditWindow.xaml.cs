@@ -189,7 +189,7 @@ public partial class NalogEditWindow : Window
                 .Options;
             using var db = new AccountingDbContext(options);
 
-            int max = await db.Nalozi.Select(n => n.BrojNaloga).DefaultIfEmpty(0).MaxAsync();
+            int max = await db.Nalozi.Select(n => (int?)n.BrojNaloga).MaxAsync() ?? 0;
             TxtBrojNaloga.Text = (max + 1).ToString();
         }
         catch
