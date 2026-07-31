@@ -22,7 +22,7 @@
                                 <Button x:Name="BtnNoviMaterijal" Content="➕ Novi materijal" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNoviMaterijal_Click"/>
                                 <Button x:Name="BtnIzmeniMaterijal" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniMaterijal_Click"/>
                                 <Button x:Name="BtnBrisiMaterijal" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" Click="BtnBrisiMaterijal_Click"/>
-                                <Button x:Name="BtnStampaSifrarnikaMaterijala" Content="🖨️ Štampaj šifarnik" Width="140" Height="34" Margin="0,2,8,2" Click="BtnStampaSifrarnikaMaterijala_Click"/>
+                                <Button x:Name="BtnStampaSifrarnikaMaterijala" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj šifarnik" Margin="0,2,8,2" Click="BtnStampaSifrarnikaMaterijala_Click"/>
                                 <Button x:Name="BtnExportExcelMaterijali" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelMaterijali_Click"/>
                             </WrapPanel>
                             <WrapPanel VerticalAlignment="Center">
@@ -60,7 +60,7 @@
                             <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Button x:Name="BtnNoviUlaz" Content="➕ Novi ulaz" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNoviUlaz_Click"/>
                                 <Button x:Name="BtnIzmeniUlaz" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniUlaz_Click"/>
-                                <Button x:Name="BtnStampajUlaz" Content="🖨️ Štampaj" Width="100" Height="34" Margin="0,2,8,2" Click="BtnStampajUlaz_Click"/>
+                                <Button x:Name="BtnStampajUlaz" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj" Margin="0,2,8,2" Click="BtnStampajUlaz_Click"/>
                                 <Button x:Name="BtnExportExcelUlazi" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelUlazi_Click"/>
                                 <Button x:Name="BtnKnjiziUlaz" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,0,2" Click="BtnKnjiziUlaz_Click"/>
                             </WrapPanel>
@@ -120,7 +120,7 @@
                             <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Button x:Name="BtnNovoTrebovanje" Content="➕ Novo trebovanje" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovoTrebovanje_Click"/>
                                 <Button x:Name="BtnIzmeniTrebovanje" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniTrebovanje_Click"/>
-                                <Button x:Name="BtnStampajTrebovanje" Content="🖨️ Štampaj" Width="100" Height="34" Margin="0,2,8,2" Click="BtnStampajTrebovanje_Click"/>
+                                <Button x:Name="BtnStampajTrebovanje" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj" Margin="0,2,8,2" Click="BtnStampajTrebovanje_Click"/>
                                 <Button x:Name="BtnExportExcelTrebovanja" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelTrebovanja_Click"/>
                                 <Button x:Name="BtnKnjiziTrebovanje" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,0,2" Click="BtnKnjiziTrebovanje_Click"/>
                             </WrapPanel>
@@ -177,7 +177,7 @@
                             <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Button x:Name="BtnNovaPrimopredaja" Content="➕ Nova primopredaja" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaPrimopredaja_Click"/>
                                 <Button x:Name="BtnIzmeniPrimopredaju" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniPrimopredaju_Click"/>
-                                <Button x:Name="BtnStampajPrimopredaju" Content="🖨️ Štampaj" Width="100" Height="34" Margin="0,2,8,2" Click="BtnStampajPrimopredaju_Click"/>
+                                <Button x:Name="BtnStampajPrimopredaju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj" Margin="0,2,8,2" Click="BtnStampajPrimopredaju_Click"/>
                                 <Button x:Name="BtnExportExcelPrimopredaje" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelPrimopredaje_Click"/>
                                 <Button x:Name="BtnKnjiziPrimopredaju" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,0,2" Click="BtnKnjiziPrimopredaju_Click"/>
                             </WrapPanel>
@@ -347,7 +347,7 @@
                             <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Button x:Name="BtnOsveziBrutoMat" Content="🔄 Osveži bilans" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnOsveziBrutoMat_Click"/>
                                 <Button x:Name="BtnExportExcelBrutoMat" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelBrutoMat_Click"/>
-                                <Button x:Name="BtnStampajBrutoMat" Content="🖨️ Štampaj PDF" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Margin="0,2,0,2" Click="BtnStampajBrutoMat_Click"/>
+                                <Button x:Name="BtnStampajBrutoMat" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,0,2" Click="BtnStampajBrutoMat_Click"/>
                             </WrapPanel>
 
                             <WrapPanel VerticalAlignment="Center">

@@ -15,7 +15,7 @@
                     <StackPanel>
                         <TextBlock Text="📖 Dnevnik glavne knjige" FontSize="16" FontWeight="Bold" Foreground="#2563EB"/>
                         <TextBlock Text="Hronološki pregled svih proknjiženih naloga sa ukupnim iznosima." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
-                        <Button Content="📥 Izvezi dnevnik (PDF)" Style="{StaticResource ActionButtonStyle}" Click="BtnGenerisiDnevnik_Click"/>
+                        <Button Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Izvezi dnevnik (PDF)" HorizontalAlignment="Left" Click="BtnGenerisiDnevnik_Click"/>
                     </StackPanel>
                 </Border>
 
@@ -51,7 +51,7 @@
                         </StackPanel>
                         <CheckBox x:Name="ChkBrutoBilansTotali" Content="Prikaži totale po sintetičkim kontima i klasama" FontSize="12" Margin="0,0,0,12"/>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="📥 Izvezi PDF" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,0,8,0" Click="BtnGenerisiBrutoBilans_Click"/>
+                            <Button Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvezi PDF" Margin="0,0,8,0" Click="BtnGenerisiBrutoBilans_Click"/>
                             <Button Content="👁 Prikaži na ekranu" Style="{StaticResource ActionButtonStyle}" Background="#0EA5E9" Click="BtnPrikaziBrutoBilans_Click"/>
                         </StackPanel>
                     </StackPanel>
@@ -72,7 +72,7 @@
                             </StackPanel>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="📥 Izvezi PDF" Style="{StaticResource ActionButtonStyle}" Background="#0891B2" Margin="0,0,8,0" Click="BtnGenerisiZakljucniList_Click"/>
+                            <Button Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#0891B2" Width="36" Padding="0" ToolTip="Izvezi PDF" Margin="0,0,8,0" Click="BtnGenerisiZakljucniList_Click"/>
                             <Button Content="👁 Prikaži na ekranu" Style="{StaticResource ActionButtonStyle}" Background="#0EA5E9" Click="BtnPrikaziZakljucniList_Click"/>
                         </StackPanel>
                     </StackPanel>
@@ -102,7 +102,7 @@
                         </StackPanel>
                         <CheckBox x:Name="ChkIosSamoOtvorene" Content="Samo partneri sa neusaglašenim saldom" IsChecked="True" FontSize="12" Margin="0,0,0,12"/>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="📥 Izvezi PDF" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,0,8,0" Click="BtnGenerisiIOS_Click"/>
+                            <Button Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Width="36" Padding="0" ToolTip="Izvezi PDF" Margin="0,0,8,0" Click="BtnGenerisiIOS_Click"/>
                             <Button Content="👁 Prikaži na ekranu" Style="{StaticResource ActionButtonStyle}" Background="#0EA5E9" Click="BtnPrikaziIOS_Click"/>
                         </StackPanel>
                     </StackPanel>
@@ -112,7 +112,7 @@
                     <StackPanel>
                         <TextBlock Text="📦 Vrednovanje zaliha" FontSize="16" FontWeight="Bold" Foreground="#D97706"/>
                         <TextBlock Text="Trenutno stanje zaliha po magacinima sa jediničnim cenama i ukupnom vrednošću." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
-                        <Button Content="📥 Izvezi izveštaj o zalihama (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Click="BtnGenerisiZalihe_Click"/>
+                        <Button Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Width="36" Padding="0" ToolTip="Izvezi izveštaj o zalihama (PDF)" HorizontalAlignment="Left" Click="BtnGenerisiZalihe_Click"/>
                     </StackPanel>
                 </Border>
 
@@ -120,7 +120,7 @@
                     <StackPanel>
                         <TextBlock Text="👥 Bruto bilans analitike" FontSize="16" FontWeight="Bold" Foreground="#DB2777"/>
                         <TextBlock Text="Sintetički pregled prometa i salda po partneru (analitika kupaca i dobavljača)." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,6,0,16"/>
-                        <Button Content="📥 Izvezi bruto bilans analitike (PDF)" Style="{StaticResource ActionButtonStyle}" Background="#DB2777" Click="BtnGenerisiBrutoBilansAnalitike_Click"/>
+                        <Button Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#DB2777" Width="36" Padding="0" ToolTip="Izvezi bruto bilans analitike (PDF)" HorizontalAlignment="Left" Click="BtnGenerisiBrutoBilansAnalitike_Click"/>
                     </StackPanel>
                 </Border>
             </UniformGrid>

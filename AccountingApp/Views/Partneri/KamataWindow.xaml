@@ -47,7 +47,7 @@
                     </StackPanel>
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                         <Button x:Name="BtnObracunaj" Content="🧮 Obračunaj" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,0" Click="BtnObracunaj_Click"/>
-                        <Button x:Name="BtnStampajKamatu" Content="📥 Izvezi PDF" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Click="BtnStampajKamatu_Click"/>
+                        <Button x:Name="BtnStampajKamatu" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Width="36" Padding="0" ToolTip="Izvezi PDF" Click="BtnStampajKamatu_Click"/>
                     </StackPanel>
                 </Grid>
             </Border>

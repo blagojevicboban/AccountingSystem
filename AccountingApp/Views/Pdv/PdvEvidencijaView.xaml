@@ -57,7 +57,7 @@
 
                     <DockPanel Grid.Row="0" Margin="0,0,0,10">
                         <TextBlock x:Name="TxtKirUkupno" Text="Ukupno izlazni PDV: 0.00 RSD" FontWeight="Bold" FontSize="13" Foreground="#1E3A8A" VerticalAlignment="Center"/>
-                        <Button DockPanel.Dock="Right" Content="📥 Štampaj KIR (PDF)" Click="BtnStampajKirPdf_Click" Padding="10,5" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                        <Button DockPanel.Dock="Right" Content="🖨️" ToolTip="Štampaj KIR (PDF)" Click="BtnStampajKirPdf_Click" Padding="0" Width="36" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="4"/>
@@ -127,7 +127,7 @@
 
                     <DockPanel Grid.Row="0" Margin="0,0,0,10">
                         <TextBlock x:Name="TxtKprUkupno" Text="Ukupno prethodni PDV: 0.00 RSD" FontWeight="Bold" FontSize="13" Foreground="#1E3A8A" VerticalAlignment="Center"/>
-                        <Button DockPanel.Dock="Right" Content="📥 Štampaj KPR (PDF)" Click="BtnStampajKprPdf_Click" Padding="10,5" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                        <Button DockPanel.Dock="Right" Content="🖨️" ToolTip="Štampaj KPR (PDF)" Click="BtnStampajKprPdf_Click" Padding="0" Width="36" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="4"/>

@@ -64,7 +64,7 @@
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                             <TextBlock x:Name="TxtStatusRavnoteze" Text="⚡ Provera ravnoteže u toku..." FontWeight="Bold" FontSize="13" Foreground="#059669"/>
                         </StackPanel>
-                        <Button DockPanel.Dock="Right" Content="📥 Štampaj Bilans Stanja (PDF)" Click="BtnStampajStanjePdf_Click" Padding="10,5" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                        <Button DockPanel.Dock="Right" Content="🖨️" ToolTip="Štampaj Bilans Stanja (PDF)" Click="BtnStampajStanjePdf_Click" Padding="0" Width="36" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="4"/>
@@ -131,7 +131,7 @@
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                             <TextBlock x:Name="TxtNetoRezultat" Text="📊 Obračun rezultata..." FontWeight="Bold" FontSize="13" Foreground="#2563EB"/>
                         </StackPanel>
-                        <Button DockPanel.Dock="Right" Content="📥 Štampaj Bilans Uspeha (PDF)" Click="BtnStampajUspehPdf_Click" Padding="10,5" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                        <Button DockPanel.Dock="Right" Content="🖨️" ToolTip="Štampaj Bilans Uspeha (PDF)" Click="BtnStampajUspehPdf_Click" Padding="0" Width="36" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="4"/>
