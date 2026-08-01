@@ -251,6 +251,38 @@ public partial class PomocView : UserControl
         },
         new PomocTema
         {
+            Naslov = "📎 DMS — Prilozi uz naloge i skenirani dokumenti",
+            Sadrzaj =
+                "Sistem za upravljanje dokumentima (DMS — Document Management System) omogućava prilaganje i pregled skeniranih ulaznih računa, ugovora i prateće dokumentacije.\n\n" +
+                "1. PRILAGANJE DOKUMENATA UZ NALOG:\n" +
+                "• U prozoru naloga knjiženja kliknite na dugme '📎 Prilozi (DMS)'.\n" +
+                "• Dugme '➕ Priloži dokument' omogućava izbor PDF fajlova ili slika (JPG/PNG) sa vašeg računara.\n\n" +
+                "2. SKLADIŠTENJE I BEZBEDNOST:\n" +
+                "• Svi priloženi dokumenti se automatski kopiraju u bezbedni podfolder 'DMS/Dokumenti' i povezuju sa nalogom u bazi podataka.\n\n" +
+                "3. PREGLED I BRISANJE:\n" +
+                "• Klikom na '👁️ Otvori' dokument se prikazuje direktno u sistemskom PDF/Pregledniku slika.\n" +
+                "• Klikom na '🗑️ Briši' prilog se uklanja iz baze i sa diska.",
+            Kljuc = "Dms"
+        },
+        new PomocTema
+        {
+            Naslov = "🌐 REST API & Web Dashboard (Mobilni uvid)",
+            Sadrzaj =
+                "Ugrađeni Web Server omogućava uvid u finansijske pokazatelje, naloge i partnere sa mobilnih telefona, tableta i web pregledača.\n\n" +
+                "1. POKRETANJE SERVERA:\n" +
+                "• U meniju '⚙️ Podešavanja' izaberite tab '🌐 REST API & Web Dashboard'.\n" +
+                "• Kliknite na '▶️ Pokreni Web Server' (podrazumevani port: 5050).\n\n" +
+                "2. WEBDASHBOARD SA TELEFONA:\n" +
+                "• U bilo kom pregledaču (Chrome, Safari, Firefox) otvorite URL prikazan u podešavanjima (npr. http://localhost:5050 ili IP adresa računara na mreži).\n" +
+                "• Web Dashboard prikazuje finansije uživo (prihode, rashode, neto dobit, broj naloga i partnera).\n\n" +
+                "3. REST API ENDPOINTS:\n" +
+                "• GET /api/status — Status servisa.\n" +
+                "• GET /api/dashboard — Financijski KPI indikatori.\n" +
+                "• GET /api/partneri — Lista partnera.",
+            Kljuc = "WebApi"
+        },
+        new PomocTema
+        {
             Naslov = "💾 Rezervne kopije (Backup & Restore)",
             Sadrzaj =
                 "Meni '💾 Rezervne kopije' omogućava zaštitu podataka pravljenjem i vraćanjem rezervnih kopija baze.\n\n" +

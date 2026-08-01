@@ -4,6 +4,23 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.43] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **DMS (Document Management System)** — ugrađen sistem za skladištenje i upravljanje priloženim skeniranim dokumentima (ulazni računi, ugovori, zapisnici).
+  - Model `DokumentPrilog` i `DmsService` za bezbedno kopiranje i povezivanje PDF/slikovnih fajlova sa nalozima knjiženja, fakturama i kalkulacijama.
+  - Dijaloški prozor `DmsWindow` sa ugrađenim pretpregledom, otvaranjem u sistemskom pregledaču i mogućnošću brisanja.
+  - Dodato dugme **"📎 Prilozi (DMS)"** u zaglavlju naloga knjiženja (`NalogEditWindow`).
+- **Cloud REST API & Mobile Web Dashboard** — ugrađen lagani HTTP web server za mobilni i web uvid u poslovanje.
+  - `AccountingWebServer` servira REST API endpoints (`/api/status`, `/api/dashboard`, `/api/partneri`) i ugrađenu responzivnu Tailwind/HTML5 Web Dashboard aplikaciju na portu `5050` (`http://localhost:5050`).
+  - Kontrolni tab u podešavanjima (`PodesavanjaView`) za pokretanje/zaustavljanje servera i brzi pristup iz pregledača sa pametnog telefona ili računara.
+
+### 📚 Dokumentacija & Pomoć
+- Dodate teme "📎 DMS — Prilozi uz naloge i skenirani dokumenti" i "🌐 REST API & Web Dashboard (Mobilni uvid)" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.43`).
+
+---
+
 ## [1.0.42] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti

@@ -24,7 +24,13 @@
 - 📜 **Poreski Bilans (Obrazac PB-1 & PDP)** — usklađivanje dobiti/gubitka i nepriznatih rashoda (čl. 7, 7a, 8, 9, 15, 16) uz obračun poreza na dobit od 15% i mesečnih akontacija.
 - 🏗️ **Poreska Amortizacija (Obrazac OA)** — obračun amortizacije po I-V poreskim grupama (2.5% do 30%) i usklađivanje sa računovodstvenom amortizacijom.
 
-### SEF e-Fakture (Sistem Elektronskih Faktura RS)
+### DMS (Document Management System — Prilozi uz Dokumente)
+- 📎 **Upravljanje skeniranim ulaznim računima i ugovorima** — Prilaganje PDF i slikovnih dokumenta uz svaki nalog knjiženja (`NalogEditWindow`), fakturu ili kalkulaciju.
+- 👁️ **Sistemski pregled i bezbedno skladištenje** — Automatsko arhiviranje u podfolder `DMS/Dokumenti` i direktno otvaranje iz baze.
+
+### Cloud REST API & Mobile Web Dashboard
+- 🌐 **Ugrađeni Web Server (Port 5050)** — Mogućnost uvid u finansije, bilanse i partnere sa mobilnih telefona i web pregledača (`http://localhost:5050`).
+- ⚡ **REST API Endpoints** — Standardizovani JSON servisi (`/api/status`, `/api/dashboard`, `/api/partneri`) za eksterne integracije.
 - ⚡ **Direktna SEF API konekcija** — Slanje izlaznih e-faktura direktno na SEF portal (`POST /sales-invoice/ubl`), provera statusa u realnom vremenu i preuzimanje ulaznih e-faktura dobavljača.
 - 📄 **UBL 2.1 XML Generator** — Zvaničan XML format po specifikaciji e-Faktura RS (`urn:cen.eu:en16931:2017#compliant#urn:mfin.gov.rs:srbdt:2021`).
 - 🔑 **Podešavanja po firmi** — Unos API ključa, izbor Demo vs Produkcionog okruženja, JBKJS broja i dugme za testiranje konekcije.

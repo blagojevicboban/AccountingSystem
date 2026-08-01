@@ -59,6 +59,57 @@ public partial class PodesavanjaView : UserControl
         {
             System.Diagnostics.Debug.WriteLine($"Greška pri učitavanju SEF/PFR podešavanja: {ex.Message}");
         }
+
+        OsveziStatusWebServera();
+    }
+
+    private void OsveziStatusWebServera()
+    {
+        if (AccountingWebServer.IsRunning)
+        {
+            TxtWebServerStatus.Text = $"🟢 Server je aktivan na http://localhost:{AccountingWebServer.Port}";
+            TxtWebServerStatus.Foreground = System.Windows.Media.Brushes.Green;
+        }
+        else
+        {
+            TxtWebServerStatus.Text = "🔴 Server je zaustavljen";
+            TxtWebServerStatus.Foreground = System.Windows.Media.Brushes.Red;
+        }
+    }
+
+    private void BtnPokreniWebServer_Click(object sender, RoutedEventArgs e)
+    {
+        int port = 5050;
+        int.TryParse(TxtApiPort.Text.Trim(), out port);
+        if (port <= 0) port = 5050;
+
+        AccountingWebServer.Start(AppConfig.DbPath, port);
+        OsveziStatusWebServera();
+        MessageBox.Show($"🌐 Web Server & Cloud REST API je uspešno pokrenut na portu {port}!\n\nWeb Dashboard je dostupan na:\nhttp://localhost:{port}", "Web Server Pokrenut", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void BtnZaustaviWebServer_Click(object sender, RoutedEventArgs e)
+    {
+        AccountingWebServer.Stop();
+        OsveziStatusWebServera();
+        MessageBox.Show("⏹️ Web Server je zaustavljen.", "Web Server Zaustavljen", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void BtnOtvoriWebDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        if (!AccountingWebServer.IsRunning)
+        {
+            BtnPokreniWebServer_Click(sender, e);
+        }
+
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo($"http://localhost:{AccountingWebServer.Port}") { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju pretraživača: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void BtnPromeniBazu_Click(object sender, RoutedEventArgs e)

@@ -198,6 +198,25 @@ public partial class NalogEditWindow : Window
         }
     }
 
+    private void BtnPriloziDms_Click(object sender, RoutedEventArgs e)
+    {
+        if (_existingNalogId == 0)
+        {
+            MessageBox.Show("Molimo sačuvajte ili knjižite nalog pre prilaganja dokumenta u DMS.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var win = new Views.Dms.DmsWindow(nalogId: _existingNalogId) { Owner = this };
+            win.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju DMS priloga: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void BtnDodajStavku_Click(object sender, RoutedEventArgs e)
     {
         DodajNovuStavku();

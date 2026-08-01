@@ -35,6 +35,7 @@
                     <Button x:Name="BtnPretragaKonta" Content="🔍 Pretraga konta (F2)" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Click="BtnPretragaKonta_Click" Margin="0,0,8,0"/>
                     <Button x:Name="BtnSifarnikOpisa" Content="📝 Šifarnik opisa" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Click="BtnSifarnikOpisa_Click" Margin="0,0,8,0"/>
                     <Button x:Name="BtnObrisiStavku" Content="🗑 Obriši stavku" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Click="BtnObrisiStavku_Click" Margin="0,0,8,0"/>
+                    <Button x:Name="BtnPriloziDms" Content="📎 Prilozi (DMS)" Style="{StaticResource ActionButtonStyle}" Background="#0284C7" Click="BtnPriloziDms_Click" Margin="0,0,8,0"/>
                     <Button x:Name="BtnPomoc" Content="❓ Pomoć (F1)" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Click="BtnPomoc_Click"/>
                 </StackPanel>
 

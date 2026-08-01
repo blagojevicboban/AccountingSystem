@@ -113,6 +113,44 @@
                 </ScrollViewer>
             </TabItem>
 
+            <!-- TAB: REST API & Web Dashboard -->
+            <TabItem Header="🌐 REST API &amp; Web Dashboard">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <StackPanel Margin="0,0,10,0">
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🌐 Ugrađeni Cloud REST API &amp; Mobile Web Dashboard" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Omogućava uvid u finansije, bilanse, radnu tablu i partnere sa mobilnih telefona i web pregledača (Port 5050)." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Web Server Port" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtApiPort" Height="36" VerticalContentAlignment="Center" Padding="8,0" FontFamily="Consolas" Text="5050"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Status Web Servera" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBlock x:Name="TxtWebServerStatus" Text="🔴 Server je zaustavljen" FontSize="14" FontWeight="Bold" Foreground="#DC2626" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button x:Name="BtnPokreniWebServer" Content="▶️ Pokreni Web Server" Height="38" Padding="18,0" Margin="0,0,10,0" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="BtnPokreniWebServer_Click"/>
+                                    <Button x:Name="BtnZaustaviWebServer" Content="⏹️ Zaustavi Server" Height="38" Padding="18,0" Margin="0,0,10,0" Background="#DC2626" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="BtnZaustaviWebServer_Click"/>
+                                    <Button x:Name="BtnOtvoriWebDashboard" Content="🌐 Otvori Web Dashboard u pregledaču" Height="38" Padding="18,0" Background="#0284C7" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="BtnOtvoriWebDashboard_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <!-- TAB: Postavke programa -->
             <TabItem Header="💻 Postavke programa">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
