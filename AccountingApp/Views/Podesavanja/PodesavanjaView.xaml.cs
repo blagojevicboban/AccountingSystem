@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using AccountingData;
+using AccountingData.Models;
 using AccountingData.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
@@ -48,11 +49,15 @@ public partial class PodesavanjaView : UserControl
                 TxtJbkjsBroj.Text = firma.JbkjsBroj ?? "";
                 TxtFirmaEmail.Text = firma.Email ?? "";
                 CmbSefEnvironment.SelectedIndex = (firma.SefEnvironment ?? "Demo").Equals("Production", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+
+                TxtPfrUrl.Text = firma.PfrUrl ?? "http://localhost:8443";
+                TxtPfrPacKod.Text = firma.PfrPacKod ?? "123456";
+                TxtPfrKasirName.Text = firma.PfrKasirName ?? "Glavni Kasir";
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Greška pri učitavanju SEF podešavanja: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Greška pri učitavanju SEF/PFR podešavanja: {ex.Message}");
         }
     }
 
@@ -92,7 +97,7 @@ public partial class PodesavanjaView : UserControl
 
             settings.Save();
 
-            // Čuvanje SEF podešavanja u bazi
+            // Čuvanje SEF i PFR podešavanja u bazi
             var options = new DbContextOptionsBuilder<AccountingDbContext>()
                 .UseSqlite($"Data Source={AppConfig.DbPath}")
                 .Options;
@@ -105,6 +110,10 @@ public partial class PodesavanjaView : UserControl
                 firma.JbkjsBroj = string.IsNullOrWhiteSpace(TxtJbkjsBroj.Text) ? null : TxtJbkjsBroj.Text.Trim();
                 firma.Email = string.IsNullOrWhiteSpace(TxtFirmaEmail.Text) ? null : TxtFirmaEmail.Text.Trim();
                 firma.SefEnvironment = CmbSefEnvironment.SelectedIndex == 1 ? "Production" : "Demo";
+
+                firma.PfrUrl = string.IsNullOrWhiteSpace(TxtPfrUrl.Text) ? "http://localhost:8443" : TxtPfrUrl.Text.Trim();
+                firma.PfrPacKod = string.IsNullOrWhiteSpace(TxtPfrPacKod.Text) ? "123456" : TxtPfrPacKod.Text.Trim();
+                firma.PfrKasirName = string.IsNullOrWhiteSpace(TxtPfrKasirName.Text) ? "Glavni Kasir" : TxtPfrKasirName.Text.Trim();
 
                 await db.SaveChangesAsync();
             }
@@ -137,6 +146,27 @@ public partial class PodesavanjaView : UserControl
         else
         {
             MessageBox.Show($"❌ {res.Message}", "Greška Konekcije", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnTestirajPfr_Click(object sender, RoutedEventArgs e)
+    {
+        var pfrClient = new PfrApiClient();
+        var postavke = new PfrPostavke
+        {
+            PfrUrl = TxtPfrUrl.Text.Trim(),
+            PacKod = TxtPfrPacKod.Text.Trim(),
+            Kasir = TxtPfrKasirName.Text.Trim()
+        };
+
+        var res = await pfrClient.TestirajPfrKonekcijuAsync(postavke);
+        if (res.Success)
+        {
+            MessageBox.Show($"✅ {res.Message}", "PFR Konekcija Uspešna", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        else
+        {
+            MessageBox.Show($"❌ {res.Message}", "Greška PFR Konekcije", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

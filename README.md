@@ -33,9 +33,11 @@
 - ⚖️ **POPDV Rekapitulacija Obaveze** — Obračun PDV obaveze za uplatu ili prava na povraćaj.
 - 📄 **ePorezi PP-PDV XML Izvoz** — Generisanje zvanične XML prijave Obrasca PP-PDV koja se direktno učitava na portal Poreske uprave RS (`eporezi.purs.gov.rs`).
 
-### Magacin i Trgovina (MAT & ROB)
+### Magacin, Trgovina i e-Fiskalizacija (MAT & ROB)
 - 📊 **Radna tabla (Robno i Materijalno)** — po jedna namenska radna tabla za svaki modul (vrednost zaliha VP/MP odnosno materijala, upozorenje na negativna stanja, poslednji dokumenti i brze akcije za nov unos).
-- 📦 **Magacin i zalihe** — Materijalne kartice po ponderisanoj prosečnoj ceni (`M1`), unos/izmena materijala (`MaterijalEditWindow`), provera i rekalkulacija salda zaliha (`ProveraKarticaWindow`), Ulazi (`M2`), Trebovanja (`M3`) i **Primopredaje / Interni prenosi (`M4`)** (razlikuje Primopredaja/Zaduženje/Razduženje).
+- 🏬 **Kalkulacije nabavke i veleprodaja (ROB1–ROB3)** — kalkulacije sa zavisnim troškovima, nivelacije cena sa zapisnikom o promeni cena zaliha.
+- 🧾 **e-Fiskalizacija (ESIR / PFR)** — Izdavanje fiskalnih računa kupcima u maloprodaji preko PFR / LPFR servisa Poreske uprave RS (`suf.purs.gov.rs`), sa podrškom za gotovinu, kartice, virmane i generisanje verifikacionog QR koda.
+- ⚡ **SEF e-Fakture (Sistem Elektronskih Faktura)** — ugrađena direktna integracija sa SEF portalom Ministarstva finansija RS (slanje izlaznih e-faktura u UBL 2.1 XML formatu, provera statusa, uvoz ulaznih faktura)., Trebovanja (`M3`) i **Primopredaje / Interni prenosi (`M4`)** (razlikuje Primopredaja/Zaduženje/Razduženje).
 - 🛒 **Trgovina i Fakture** — Veleprodajne (`MAT6`) i Maloprodajne (`MAT3`) kalkulacije (sa direktnom PDF štampom), **Računi-Otpremnice / Fakture (`MAT5`)** sa rokom dospelosti, rabatom i PDV-om (unos stavki po šifri artikla), **Predračun** (isti ekran, čekboks "Predračun" — dokument sa rokom važenja koji se ne knjiži i jednim klikom ("🔁 Pretvori u račun") pretvara u pravu fakturu), i **Nivelacije cena (`MAT7`)** sa automatskom generacijom svođenjem na prosečnu nabavnu cenu, zbirnom PDF štampom i masovnim knjiženjem.
 - 🔎 **Filter Svi / Proknjiženi / Neproknjiženi** — dostupan na svim tabovima gde se knjiži, i u Robnom (Zaduženja, Razduženja, Primopredaje, Kalkulacije, Računi-Otpremnice, Nivelacije) i u Materijalnom (Ulazi, Trebovanja, Primopredaje) knjigovodstvu.
 - 🔓 **Rasknjižavanje dokumenata (Robno i Materijalno)** — kao i kod naloga glavne knjige: klik na 'Izmeni' nad proknjiženim dokumentom nudi rasknjižavanje (samo Administrator), sa bezbednosnom proverom da za taj artikal/magacin nije u međuvremenu knjiženo nešto kasnije (štiti tačnost prosečne cene zaliha).

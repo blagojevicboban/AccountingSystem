@@ -327,6 +327,22 @@ public partial class PomocView : UserControl
         },
         new PomocTema
         {
+            Naslov = "🧾 e-Fiskalizacija (ESIR / PFR) i Izdavanje Računa",
+            Sadrzaj =
+                "Aplikacija poseduje ugrađenu podršku za komunikaciju sa PFR / LPFR servisom (Procesor Fiskalnih Računa) Poreske uprave RS.\n\n" +
+                "1. PODEŠAVANJE PFR KONEKCIJE:\n" +
+                "• U meniju '⚙️ Podešavanja' -> tab '🧾 e-Fiskalizacija (PFR / ESIR)' unesite PFR URL (npr. http://localhost:8443) i PAC kod Bezbednosnog Elementa (BE).\n" +
+                "• Kliknite '⚡ Testiraj PFR Konekciju' da potvrdite ispravnost veze sa kasenim uređajem ili lokalnim PFR servisom.\n\n" +
+                "2. FISKALIZACIJA PROMET ROBA I USLUGA:\n" +
+                "• U meniju 'Trgovina / Fakture' selektujte račun i kliknite dugme '🧾 Fiskalizuj (PFR)'.\n" +
+                "• Izaberite način plaćanja: Gotovina (Cash), Platna kartica (Card) ili Prenos na račun (WireTransfer).\n" +
+                "• Nakon slanja PFR vrši verifikaciju i vraća zvanični fiskalni broj računa, PFR brojač, fiskalni žurnal i verifikacioni URL sa QR kodom Poreske uprave RS (`suf.purs.gov.rs`).\n\n" +
+                "3. PREGLED I ŠTAMPA FISKALNOG ISEČKA:\n" +
+                "• Fiskalizovani računi dobijaju jedinstveni fiskalni broj u tabeli i status 'Fiskalizovan'. Prozor prikazuje žurnal i URL QR koda koji se štampa na fiskalnom računu.",
+            Kljuc = "Pfr"
+        },
+        new PomocTema
+        {
             Naslov = "⌨️ Korisne prečice i tasteri",
             Sadrzaj =
                 "Za maksimalnu brzinu u radu bez miša podržane su standardne tastaturne prečice:\n\n" +

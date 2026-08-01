@@ -4,6 +4,22 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.41] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **e-Fiskalizacija (ESIR / PFR Integracija RS)** — ugrađena kompletna podrška za komunikaciju sa PFR / LPFR servisom (Procesor Fiskalnih Računa) Poreske uprave RS (`http://localhost:8443`).
+  - **PFR Klijent & Servis (`PfrApiClient`, `EsirFiskalizacijaService`)**: Slanje zahteva za fiskalizaciju maloprodajnih računa u PFR po propisanoj JSON strukturi sa poreskim oznakama (Đ 20%, E 10%, А 0%) i metodama plaćanja (Gotovina, Platna kartica, Prenos na račun).
+  - **Fiskalni Račun i Isečak (`FiskalniRacunWindow`)**: Izdavanje fiskalnog računa kupcu, prikaz PFR broja računa (`InvoiceNumber`), PFR brojača, fiskalnog žurnala i zvaničnog verifikacionog URL QR koda Poreske uprave RS (`suf.purs.gov.rs`).
+  - **PFR Podešavanja (`PodesavanjaView`)**: Novi tab "🧾 e-Fiskalizacija (PFR / ESIR)" sa unosom PFR URL-a, PAC koda Bezbednosnog Elementa (BE), naziva kasira i dugmetom za testiranje PFR konekcije.
+  - **Evidencija i status u Trgovini (`TrgovinaView`)**: Dodato novo dugme "🧾 Fiskalizuj (PFR)", nova kolona `Fiskalni Broj` u tabeli računa i evidencijska tabela `FiskalniRacuniLog`.
+  - **EF Core Migracija**: Dodana migracija `DodajEsirFiskalizaciju` sa PFR poljima u tabelama `Firme`, `RacuniOtpremnice` i `FiskalniRacuniLog`.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata nova tema "🧾 e-Fiskalizacija (ESIR / PFR) i Izdavanje Računa" u ugrađenu Pomoć (`PomocView`).
+- Ažurirani `README.md` i `ANALIZA_I_PLAN.md`.
+
+---
+
 ## [1.0.40] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti

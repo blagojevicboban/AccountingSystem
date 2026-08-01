@@ -413,8 +413,8 @@
                                 <Button x:Name="BtnMasovnoKnjizenjeRacuna" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,6,2" Click="BtnMasovnoKnjizenjeRacuna_Click"/>
                                 <Button x:Name="BtnPretvoriPredracun" Content="🔁" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Width="36" Padding="0" ToolTip="Pretvori predračun u račun" Margin="0,2,6,2" Click="BtnPretvoriPredracun_Click"/>
                                 <Button x:Name="BtnPosaljiNaSef" Content="📤 Pošalji na SEF" Style="{StaticResource ActionButtonStyle}" Background="#0284C7" Margin="0,2,6,2" ToolTip="Pošalji e-fakturu na SEF portal" Click="BtnPosaljiNaSef_Click"/>
-                                <Button x:Name="BtnOsveziSefStatus" Content="🔄 SEF Status" Style="{StaticResource ActionButtonStyle}" Background="#0369A1" Margin="0,2,6,2" ToolTip="Osveži SEF status fakture" Click="BtnOsveziSefStatus_Click"/>
                                 <Button x:Name="BtnSacuvajUblXml" Content="📄 UBL XML" Style="{StaticResource ActionButtonStyle}" Background="#334155" Margin="0,2,6,2" ToolTip="Sačuvaj UBL 2.1 XML fajl" Click="BtnSacuvajUblXml_Click"/>
+                                <Button x:Name="BtnFiskalizujPfr" Content="🧾 Fiskalizuj (PFR)" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,6,2" ToolTip="Izdavanje fiskalnog računa preko PFR-a" Click="BtnFiskalizujPfr_Click"/>
                                 <Button x:Name="BtnPreuzmiUlazneSef" Content="📥 Ulazne SEF" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,6,2" ToolTip="Preuzmi ulazne e-fakture sa SEF-a" Click="BtnPreuzmiUlazneSef_Click"/>
                                 <Button x:Name="BtnExportExcelRacuni" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,6,2" Click="BtnExportExcelRacuni_Click"/>
                                 <Button x:Name="BtnStampajRacun" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj Račun (PDF)" Margin="0,2,0,2" Click="BtnStampajRacun_Click"/>
@@ -444,6 +444,7 @@
                                     <DataGridTextColumn Header="Datum" Binding="{Binding DatumRacuna, StringFormat=\{0:dd.MM.yyyy\}}" Width="95"/>
                                     <DataGridTextColumn Header="Kupac / Konto" Binding="{Binding KontoKupca}" Width="*"/>
                                     <DataGridTextColumn Header="SEF Status" Binding="{Binding SefStatus}" Width="110"/>
+                                    <DataGridTextColumn Header="Fiskalni Broj" Binding="{Binding FiskalniBroj}" Width="140"/>
                                     <DataGridTextColumn Header="Rok (dana)" Binding="{Binding RokPlacanjaDana}" Width="80"/>
                                     <DataGridTextColumn Header="Bez PDV" Binding="{Binding IznosBezPdv, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                                     <DataGridTextColumn Header="PDV" Binding="{Binding PdvIznos, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>

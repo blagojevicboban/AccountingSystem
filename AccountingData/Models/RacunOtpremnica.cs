@@ -58,6 +58,13 @@ public class RacunOtpremnica
     [MaxLength(500)]
     public string? SefPoruka { get; set; }
 
+    [MaxLength(100)]
+    public string? FiskalniBroj { get; set; }
+    [MaxLength(1000)]
+    public string? FiskalniQrKod { get; set; }
+    public DateTime? FiskalniDatum { get; set; }
+    public FiskalniStatus FiskalniStatus { get; set; } = FiskalniStatus.NijeFiskalizovan;
+
     public List<RacunOtpremnicaStavka> Stavke { get; set; } = new();
 
     [MaxLength(20)]

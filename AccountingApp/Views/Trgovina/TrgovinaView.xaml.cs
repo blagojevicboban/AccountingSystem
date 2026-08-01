@@ -2450,5 +2450,27 @@ public partial class TrgovinaView : UserControl
         }
     }
 
+    private void BtnFiskalizujPfr_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgRacuni.SelectedItem is not RacunOtpremnica selektovani)
+        {
+            MessageBox.Show("Molimo izaberite račun/fakturu iz tabele za fiskalizaciju.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var win = new FiskalniRacunWindow(selektovani.RacunOtpremnicaId) { Owner = Window.GetWindow(this) };
+            if (win.ShowDialog() == true)
+            {
+                LoadRacune();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju ekrana za fiskalizaciju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     #endregion
 }

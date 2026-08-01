@@ -45,6 +45,15 @@ public class Firma
     [MaxLength(20)]
     public string SefEnvironment { get; set; } = "Demo";
 
+    [MaxLength(250)]
+    public string PfrUrl { get; set; } = "http://localhost:8443";
+
+    [MaxLength(100)]
+    public string PfrPacKod { get; set; } = "123456";
+
+    [MaxLength(100)]
+    public string PfrKasirName { get; set; } = "Glavni Kasir";
+
     public bool IsActive { get; set; } = true;
     public DateTime DatumKreiranja { get; set; } = DateTime.Now;
 }

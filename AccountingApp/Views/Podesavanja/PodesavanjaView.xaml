@@ -75,6 +75,44 @@
                 </ScrollViewer>
             </TabItem>
 
+            <!-- TAB: e-Fiskalizacija (PFR / ESIR) -->
+            <TabItem Header="🧾 e-Fiskalizacija (PFR / ESIR)">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <StackPanel Margin="0,0,10,0">
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🧾 Podešavanja e-Fiskalizacije (LPFR / VPFR RS)" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Povezivanje sa Procesorom Fiskalnih Računa (PFR) i Bezbednosnim Elementom (BE) za izdavanje fiskalnih računa." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                                <!-- PFR URL -->
+                                <TextBlock Text="PFR URL Servisa (LPFR / VPFR Endpoint)" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtPfrUrl" Height="36" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,14" FontFamily="Consolas" Text="http://localhost:8443"/>
+
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="PAC Kod Bezbednosnog Elementa" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtPfrPacKod" Height="36" VerticalContentAlignment="Center" Padding="8,0" FontFamily="Consolas" Text="123456"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Ime i prezime kasira" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtPfrKasirName" Height="36" VerticalContentAlignment="Center" Padding="8,0" Text="Glavni Kasir"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Button Content="⚡ Testiraj PFR Konekciju" Height="38" Padding="20,0" HorizontalAlignment="Left" Background="#0D9488" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="BtnTestirajPfr_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <!-- TAB: Postavke programa -->
             <TabItem Header="💻 Postavke programa">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
