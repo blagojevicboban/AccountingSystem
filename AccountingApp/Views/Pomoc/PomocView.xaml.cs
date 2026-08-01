@@ -283,6 +283,34 @@ public partial class PomocView : UserControl
         },
         new PomocTema
         {
+            Naslov = "💱 Devizno knjiženje i Obračun kursnih razlika",
+            Sadrzaj =
+                "Modul deviznog knjigovodstva omogućava evidenciju naloga i faktura u inostranim valutama (EUR, USD, CHF, GBP) uz praćenje dinarske protivvrednosti.\n\n" +
+                "1. VIŠEVALUTNO KNJIŽENJE:\n" +
+                "• U nalogu knjiženja unesite valutu (npr. EUR), važeći kurs i devizni iznos (Duguje/Potražuje).\n" +
+                "• Sistem automatski preračunava i knjiži odgovarajući dinarski iznos po NBS kursu.\n\n" +
+                "2. VALVIRANJE I KURSNE RAZLIKE:\n" +
+                "• Na dan bilansa (31.12. ili kraj meseca) u dijalogu 'Devizno valviranje' pokrenite automatski proračun kursnih razlika.\n" +
+                "• Pozitivne kursne razlike se automatski knjiže na Konto 6630 (Prihodi od kursnih razlika).\n" +
+                "• Negativne kursne razlike se knjiže na Konto 5630 (Rashodi od kursnih razlika).",
+            Kljuc = "Devizno"
+        },
+        new PomocTema
+        {
+            Naslov = "🛃 Ino-fakture i Uvozne kalkulacije",
+            Sadrzaj =
+                "Uvozne kalkulacije omogućavaju uvoz robe i materijala iz inostranstva sa kompletnim obračunom uvoznih troškova.\n\n" +
+                "1. UNOS INO-FAKTURE:\n" +
+                "• Unos broja ino-fakture, ino-dobavljača, deviznog iznosa i kursa na dan carinjenja.\n\n" +
+                "2. ZAVISNI TROŠKOVI UVOZA:\n" +
+                "• Unos iznosa carine (po stopi ili fiksno), špedicije, prevoza i ostalih troškova.\n" +
+                "• Zavisni troškovi se automatski raspoređuju na uvozne nabavne cene artikala po vrednosti.\n\n" +
+                "3. KNJIŽENJE U MAGACIN I GLAVNU KNJIGU:\n" +
+                "• Automatsko knjiženje zaduženja magacina (Konto 1300 / 1010) i obaveza prema ino-dobavljaču (Konto 4350) i špediteru (Konto 4330).",
+            Kljuc = "Uvoz"
+        },
+        new PomocTema
+        {
             Naslov = "💾 Rezervne kopije (Backup & Restore)",
             Sadrzaj =
                 "Meni '💾 Rezervne kopije' omogućava zaštitu podataka pravljenjem i vraćanjem rezervnih kopija baze.\n\n" +

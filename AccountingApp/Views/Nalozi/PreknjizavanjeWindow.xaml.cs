@@ -13,6 +13,7 @@ public partial class PreknjizavanjeWindow : Window
     public PreknjizavanjeWindow()
     {
         InitializeComponent();
+        ContextHelpFix.UkloniDugmeZaPomoc(this);
     }
 
     private async void BtnIzvrsi_Click(object sender, RoutedEventArgs e)

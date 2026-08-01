@@ -38,6 +38,8 @@ public class AccountingDbContext : DbContext
     public DbSet<KursnaListaStavka> KursneListeStavke => Set<KursnaListaStavka>();
     public DbSet<FiskalniRacunLog> FiskalniRacuniLog => Set<FiskalniRacunLog>();
     public DbSet<DokumentPrilog> DokumentiPrilozi => Set<DokumentPrilog>();
+    public DbSet<UvoznaKalkulacija> UvozneKalkulacije => Set<UvoznaKalkulacija>();
+    public DbSet<UvoznaStavka> UvozneStavke => Set<UvoznaStavka>();
 
     public AccountingDbContext(DbContextOptions<AccountingDbContext> options) : base(options)
     {

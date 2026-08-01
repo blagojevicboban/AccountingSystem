@@ -18,6 +18,7 @@ public partial class ArtikalEditWindow : Window
     public ArtikalEditWindow(Artikal? existingArtikal = null)
     {
         InitializeComponent();
+        ContextHelpFix.UkloniDugmeZaPomoc(this);
         _existingArtikal = existingArtikal;
         LoadData();
     }

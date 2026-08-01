@@ -4,6 +4,25 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.44] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Devizno Knjigovodstvo & Viševalutno knjiženje** — ugrađena kompletna podrška za devizno poslovanje (EUR, USD, CHF, GBP).
+  - Proširena `StavkaNaloga` sa deviznim poljima (`Valuta`, `KursValute`, `DevizniDuguje`, `DevizniPotrazuje`) i prikaz u `NalogEditWindow`.
+  - Automatski proračun dinarske protivvrednosti po važećem NBS kursu.
+- **Automatsko Valviranje Deviznih Konta i Kursne Razlike (`DeviznoValviranjeWindow`)**:
+  - `DeviznoKnjigovodstvoService` vrši proračun i automatsko generisanje naloga knjiženja za valviranje deviznih konta na dan bilansa.
+  - Knjiženje pozitivnih kursnih razlika na **Konto 6630** (Prihodi od kursnih razlika) i negativnih na **Konto 5630** (Rashodi od kursnih razlika).
+- **Ino-Fakture i Uvozne Kalkulacije (`UvoznaKalkulacijaWindow`)**:
+  - Model `UvoznaKalkulacija` i `UvoznaStavka` sa unosom ino-fakture u devizama, proračunom carine, špedicije i prevoza.
+  - `UvoznaKalkulacijaService` vrši proporcionalnu raspodelu zavisnih uvoznih troškova na nabavne cene robe/materijala i knjiži ulaz u magacin (Konto 1300/1010) i obaveze (Konto 4350/4330).
+
+### 📚 Dokumentacija & Pomoć
+- Dodate teme "💱 Devizno knjiženje i Obračun kursnih razlika" i "🛃 Ino-fakture i Uvozne kalkulacije" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.44`).
+
+---
+
 ## [1.0.43] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti

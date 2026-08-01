@@ -67,13 +67,17 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellEditingTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Duguje" Binding="{Binding Duguje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
-                        <DataGridTextColumn Header="Potražuje" Binding="{Binding Potrazuje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
+                        <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding Duguje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
+                        <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding Potrazuje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
+                        <DataGridTextColumn Header="Valuta" Binding="{Binding Valuta, UpdateSourceTrigger=PropertyChanged}" Width="65"/>
+                        <DataGridTextColumn Header="Kurs" Binding="{Binding KursValute, UpdateSourceTrigger=PropertyChanged, StringFormat=N4}" Width="80"/>
+                        <DataGridTextColumn Header="Dev.Duguje" Binding="{Binding DevizniDuguje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Dev.Potražuje" Binding="{Binding DevizniPotrazuje, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                         <DataGridComboBoxColumn x:Name="ColPartner" Header="Partner"
                                                  SelectedValueBinding="{Binding PartnerId}"
                                                  SelectedValuePath="PartnerId"
                                                  DisplayMemberPath="Naziv"
-                                                 Width="160"/>
+                                                 Width="150"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

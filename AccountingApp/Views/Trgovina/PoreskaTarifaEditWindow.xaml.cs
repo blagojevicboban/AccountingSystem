@@ -16,6 +16,7 @@ public partial class PoreskaTarifaEditWindow : Window
     public PoreskaTarifaEditWindow(PoreskaTarifa? existingTarifa = null)
     {
         InitializeComponent();
+        ContextHelpFix.UkloniDugmeZaPomoc(this);
         _existingTarifa = existingTarifa;
 
         if (_existingTarifa != null)

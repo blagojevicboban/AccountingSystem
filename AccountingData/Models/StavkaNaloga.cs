@@ -41,4 +41,16 @@ public class StavkaNaloga
     public string? StariKonto { get; set; }
 
     public int? PromenaKod { get; set; }
+
+    [MaxLength(10)]
+    public string Valuta { get; set; } = "RSD";
+
+    [Column(TypeName = "decimal(18, 4)")]
+    public decimal KursValute { get; set; } = 1.0m;
+
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal DevizniDuguje { get; set; }
+
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal DevizniPotrazuje { get; set; }
 }

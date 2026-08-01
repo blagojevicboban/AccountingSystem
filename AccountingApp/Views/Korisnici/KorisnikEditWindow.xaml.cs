@@ -18,6 +18,7 @@ public partial class KorisnikEditWindow : Window
     public KorisnikEditWindow(AccountingDbContext db, Korisnik? korisnik = null)
     {
         InitializeComponent();
+        ContextHelpFix.UkloniDugmeZaPomoc(this);
         _db = db;
 
         if (korisnik == null)

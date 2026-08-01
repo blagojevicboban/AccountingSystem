@@ -17,6 +17,7 @@ public partial class MagacinEditWindow : Window
     public MagacinEditWindow(AccountingData.Models.Magacin? existingMagacin = null)
     {
         InitializeComponent();
+        ContextHelpFix.UkloniDugmeZaPomoc(this);
         _existingMagacin = existingMagacin;
 
         if (_existingMagacin != null)

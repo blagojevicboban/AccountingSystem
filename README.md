@@ -24,7 +24,10 @@
 - 📜 **Poreski Bilans (Obrazac PB-1 & PDP)** — usklađivanje dobiti/gubitka i nepriznatih rashoda (čl. 7, 7a, 8, 9, 15, 16) uz obračun poreza na dobit od 15% i mesečnih akontacija.
 - 🏗️ **Poreska Amortizacija (Obrazac OA)** — obračun amortizacije po I-V poreskim grupama (2.5% do 30%) i usklađivanje sa računovodstvenom amortizacijom.
 
-### DMS (Document Management System — Prilozi uz Dokumente)
+### Devizno Knjigovodstvo i Inostrano Poslovanje
+- 💱 **Viševalutno knjiženje** — Unos naloga i stavki u deviznim valutama (EUR, USD, CHF, GBP) sa praćenjem deviznog iznosa i automatskim proračunom RSD iznosa po kursu NBS.
+- 📈 **Valviranje deviznih konta i Kursne Razlike** — Automatski proračun i generisanje naloga knjiženja za valviranje deviznih stanja na dan bilansa uz proknjižavanje pozitivnih (Konto 6630) i negativnih (Konto 5630) kursnih razlika.
+- 🛃 **Ino-fakture i Uvozne Kalkulacije** — Unos uvoza robe/materijala u devizama, proračun carine, špedicije i prevoza uz proporcionalnu raspodelu zavisnih troškova na uvozne nabavne cene i knjiženje u magacin (1300/1010) i obaveze (4350).
 - 📎 **Upravljanje skeniranim ulaznim računima i ugovorima** — Prilaganje PDF i slikovnih dokumenta uz svaki nalog knjiženja (`NalogEditWindow`), fakturu ili kalkulaciju.
 - 👁️ **Sistemski pregled i bezbedno skladištenje** — Automatsko arhiviranje u podfolder `DMS/Dokumenti` i direktno otvaranje iz baze.
 

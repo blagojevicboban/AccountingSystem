@@ -14,6 +14,7 @@ public partial class MaterijalEditWindow : Window
     public MaterijalEditWindow(Materijal? existingMaterijal = null)
     {
         InitializeComponent();
+        ContextHelpFix.UkloniDugmeZaPomoc(this);
         _existingMaterijal = existingMaterijal;
         LoadData();
     }
