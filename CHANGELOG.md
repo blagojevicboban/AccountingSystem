@@ -4,6 +4,13 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.1.1] - 2026-08-01
+
+### 🎨 UI / UX
+- Ikonica 📘 na login ekranu sada bela (`Foreground="White"`) — ranije se renderovala crno i gubila na tamnom header-u.
+
+---
+
 ## [1.0.52] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti
