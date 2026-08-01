@@ -78,6 +78,8 @@ public class RacunOtpremnicaService
             {
                 if (existing.IsKnjizen) throw new InvalidOperationException("Proknjiženi račun-otpremnica se ne može menjati.");
 
+                existing.TipDokumenta = racun.TipDokumenta;
+                existing.RokVazenjaPredracuna = racun.RokVazenjaPredracuna;
                 existing.BrojRacuna = racun.BrojRacuna;
                 existing.DatumRacuna = racun.DatumRacuna;
                 existing.RokPlacanja = racun.RokPlacanja;
@@ -97,10 +99,24 @@ public class RacunOtpremnicaService
         await _db.SaveChangesAsync();
     }
 
+    /// <summary>Pretvara predračun u račun-otpremnicu: menja tip dokumenta i postavlja tekući datum kao datum računa, zadržavajući iste stavke.</summary>
+    public async Task PretvoriUFakturuAsync(int racunOtpremnicaId)
+    {
+        var racun = await _db.RacuniOtpremnice.FirstOrDefaultAsync(r => r.RacunOtpremnicaId == racunOtpremnicaId);
+        if (racun == null) throw new InvalidOperationException("Predračun nije pronađen.");
+        if (racun.TipDokumenta != TipRacunOtpremnice.Predracun) throw new InvalidOperationException("Dokument nije predračun.");
+
+        racun.TipDokumenta = TipRacunOtpremnice.Racun;
+        racun.DatumRacuna = DateTime.Now;
+        racun.RokVazenjaPredracuna = null;
+        await _db.SaveChangesAsync();
+    }
+
     public async Task KnjiziRacunAsync(int racunOtpremnicaId)
     {
         var racun = await GetRacunByIdAsync(racunOtpremnicaId);
         if (racun == null) throw new InvalidOperationException("Račun nije pronađen.");
+        if (racun.TipDokumenta == TipRacunOtpremnice.Predracun) throw new InvalidOperationException("Predračun se ne može knjižiti — prvo ga pretvorite u račun.");
         if (racun.IsKnjizen) throw new InvalidOperationException("Račun je već proknjižen.");
 
         // Automatsko kreiranje naloga knjiženja u Glavnoj knjizi

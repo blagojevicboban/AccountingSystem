@@ -198,7 +198,7 @@ public partial class NaloziView : UserControl
                 using var db = new AccountingDbContext(options);
                 var service = new NaloziService(db);
 
-                await service.RasknjiziNalogAsync(nalog.NalogId);
+                await service.RasknjiziNalogAsync(nalog.NalogId, AppSession.TrenutniKorisnik?.KorisnikId, AppSession.TrenutniKorisnik?.KorisnickoIme);
                 int nalogId = nalog.NalogId;
                 
                 _allNalozi = await service.GetNaloziAsync();
@@ -306,7 +306,7 @@ public partial class NaloziView : UserControl
             using var db = new AccountingDbContext(options);
             var service = new NaloziService(db);
 
-            await service.RasknjiziNalogAsync(selectedNalog.NalogId);
+            await service.RasknjiziNalogAsync(selectedNalog.NalogId, AppSession.TrenutniKorisnik?.KorisnikId, AppSession.TrenutniKorisnik?.KorisnickoIme);
 
             var otvoriIzmenu = MessageBox.Show(
                 $"Nalog #{selectedNalog.BrojNaloga} je rasknjižen.\n\nDa li želite odmah da ga izmenite?",

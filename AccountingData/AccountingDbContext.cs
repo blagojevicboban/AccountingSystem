@@ -34,6 +34,7 @@ public class AccountingDbContext : DbContext
     public DbSet<NivelacijaCena> NivelacijeCena => Set<NivelacijaCena>();
     public DbSet<NivelacijaStavka> NivelacijaStavke => Set<NivelacijaStavka>();
     public DbSet<PoreskaTarifa> PoreskeTarife => Set<PoreskaTarifa>();
+    public DbSet<NalogAudit> NalogAuditi => Set<NalogAudit>();
 
     public AccountingDbContext(DbContextOptions<AccountingDbContext> options) : base(options)
     {
@@ -142,6 +143,9 @@ public class AccountingDbContext : DbContext
         modelBuilder.Entity<PoreskaTarifa>()
             .HasIndex(t => t.TarifniBroj)
             .IsUnique();
+
+        modelBuilder.Entity<NalogAudit>()
+            .HasIndex(a => a.NalogId);
     }
 
     private const int PasswordSaltSize = 16;

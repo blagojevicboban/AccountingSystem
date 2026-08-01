@@ -2236,10 +2236,19 @@ public class PdfReportService
 
                         row.RelativeItem().AlignRight().Column(col =>
                         {
-                            col.Item().Text($"RAČUN - OTPREMNICA br. {racun.BrojRacuna}").Bold().FontSize(14).FontColor(Colors.Blue.Darken2);
+                            bool jePredracun = racun.TipDokumenta == TipRacunOtpremnice.Predracun;
+                            string naslovDokumenta = jePredracun ? "PREDRAČUN" : "RAČUN - OTPREMNICA";
+                            col.Item().Text($"{naslovDokumenta} br. {racun.BrojRacuna}").Bold().FontSize(14).FontColor(jePredracun ? Colors.Orange.Darken2 : Colors.Blue.Darken2);
                             col.Item().Text($"Mesto i datum izdavanja: {firma.PttIMesto ?? "Beograd"}, {racun.DatumRacuna:dd.MM.yyyy}.");
-                            col.Item().Text($"Datum prometa: {racun.DatumOtpremnice:dd.MM.yyyy}.");
-                            col.Item().Text($"Rok plaćanja: {racun.DatumRacuna.AddDays(racun.RokPlacanjaDana):dd.MM.yyyy}. ({racun.RokPlacanjaDana} dana)");
+                            if (jePredracun)
+                            {
+                                if (racun.RokVazenjaPredracuna.HasValue) col.Item().Text($"Rok važenja predračuna: {racun.RokVazenjaPredracuna.Value:dd.MM.yyyy}.");
+                            }
+                            else
+                            {
+                                col.Item().Text($"Datum prometa: {racun.DatumOtpremnice:dd.MM.yyyy}.");
+                                col.Item().Text($"Rok plaćanja: {racun.DatumRacuna.AddDays(racun.RokPlacanjaDana):dd.MM.yyyy}. ({racun.RokPlacanjaDana} dana)");
+                            }
                             if (!string.IsNullOrWhiteSpace(racun.NacinPlacanja)) col.Item().Text($"Način plaćanja: {racun.NacinPlacanja}");
                         });
                     });
@@ -2321,8 +2330,16 @@ public class PdfReportService
 
                     col.Item().PaddingTop(20).Column(c =>
                     {
-                        c.Item().Text($"Roba otpremljena uz otpremnicu broj {racun.BrojOtpremnice ?? racun.BrojRacuna.ToString()}.").FontSize(8);
-                        c.Item().Text($"Plaćanje: {racun.NacinPlacanja ?? "Virman"} u roku od {racun.RokPlacanjaDana} dana od datuma prijema robe.").FontSize(8);
+                        if (racun.TipDokumenta == TipRacunOtpremnice.Predracun)
+                        {
+                            c.Item().Text("Ovaj predračun ne predstavlja fakturu niti obavezu plaćanja, već služi za informisanje o uslovima buduće isporuke.").FontSize(8);
+                            c.Item().Text($"Plaćanje: {racun.NacinPlacanja ?? "Virman"}.").FontSize(8);
+                        }
+                        else
+                        {
+                            c.Item().Text($"Roba otpremljena uz otpremnicu broj {racun.BrojOtpremnice ?? racun.BrojRacuna.ToString()}.").FontSize(8);
+                            c.Item().Text($"Plaćanje: {racun.NacinPlacanja ?? "Virman"} u roku od {racun.RokPlacanjaDana} dana od datuma prijema robe.").FontSize(8);
+                        }
                         c.Item().Text("U slučaju spora nadležan je stvarno i mesno nadležni sud.").FontSize(8);
                         c.Item().Text("Ovaj dokument je punovažan bez potpisa i pečata.").FontSize(8);
                     });

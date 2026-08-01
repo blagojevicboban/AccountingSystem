@@ -39,7 +39,9 @@ public partial class RacunOtpremnicaEditWindow : Window
 
             if (_existingRacun != null)
             {
-                TxtNaslov.Text = $"✏️ Izmena računa-otpremnice #{_existingRacun.BrojRacuna}";
+                ChkPredracun.IsChecked = _existingRacun.TipDokumenta == TipRacunOtpremnice.Predracun;
+                DpRokVazenja.SelectedDate = _existingRacun.RokVazenjaPredracuna;
+                AzurirajNaslovITipPolja();
                 TxtBrojRacuna.Text = _existingRacun.BrojRacuna.ToString();
                 TxtBrojRacuna.IsReadOnly = true;
                 TxtBrojOtpremnice.Text = _existingRacun.BrojOtpremnice ?? _existingRacun.BrojRacuna.ToString();
@@ -67,7 +69,7 @@ public partial class RacunOtpremnicaEditWindow : Window
             }
             else
             {
-                TxtNaslov.Text = "➕ Novi račun - otpremnica";
+                AzurirajNaslovITipPolja();
                 DpDatum.SelectedDate = DateTime.Now;
 
                 int maxBr = (await db.RacuniOtpremnice.Select(r => (int?)r.BrojRacuna).MaxAsync() ?? 0) + 1;
@@ -83,6 +85,20 @@ public partial class RacunOtpremnicaEditWindow : Window
         {
             MessageBox.Show($"Greška pri učitavanju podataka: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private void ChkPredracun_CheckedChanged(object sender, RoutedEventArgs e) => AzurirajNaslovITipPolja();
+
+    private void AzurirajNaslovITipPolja()
+    {
+        bool jePredracun = ChkPredracun.IsChecked == true;
+        TxtRokVazenjaLabel.Visibility = jePredracun ? Visibility.Visible : Visibility.Collapsed;
+        DpRokVazenja.Visibility = jePredracun ? Visibility.Visible : Visibility.Collapsed;
+
+        string osnova = jePredracun ? "predračuna" : "računa-otpremnice";
+        TxtNaslov.Text = _existingRacun != null
+            ? $"✏️ Izmena {osnova} #{_existingRacun.BrojRacuna}"
+            : $"➕ Novi {(jePredracun ? "predračun" : "račun - otpremnica")}";
     }
 
     private void BtnDodajStavku_Click(object sender, RoutedEventArgs e)
@@ -134,6 +150,8 @@ public partial class RacunOtpremnicaEditWindow : Window
             var partner = await db.Partneri.FirstOrDefaultAsync(p => p.SifraPartnera == kontoKupca || p.Naziv == kontoKupca);
 
             var racun = _existingRacun ?? new RacunOtpremnica();
+            racun.TipDokumenta = ChkPredracun.IsChecked == true ? TipRacunOtpremnice.Predracun : TipRacunOtpremnice.Racun;
+            racun.RokVazenjaPredracuna = racun.TipDokumenta == TipRacunOtpremnice.Predracun ? DpRokVazenja.SelectedDate : null;
             racun.BrojRacuna = brRacuna;
             racun.BrojOtpremnice = string.IsNullOrWhiteSpace(TxtBrojOtpremnice.Text) ? brRacuna.ToString() : TxtBrojOtpremnice.Text.Trim();
             racun.DatumRacuna = DpDatum.SelectedDate ?? DateTime.Now;

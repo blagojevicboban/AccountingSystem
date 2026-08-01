@@ -492,13 +492,15 @@ public partial class TrgovinaView : UserControl
         var search = TxtPretragaRacuna.Text.Trim().ToLower();
         bool samoProknjizeni = RbProknjizeniRacuni?.IsChecked == true;
         bool samoNeproknjizeni = RbNeproknjizeniRacuni?.IsChecked == true;
+        bool samoPredracuni = RbPredracuniRacuni?.IsChecked == true;
 
         DgRacuni.ItemsSource = _sviRacuni.Where(r =>
             (string.IsNullOrEmpty(search) || r.BrojRacuna.ToString().Contains(search) ||
                                    (r.BrojOtpremnice != null && r.BrojOtpremnice.ToLower().Contains(search)) ||
                                    r.KontoKupca.ToLower().Contains(search)) &&
             (!samoProknjizeni || r.IsKnjizen) &&
-            (!samoNeproknjizeni || !r.IsKnjizen)
+            (!samoNeproknjizeni || !r.IsKnjizen) &&
+            (!samoPredracuni || r.TipDokumenta == TipRacunOtpremnice.Predracun)
         ).ToList();
 
         if (DgRacuni.Items.Count > 0) DgRacuni.SelectedIndex = 0;
@@ -515,11 +517,14 @@ public partial class TrgovinaView : UserControl
             DgRacunStavke.ItemsSource = null;
             BtnIzmeniRacun.IsEnabled = true;
             BtnKnjiziRacun.IsEnabled = true;
+            BtnPretvoriPredracun.IsEnabled = false;
             return;
         }
 
+        bool jePredracun = racun.TipDokumenta == TipRacunOtpremnice.Predracun;
         BtnIzmeniRacun.IsEnabled = !racun.IsKnjizen;
-        BtnKnjiziRacun.IsEnabled = !racun.IsKnjizen;
+        BtnKnjiziRacun.IsEnabled = !racun.IsKnjizen && !jePredracun;
+        BtnPretvoriPredracun.IsEnabled = jePredracun;
 
         try
         {
@@ -640,9 +645,44 @@ public partial class TrgovinaView : UserControl
         }
     }
 
+    private async void BtnPretvoriPredracun_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgRacuni.SelectedItem is not RacunOtpremnica selektovani)
+        {
+            MessageBox.Show("Izaberite predračun sa liste.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (selektovani.TipDokumenta != TipRacunOtpremnice.Predracun)
+        {
+            MessageBox.Show("Izabrani dokument nije predračun.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var potv = MessageBox.Show($"Pretvoriti predračun br. {selektovani.BrojRacuna} u račun-otpremnicu?\nDatum računa će biti postavljen na današnji dan.",
+            "Pretvaranje predračuna", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (potv != MessageBoxResult.Yes) return;
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+            var service = new RacunOtpremnicaService(db);
+            await service.PretvoriUFakturuAsync(selektovani.RacunOtpremnicaId);
+
+            MessageBox.Show($"Predračun br. {selektovani.BrojRacuna} je pretvoren u račun-otpremnicu.", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+            LoadRacune();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri pretvaranju predračuna: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private async void BtnMasovnoKnjizenjeRacuna_Click(object sender, RoutedEventArgs e)
     {
-        var neknjizeni = _sviRacuni.Where(r => !r.IsKnjizen).ToList();
+        var neknjizeni = _sviRacuni.Where(r => !r.IsKnjizen && r.TipDokumenta != TipRacunOtpremnice.Predracun).ToList();
         if (neknjizeni.Count == 0)
         {
             MessageBox.Show("Nema neknjiženih računa za knjiženje.", "Informacija", MessageBoxButton.OK, MessageBoxImage.Information);

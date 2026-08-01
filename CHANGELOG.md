@@ -4,6 +4,20 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.36] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Predračun (Trgovina — Računi-Otpremnice)** — isti ekran za unos računa-otpremnice sada ima čekboks "📝 Predračun" koji otkriva polje "Rok važenja predračuna". Predračun se ne može proknjižiti dok se prvo ne pretvori u pravi račun (novo dugme "🔁 Pretvori u račun" — zadržava sve stavke, samo postavlja tekući datum i menja tip dokumenta). Lista računa ima novu kolonu "Tip" i filter "Predračuni". PDF štampa predračuna ispisuje "PREDRAČUN" zaglavlje, rok važenja umesto roka plaćanja, i napomenu da ne predstavlja obavezu plaćanja. Uvoz starih DOS podataka (RAC_OTP.DBF) ostaje nepromenjen — svi uvezeni računi ostaju tipa "Račun", pošto stari DOS program predračun nikad nije ni implementirao (pozivane `izmena_predrac()`/`stampa_predrac()` procedure nisu postojale nigde u legacy kodu).
+- **Trag rasknjižavanja naloga (`NalogAudit`) i zaštita od razilaženja sa prenetim početnim stanjem** — rasknjižavanje naloga u Glavnoj knjizi sada upisuje ko i kada je rasknjižio (korisnik, vreme, broj naloga) radi revizije, i odbija rasknjižavanje naloga iz godine za koju je već napravljen prenos početnog stanja u narednu godinu (jer bi to tiho razišlo preneto stanje od stvarnog prometa).
+
+### 🐛 Ispravke i Validacije
+- **Gubljenje podataka na Računu-Otpremnici posle ponovnog učitavanja** — polja `BrojOtpremnice`, `KontoKupca`, `RokPlacanjaDana` i `NacinPlacanja` su bila označena `[NotMapped]` (bez veze sa kolonom u bazi), pa su se posle svakog snimanja i ponovnog otvaranja tiho vraćala na podrazumevane vrednosti (npr. rok plaćanja uvek nazad na 15 dana, broj otpremnice i način plaćanja se brišu, kupac ostaje prazan ako nije prepoznat kao postojeći partner). Sada su stvarno mapirana u bazu (migracija `MapirajPoljaRacunOtpremnice`); dodat test koji snima račun i učitava ga preko potpuno novog konteksta baze da dokaže da vrednosti opstaju.
+
+### 📚 Dokumentacija
+- Ažuriran README.md sa opisom Predračuna i revizionog traga rasknjižavanja naloga. Ažuriran `run-accounting-app` skill (UI-test alat) sa novim saznanjima o tajmingu prijave, `ComboBox` fokusiranju i pretpodešenim dozvolama za bržu vožnju aplikacije.
+
+---
+
 ## [1.0.35] - 2026-07-31
 
 ### 🚀 Nove funkcionalnosti

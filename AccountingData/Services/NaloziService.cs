@@ -76,8 +76,13 @@ public class NaloziService
     /// <summary>
     /// Vraća proknjižen nalog u status nacrta (analogno legacy rasknjizi proceduri
     /// iz FIN3.PRG) da bi mogao ponovo da se izmeni pre eventualnog ponovnog knjiženja.
+    /// Odbija nalog iz godine za koju je već napravljen prenos početnog stanja u
+    /// narednu godinu (NovaGodinaService), jer bi rasknjižavanje posle toga tiho
+    /// razišlo već preneto početno stanje od stvarnog stanja prethodne godine.
+    /// Upisuje i trag u NalogAudit (ko/kada) — korisnikId/korisnickoIme dolazi iz
+    /// UI sloja (AppSession), jer AccountingData ne zna za trenutnu sesiju.
     /// </summary>
-    public async Task<bool> RasknjiziNalogAsync(int nalogId)
+    public async Task<bool> RasknjiziNalogAsync(int nalogId, int? korisnikId = null, string? korisnickoIme = null)
     {
         var nalog = await GetNalogByIdAsync(nalogId);
         if (nalog == null) return false;
@@ -87,8 +92,28 @@ public class NaloziService
             throw new InvalidOperationException($"Nalog {nalog.BrojNaloga} nije proknjižen.");
         }
 
+        var narednaGodina = nalog.DatumNaloga.Year + 1;
+        if (await new NovaGodinaService(_db).PostojiPrenosAsync(narednaGodina))
+        {
+            throw new InvalidOperationException(
+                $"Nalog {nalog.BrojNaloga} je iz {nalog.DatumNaloga.Year}. godine, za koju je već napravljen " +
+                $"prenos početnog stanja u {narednaGodina}. godinu. Rasknjižavanje bi razišlo preneto početno " +
+                "stanje od stvarnog prometa — prvo poništite/ponovite prenos ako je rasknjižavanje zaista potrebno.");
+        }
+
         nalog.IsKnjizen = false;
         nalog.DatumKnjiženja = null;
+
+        _db.NalogAuditi.Add(new NalogAudit
+        {
+            NalogId = nalog.NalogId,
+            BrojNaloga = nalog.BrojNaloga,
+            Akcija = "Rasknjizavanje",
+            KorisnikId = korisnikId,
+            KorisnickoIme = korisnickoIme,
+            Vreme = DateTime.Now
+        });
+
         await _db.SaveChangesAsync();
         return true;
     }

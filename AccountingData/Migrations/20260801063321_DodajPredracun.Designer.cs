@@ -3,6 +3,7 @@ using System;
 using AccountingData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AccountingData.Migrations
 {
     [DbContext(typeof(AccountingDbContext))]
-    partial class AccountingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260801063321_DodajPredracun")]
+    partial class DodajPredracun
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
@@ -747,40 +750,6 @@ namespace AccountingData.Migrations
                     b.ToTable("Nalozi");
                 });
 
-            modelBuilder.Entity("AccountingData.Models.NalogAudit", b =>
-                {
-                    b.Property<int>("NalogAuditId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Akcija")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("BrojNaloga")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("KorisnickoIme")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("KorisnikId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("NalogId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("Vreme")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("NalogAuditId");
-
-                    b.HasIndex("NalogId");
-
-                    b.ToTable("NalogAuditi");
-                });
-
             modelBuilder.Entity("AccountingData.Models.NivelacijaCena", b =>
                 {
                     b.Property<int>("NivelacijaCenaId")
@@ -1033,10 +1002,6 @@ namespace AccountingData.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("BrojOtpremnice")
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("BrojRacuna")
                         .HasColumnType("INTEGER");
 
@@ -1046,17 +1011,8 @@ namespace AccountingData.Migrations
                     b.Property<bool>("IsKnjizen")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("KontoKupca")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("TEXT");
-
                     b.Property<int?>("MagacinId")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("NacinPlacanja")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
 
                     b.Property<int?>("NalogId")
                         .HasColumnType("INTEGER");
@@ -1070,9 +1026,6 @@ namespace AccountingData.Migrations
 
                     b.Property<DateTime?>("RokPlacanja")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("RokPlacanjaDana")
-                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("RokVazenjaPredracuna")
                         .HasColumnType("TEXT");

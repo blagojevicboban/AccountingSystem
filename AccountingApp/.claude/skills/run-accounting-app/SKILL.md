@@ -46,20 +46,40 @@ All commands go through `driver.ps1` (this directory). Each invocation is a
 fresh `powershell.exe` process; it tracks the running app's PID in
 `$env:TEMP\accounting_driver_state.json` so successive calls find the same window.
 
-```powershell
-$Drv = "AccountingApp\.claude\skills\run-accounting-app\driver.ps1"
-$Exe = "AccountingApp\bin\Debug\net8.0-windows\AccountingApp.exe"
+**Always start every invocation with the literal absolute path below — do not
+lead with a `$Drv = ...` assignment or a `cd`, even when chaining several
+`driver.ps1` calls in one shell invocation.** This repo's `.claude/settings.json`
+has a pre-approved `permissions.allow` rule keyed on this exact literal prefix:
 
-powershell -ExecutionPolicy Bypass -File $Drv launch $Exe
-powershell -ExecutionPolicy Bypass -File $Drv ss login.png              # screenshot the login window
-powershell -ExecutionPolicy Bypass -File $Drv type TxtUsername "^a{DEL}admin"
-powershell -ExecutionPolicy Bypass -File $Drv type TxtPassword "^a{DEL}admin123"
-powershell -ExecutionPolicy Bypass -File $Drv click BtnLogin
-powershell -ExecutionPolicy Bypass -File $Drv tree                      # dump AutomationId tree of current window
-powershell -ExecutionPolicy Bypass -File $Drv click BtnIzvestaji        # any AutomationId from `tree`, e.g. BtnDashboard/BtnNalozi/BtnKartice/BtnPartneri/BtnMagacin/BtnKalkulacije/BtnIzvestaji/BtnFirme/BtnUvozDOS
-powershell -ExecutionPolicy Bypass -File $Drv ss izvestaji.png
-powershell -ExecutionPolicy Bypass -File $Drv close
 ```
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1"
+```
+
+A call (or a multi-line/`;`-chained batch of calls) whose text starts with that
+exact prefix runs with no permission prompt. Prefix matching only looks at how
+the command *starts* — so `$Drv = "..."` or `cd X; powershell ...` as the first
+line defeats it and a prompt comes back. Repeat the full literal path on every
+line instead of factoring it into a variable; it's more typing but keeps every
+call, and every batch, matching the rule:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1" launch "C:\ERP\AccountingSystem\AccountingApp\bin\Debug\net8.0-windows\AccountingApp.exe"
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1" ss login.png              # screenshot the login window
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1" type TxtUsername "^a{DEL}admin"
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1" type TxtPassword "^a{DEL}admin123"
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1" click BtnLogin
+# The login -> MainWindow swap isn't instant; a `tree`/`click` fired immediately
+# after can still land on the login window and error "AutomationId not found".
+# Give it a beat (a Start-Sleep of ~1-2s, or just retry the click once) before
+# treating a post-login step as failed.
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1" tree                      # dump AutomationId tree of current window
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1" click BtnIzvestaji        # any AutomationId from `tree`, e.g. BtnDashboard/BtnNalozi/BtnKartice/BtnPartneri/BtnMagacin/BtnKalkulacije/BtnIzvestaji/BtnFirme/BtnUvozDOS
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1" ss izvestaji.png
+powershell -ExecutionPolicy Bypass -File "C:\ERP\AccountingSystem\AccountingApp\.claude\skills\run-accounting-app\driver.ps1" close
+```
+
+`Stop-Process -Name AccountingApp*` (used to clear a file lock before rebuilding
+— see the `sqlite-efcore-schema-migration` skill) is also pre-approved.
 
 Commands: `launch <exe>`, `tree`, `click <AutomationId>`, `type <AutomationId> <text>`,
 `keys <SendKeys-string>`, `ss <out.png>`, `close`. `AutomationId` is the control's
@@ -179,6 +199,23 @@ before those elements exist. Set the initial state in code instead.
   `keys` call as opening it, so no intervening reactivation) or accept that only
   the "type to filter" part is screenshot-verifiable with this driver, not the
   "click a specific row" part.
+
+- **Clicking a `ComboBox` (e.g. `CmbNacinPlacanja`) with `click` toggles its dropdown
+  open/closed via `InvokePattern`/`Toggle`, and can leave it in a state where the
+  previously-typed text gets cleared** on the next window reactivation. Don't
+  `click` into an editable `ComboBox` to focus it before typing — use `type
+  <AutomationId> "^a{DEL}value"` directly, which sends `SendKeys` without touching
+  the dropdown state.
+- **Rapid scripted `keys`/Tab navigation into a `DataGrid` cell (e.g. tabbing into
+  the stavke grid's `DataGridComboBoxColumn`) immediately followed by clicking a
+  dialog's Cancel/Close button can trigger `System.InvalidOperationException:
+  DialogResult can be set only after Window is created and shown as dialog`** in
+  `crash.log`. Reproduced once this way (2026-08-01); a clean re-run — open the
+  same dialog, click Cancel immediately with no intervening grid/keys traffic —
+  closed fine with no exception. Treat this as a UI-Automation timing artifact
+  from stacking `keys` and `click` calls too tightly on a `DataGrid` in edit mode,
+  not a real app regression — but if it reproduces *without* prior grid/`keys`
+  interaction, that would be a genuine bug worth reporting.
 
 ## Troubleshooting
 

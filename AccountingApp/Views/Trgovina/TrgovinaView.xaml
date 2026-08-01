@@ -411,6 +411,7 @@
                                 <Button x:Name="BtnIzmeniRacun" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,6,2" Click="BtnIzmeniRacun_Click"/>
                                 <Button x:Name="BtnKnjiziRacun" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" Click="BtnKnjiziRacun_Click"/>
                                 <Button x:Name="BtnMasovnoKnjizenjeRacuna" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,6,2" Click="BtnMasovnoKnjizenjeRacuna_Click"/>
+                                <Button x:Name="BtnPretvoriPredracun" Content="🔁" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Width="36" Padding="0" ToolTip="Pretvori predračun u račun" Margin="0,2,6,2" Click="BtnPretvoriPredracun_Click"/>
                                 <Button x:Name="BtnExportExcelRacuni" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,6,2" Click="BtnExportExcelRacuni_Click"/>
                                 <Button x:Name="BtnStampajRacun" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj Račun (PDF)" Margin="0,2,0,2" Click="BtnStampajRacun_Click"/>
                             </WrapPanel>
@@ -420,7 +421,8 @@
                                 <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
                                     <RadioButton x:Name="RbSviRacuni" Content="Svi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
                                     <RadioButton x:Name="RbProknjizeniRacuni" Content="Proknjiženi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
-                                    <RadioButton x:Name="RbNeproknjizeniRacuni" Content="Neproknjiženi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Checked="Filter_Racuni_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniRacuni" Content="Neproknjiženi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
+                                    <RadioButton x:Name="RbPredracuniRacuni" Content="Predračuni" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Checked="Filter_Racuni_Changed"/>
                                 </WrapPanel>
                             </WrapPanel>
                         </DockPanel>
@@ -432,6 +434,7 @@
                             <DataGrid x:Name="DgRacuni" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
                                       SelectionChanged="DgRacuni_SelectionChanged" MouseDoubleClick="DgRacuni_MouseDoubleClick">
                                 <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Tip" Binding="{Binding TipDokumenta}" Width="85"/>
                                     <DataGridTextColumn Header="Br. računa" Binding="{Binding BrojRacuna}" SortMemberPath="BrojRacuna" Width="110"/>
                                     <DataGridTextColumn Header="Br. otpremnice" Binding="{Binding BrojOtpremnice}" Width="110"/>
                                     <DataGridTextColumn Header="Datum" Binding="{Binding DatumRacuna, StringFormat=\{0:dd.MM.yyyy\}}" Width="95"/>

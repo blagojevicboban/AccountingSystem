@@ -3,10 +3,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AccountingData.Models;
 
+public enum TipRacunOtpremnice
+{
+    Racun = 0,
+    Predracun = 1
+}
+
 public class RacunOtpremnica
 {
     [Key]
     public int RacunOtpremnicaId { get; set; }
+
+    public TipRacunOtpremnice TipDokumenta { get; set; } = TipRacunOtpremnice.Racun;
+
+    public DateTime? RokVazenjaPredracuna { get; set; }
 
     public int BrojRacuna { get; set; }
 
@@ -44,15 +54,14 @@ public class RacunOtpremnica
 
     public List<RacunOtpremnicaStavka> Stavke { get; set; } = new();
 
-    [NotMapped]
+    [MaxLength(20)]
     public string? BrojOtpremnice { get; set; }
     [NotMapped]
     public DateTime DatumOtpremnice { get => DatumRacuna; set => DatumRacuna = value; }
-    [NotMapped]
+    [MaxLength(30)]
     public string KontoKupca { get; set; } = string.Empty;
-    [NotMapped]
     public int RokPlacanjaDana { get; set; } = 15;
-    [NotMapped]
+    [MaxLength(50)]
     public string? NacinPlacanja { get; set; }
     [NotMapped]
     public decimal IznosBezPdv { get => UkupnoOsnovica; set => UkupnoOsnovica = value; }
