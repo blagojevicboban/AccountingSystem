@@ -6,10 +6,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1100">
 
-    <UserControl.Resources>
-        <ResourceDictionary Source="/Resources/Styles.xaml"/>
-    </UserControl.Resources>
-
     <Grid Margin="16">
         <TabControl x:Name="TabMestaTroska" Background="Transparent" BorderThickness="0">
 

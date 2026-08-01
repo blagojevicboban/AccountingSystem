@@ -6,10 +6,6 @@
         WindowStartupLocation="CenterOwner"
         Background="#F8FAFC">
 
-    <Window.Resources>
-        <ResourceDictionary Source="/Resources/Styles.xaml"/>
-    </Window.Resources>
-
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Header -->

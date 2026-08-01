@@ -49,7 +49,7 @@ jobs:
               "--packDir", "publish_output",
               "--mainExe", "AccountingApp.exe",
               "--outputDir", "ReleasePackage",
-              "--packTitle", "AccountingSystem",
+              "--packTitle", "ERPi Finansije",
               "--packAuthors", "Blagojevic Boban",
               "--icon", "AccountingApp\app.ico"
           )

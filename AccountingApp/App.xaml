@@ -95,6 +95,47 @@
             <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>
 
+        <!-- Aliasi za DataGrid ElementStyle poravnanje (iste konvencije kao NumericColumnElementStyle) -->
+        <Style x:Key="RightAlign" TargetType="TextBlock" BasedOn="{StaticResource NumericColumnElementStyle}"/>
+        <Style x:Key="RightAlignStyle" TargetType="TextBlock" BasedOn="{StaticResource NumericColumnElementStyle}"/>
+        <Style x:Key="CenterAlign" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Primarno dugme — isti izgled kao ActionButtonStyle, samo pod nazivom koji koriste noviji ekrani -->
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}"/>
+
+        <!-- Sekundarno (neutralno) dugme — za "Odustani"/manje istaknute akcije pored PrimaryButton -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Background" Value="#F1F5F9"/>
+            <Setter Property="Foreground" Value="#334155"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Visoko uočljiv stil za aktivne / fokusirane ćelije u svim DataGrid tabelama (narandžasti okvir) -->
         <Style TargetType="DataGridCell">
             <Setter Property="Padding" Value="4,2"/>
