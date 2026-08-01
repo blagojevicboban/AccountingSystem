@@ -4,6 +4,23 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.42] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Prateći APR Finansijski Izveštaji & Poreski Bilans (PB-1, PDP, OA)** — ugrađen kompletni set finansijskih i poreskih izveštaja za predaju APR-u i Poreskoj upravi RS.
+  - **Statistički izveštaj (SI)**: Automatska priprema statističkih AOP pozicija 9001-9010 (zarade, troškovi robe, usluga, nabavke osnovnih sredstava i porezi).
+  - **Izveštaj o tokovima gotovine (Cash Flow Statement)**: Obračun priliva i odliva gotovine po AOP pozicijama 3001-3040 iz poslovnih, investicionih i finansijskih aktivnosti.
+  - **Izveštaj o promenama na kapitalu**: Matrica promena osnovnog kapitala, rezervi, neraspoređene dobiti i gubitka u toku godine (AOP 4001-4010).
+  - **Poreski Bilans Obrazac PB-1 (`PoreskiBilansWindow`)**: Obračun oporezive dobiti sa usklađivanjem nepriznatih rashoda (reprezentacija iznad 0.5%, zatezne kamate, kazne i penali, donacije iznad 5%) i stope poreza na dobit od 15%.
+  - **Poreska Amortizacija Obrazac OA (`GenerisiPoreskuAmortizacijuOaAsync`)**: Obračun amortizacije po I-V grupama osnovnih sredstava (2.5% do 30%) i usklađivanje sa računovodstvenom amortizacijom u PB-1.
+  - **Obrazac PDP (Poreska Prijava)**: Priprema poreske prijave poreza na dobit sa obračunatim porezom i mesečnim akontacijama za naredni period.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata ugrađena tema "🏛️ Bilansi (APR) i Poreski Bilans (PB-1 / PDP / OA)" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `ANALIZA_I_PLAN.md`.
+
+---
+
 ## [1.0.41] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti

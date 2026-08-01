@@ -199,18 +199,22 @@ public partial class PomocView : UserControl
         },
         new PomocTema
         {
-            Naslov = "🏛️ Bilansi (APR)",
+            Naslov = "🏛️ Bilansi (APR) i Poreski Bilans (PB-1 / PDP / OA)",
             Sadrzaj =
-                "Meni '🏛️ Bilansi (APR)' generiše zvanične finansijske izveštaje za predaju Agenciji za privredne registre.\n\n" +
-                "1. DVA TABA:\n" +
-                "• Bilans stanja — Imovina, Kapital i Obaveze na dan izveštavanja.\n" +
-                "• Bilans uspeha — Prihodi, Rashodi i Finansijski rezultat za period.\n\n" +
-                "2. OSVEŽAVANJE OBRAČUNA:\n" +
-                "• Dugme '🔄 Osveži obračun' ponovo izračunava vrednosti na osnovu svih proknjiženih (ne i nacrt) naloga glavne knjige.\n\n" +
-                "3. AOP KOLONE:\n" +
-                "• Svaka pozicija bilansa (AOP) mapirana je na opseg konta iz Kontnog plana — izmena kontnog plana može uticati na koje AOP pozicije se sabira konto.\n\n" +
-                "4. IZVOZ:\n" +
-                "• Dugmad '🖨️ PDF' i '📊 Excel' izvoze trenutno prikazan tab (Bilans stanja ili Bilans uspeha) posebno.",
+                "Meni '🏛️ Bilansi (APR)' generiše zvanične finansijske izveštaje za predaju Agenciji za privredne registre i Poreskoj upravi RS.\n\n" +
+                "1. FINANSIJSKI IZVEŠTAJI ZA APR (5 TABOVA):\n" +
+                "• Bilans stanja — Imovina, Kapital i Obaveze na dan izveštavanja po AOP pozicijama.\n" +
+                "• Bilans uspeha — Prihodi, Rashodi i Finansijski rezultat (Dobitak/Gubitak).\n" +
+                "• Statistički izveštaj (SI) — Opšti i statistički podaci za APR i Poresku upravu.\n" +
+                "• Tokovi gotovine (Cash Flow) — Prilivi i odlivi iz poslovnih, investicionih i finansijskih aktivnosti.\n" +
+                "• Promene na kapitalu — Matrica promena osnovnog kapitala, rezervi i neraspoređene dobiti u toku godine.\n\n" +
+                "2. PORESKI BILANS I PRIJAVA POREZA NA DOBIT:\n" +
+                "• Klikom na dugme '📜 Poreski Bilans (PB-1 / PDP / OA)' otvara se prozor za usklađivanje dobiti i obračun poreza na dobit (15%).\n" +
+                "• Obrazac PB-1 — Usklađivanje rashoda (nepriznati rashodi po čl. 7, 7a, 8, 9, 15, 16 Zakona o porezu na dobit) i prihoda.\n" +
+                "• Obrazac OA — Obračun poreske amortizacije po I–V grupama (Stopa 2.5% do 30%) i poređenje sa računovodstvenom amortizacijom.\n" +
+                "• Obrazac PDP — Poreska prijava sa obračunatim porezom na dobit i predloženim mesečnim akontacijama.\n\n" +
+                "3. OSVEŽAVANJE I IZVOZ:\n" +
+                "• Dugme '🔄 Osveži obračun' izračunava sve vrednosti iz proknjiženih naloga, a dugmad '🖨️ PDF' i 'X Excel' izvoze izveštaje.",
             Kljuc = "Bilansi"
         },
         new PomocTema

@@ -18,10 +18,11 @@
 - 💰 **Kamate** — obračun zatezne kamate po danu kašnjenja, sa podrškom za više kamatnih stopa kroz vreme; unos novih stopa iz aplikacije.
 - 📊 **Bruto bilans analitike** — promet i saldo po partneru (paralelno finansijskom bruto bilansu po kontu).
 
-### Zvanični Finansijski Izveštaji za APR (Bilansi)
-- 🏛️ **Bilans Stanja** — Obračun AOP pozicija za Aktivu (Klasa 0–2) i Pasivu (Klasa 3–4) na izabrani datum, uz automatsku proveru ravnoteže (`Aktiva == Pasiva`).
-- 📈 **Bilans Uspeha** — Obračun AOP pozicija za Poslovne prihode (Klasa 6), Poslovne rashode (Klasa 5), Finansijske prihode/rashode i obračun Neto dobitka ili gubitka perioda.
-- 📥 **PDF Štampa Bilansa** — Izvoz zvaničnih PDF izveštaja Bilansa Stanja i Bilansa Uspeha.
+### Zvanični APR Bilansi i Poreski Bilans (FIN & POREZ)
+- 🏛️ **Bilans Stanja i Bilans Uspeha** — zvanični AOP obrasci sa proverom ravnoteže (Aktiva = Pasiva).
+- 📋 **Statistički izveštaj (SI)**, 💵 **Tokovi gotovine (Cash Flow)** i 📈 **Promene na kapitalu** — kompletni prateći izveštaji za APR sa AOP pozicijama.
+- 📜 **Poreski Bilans (Obrazac PB-1 & PDP)** — usklađivanje dobiti/gubitka i nepriznatih rashoda (čl. 7, 7a, 8, 9, 15, 16) uz obračun poreza na dobit od 15% i mesečnih akontacija.
+- 🏗️ **Poreska Amortizacija (Obrazac OA)** — obračun amortizacije po I-V poreskim grupama (2.5% do 30%) i usklađivanje sa računovodstvenom amortizacijom.
 
 ### SEF e-Fakture (Sistem Elektronskih Faktura RS)
 - ⚡ **Direktna SEF API konekcija** — Slanje izlaznih e-faktura direktno na SEF portal (`POST /sales-invoice/ubl`), provera statusa u realnom vremenu i preuzimanje ulaznih e-faktura dobavljača.

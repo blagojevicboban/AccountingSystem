@@ -89,10 +89,31 @@ public partial class BilansiView : UserControl
                 TxtNetoRezultat.Text = "⚖️ Rezultat poslovanja je 0.00 RSD";
                 TxtNetoRezultat.Foreground = System.Windows.Media.Brushes.Blue;
             }
+            // 3. Statistički izveštaj (SI), Cash Flow i Promene na kapitalu
+            int godina = (DpDoDatuma.SelectedDate ?? DateTime.Today).Year;
+            var aprProsireniService = new AprProsireniIzvestajiService(db);
+
+            DgStatistickiIzvestaj.ItemsSource = await aprProsireniService.GenerisiStatistickiIzvestajAsync(godina);
+            DgCashFlow.ItemsSource = await aprProsireniService.GenerisiCashFlowAsync(godina);
+            DgPromeneNaKapitalu.ItemsSource = await aprProsireniService.GenerisiPromeneNaKapitaluAsync(godina);
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri obračunu bilansa: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnOtvoriPoreskiBilans_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            int godina = (DpDoDatuma.SelectedDate ?? DateTime.Today).Year;
+            var win = new PoreskiBilansWindow(godina) { Owner = Window.GetWindow(this) };
+            win.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju Poreskog Bilansa: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -154,4 +175,13 @@ public partial class BilansiView : UserControl
 
     private void BtnExportExcelBilansUspeha_Click(object sender, RoutedEventArgs e)
         => ExcelExportService.ExportDataGridToExcel(DgBilansUspeha, "Bilans Uspeha", "Bilans_Uspeha");
+
+    private void BtnExportExcelSI_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgStatistickiIzvestaj, "Statistički Izveštaj (SI)", "Statisticki_Izvestaj_SI");
+
+    private void BtnExportExcelCashFlow_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgCashFlow, "Tokovi Gotovine (Cash Flow)", "Tokovi_Gotovine_Cash_Flow");
+
+    private void BtnExportExcelKapital_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgPromeneNaKapitalu, "Promene na Kapitalu", "Promene_Na_Kapitalu");
 }

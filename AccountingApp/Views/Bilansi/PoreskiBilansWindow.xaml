@@ -1,0 +1,113 @@
+<Window x:Class="AccountingApp.Views.Bilansi.PoreskiBilansWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="📜 Poreski Bilans i Prijava Poreza na Dobit (Obrazac PB-1, PDP i OA)" Height="700" Width="1050"
+        WindowStartupLocation="CenterOwner" Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="📜 Obračun Poreza na Dobit Pravnih Lica (PB-1 / PDP / OA)" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+                <TextBlock Text="Usklađivanje rashoda, obračun poreske amortizacije i priprema poreske prijave za Poresku upravu RS." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0"/>
+            </StackPanel>
+            <Button Grid.Column="1" Content="X Izvozi u Excel" Style="{StaticResource ActionButtonStyle}" Background="#059669" Height="36" Padding="16,0" Click="BtnExportExcel_Click"/>
+        </Grid>
+
+        <!-- Tabovi -->
+        <TabControl Grid.Row="1" Background="White">
+
+            <!-- TAB 1: OBRAZAC PB-1 -->
+            <TabItem Header="📜 Obrazac PB-1 (Poreski bilans)">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Usklađivanje dobiti i nepriznatih rashoda po Zakonu o porezu na dobit pravnih lica RS" FontSize="13" FontWeight="SemiBold" Foreground="#0369A1" Margin="0,0,0,10"/>
+                    <DataGrid Grid.Row="1" x:Name="DgPb1" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="R.Br." Binding="{Binding RedniBroj}" Width="55" FontWeight="Bold"/>
+                            <DataGridTextColumn Header="Pozicija usklađivanja" Binding="{Binding Opis}" Width="*"/>
+                            <DataGridTextColumn Header="Računovodstveni iznos" Binding="{Binding RacunovodstveniIznos, StringFormat={}{0:N2}}" Width="160" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            <DataGridTextColumn Header="Poreski iznos" Binding="{Binding PoreskiIznos, StringFormat={}{0:N2}}" Width="160" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            <DataGridTextColumn Header="Usklađivanje (+/-)" Binding="{Binding Uskladjivanje, StringFormat={}{0:N2}}" Width="160" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 2: OBRAZAC OA -->
+            <TabItem Header="🏗️ Obrazac OA (Poreska Amortizacija)">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Obračun amortizacije osnovnih sredstava po poreskim grupama I-V (Stopa 2.5% do 30%)" FontSize="13" FontWeight="SemiBold" Foreground="#0D9488" Margin="0,0,0,10"/>
+                    <DataGrid Grid.Row="1" x:Name="DgOa" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Grupa" Binding="{Binding Grupa}" Width="60" FontWeight="Bold"/>
+                            <DataGridTextColumn Header="Naziv poreske grupe" Binding="{Binding NazivGrupe}" Width="*"/>
+                            <DataGridTextColumn Header="Stopa %" Binding="{Binding PoreskaStopa, StringFormat={}{0:N1}%}" Width="80"/>
+                            <DataGridTextColumn Header="Nabavna vrednost" Binding="{Binding NabavnaVrednost, StringFormat={}{0:N2}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            <DataGridTextColumn Header="Poreska amortizacija" Binding="{Binding PoreskaAmortizacija, StringFormat={}{0:N2}}" Width="150" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            <DataGridTextColumn Header="Rač. amortizacija" Binding="{Binding RacunovodstvenaAmortizacija, StringFormat={}{0:N2}}" Width="150" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            <DataGridTextColumn Header="Razlika (PB-1)" Binding="{Binding RazlikaAmortizacije, StringFormat={}{0:N2}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 3: OBRAZAC PDP -->
+            <TabItem Header="📋 Obrazac PDP (Poreska Prijava)">
+                <Border Padding="20" Background="#F8FAFC">
+                    <StackPanel MaxWidth="600" HorizontalAlignment="Left">
+                        <TextBlock Text="📋 Poreska Prijava Poreza na Dobit (Obrazac PDP)" FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,16"/>
+
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="Obveznik / Firma:" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="TxtPdpFirma" Text="-" HorizontalAlignment="Right" FontWeight="Bold"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="PIB Obveznika:" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="TxtPdpPib" Text="-" HorizontalAlignment="Right" FontFamily="Consolas"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="Oporeziva Poreska Dobit:" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="TxtPdpOporezivaDobit" Text="0.00 RSD" HorizontalAlignment="Right" FontWeight="Bold"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="Zakonska stopa poreza:" FontWeight="SemiBold"/>
+                            <TextBlock Text="15.00 %" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Border Height="1" Background="#CBD5E1" Margin="0,6,0,12"/>
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="UKUPNO OBRAČUNATI POREZ NA DOBIT:" FontSize="14" FontWeight="Bold" Foreground="#0284C7"/>
+                            <TextBlock x:Name="TxtPdpObracunatiPorez" Text="0.00 RSD" HorizontalAlignment="Right" FontSize="16" FontWeight="Bold" Foreground="#0284C7"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,14">
+                            <TextBlock Text="Predložena mesečna akontacija za narednu godinu:" FontWeight="SemiBold" Foreground="#475569"/>
+                            <TextBlock x:Name="TxtPdpAkontacija" Text="0.00 RSD / mesečno" HorizontalAlignment="Right" FontWeight="Bold" Foreground="#059669"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+        </TabControl>
+
+        <!-- Footer -->
+        <Grid Grid.Row="2" Margin="0,16,0,0">
+            <TextBlock x:Name="TxtStatus" Text="Obračun poreskog bilansa je završen." VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}"/>
+            <Button Content="Zatvori" Width="100" Height="34" HorizontalAlignment="Right" Click="BtnZatvori_Click"/>
+        </Grid>
+    </Grid>
+</Window>
