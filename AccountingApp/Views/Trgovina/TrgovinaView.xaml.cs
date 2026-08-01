@@ -2323,4 +2323,132 @@ public partial class TrgovinaView : UserControl
 
     private void BtnExportExcelRobniBruto_Click(object sender, RoutedEventArgs e)
         => Services.ExcelExportService.ExportDataGridToExcel(DgRobniBrutoBilans, "Robni Bruto bilans", "Robni_Bruto_Bilans");
+
+    #region SEF e-Fakture Event Handleri
+
+    private async void BtnPosaljiNaSef_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgRacuni.SelectedItem is not RacunOtpremnica selektovani)
+        {
+            MessageBox.Show("Molimo izaberite račun/fakturu iz tabele sa liste.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var confirm = MessageBox.Show($"Da li ste sigurni da želite da pošaljete fakturu br. {selektovani.BrojRacuna} na SEF portal?",
+            "Potvrda slanja na SEF", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes) return;
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+
+            var service = new SefService(db);
+            var res = await service.PosaljiNaSefAsync(selektovani.RacunOtpremnicaId);
+
+            if (res.Success)
+            {
+                MessageBox.Show($"✅ {res.Message}", "Uspešno slanje na SEF", MessageBoxButton.OK, MessageBoxImage.Information);
+                LoadRacune();
+            }
+            else
+            {
+                MessageBox.Show($"❌ {res.Message}", "Greška pri slanju na SEF", MessageBoxButton.OK, MessageBoxImage.Error);
+                LoadRacune();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnOsveziSefStatus_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgRacuni.SelectedItem is not RacunOtpremnica selektovani)
+        {
+            MessageBox.Show("Molimo izaberite račun/fakturu iz tabele.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+
+            var service = new SefService(db);
+            var res = await service.OsveziStatusNaSefuAsync(selektovani.RacunOtpremnicaId);
+
+            if (res.Success)
+            {
+                MessageBox.Show($"✅ Status sa SEF-a: {res.Status}\n{res.Message}", "SEF Status", MessageBoxButton.OK, MessageBoxImage.Information);
+                LoadRacune();
+            }
+            else
+            {
+                MessageBox.Show($"❌ {res.Message}", "Greška pri proveri statusa", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnSacuvajUblXml_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgRacuni.SelectedItem is not RacunOtpremnica selektovani)
+        {
+            MessageBox.Show("Molimo izaberite račun/fakturu iz tabele.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Sačuvaj UBL 2.1 XML e-Fakturu",
+            Filter = "UBL XML Fajl (*.xml)|*.xml",
+            FileName = $"Faktura_{selektovani.BrojRacuna:D5}_UBL21.xml"
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+                using var db = new AccountingDbContext(options);
+
+                var service = new SefService(db);
+                var res = await service.SacuvajUblXmlFajlAsync(selektovani.RacunOtpremnicaId, dialog.FileName);
+
+                if (res.Success)
+                {
+                    MessageBox.Show($"✅ {res.Message}", "UBL XML Sačuvan", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"❌ {res.Message}", "Greška pri generisanju XML-a", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void BtnPreuzmiUlazneSef_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var win = new SefUlazneFaktureWindow { Owner = Window.GetWindow(this) };
+            win.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju prozora za ulazne SEF fakture: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
 }

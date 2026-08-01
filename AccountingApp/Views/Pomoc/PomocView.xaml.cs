@@ -287,6 +287,27 @@ public partial class PomocView : UserControl
         },
         new PomocTema
         {
+            Naslov = "⚡ SEF e-Fakture (Sistem Elektronskih Faktura)",
+            Sadrzaj =
+                "Aplikacija poseduje ugrađenu direktnu integraciju sa državnim SEF portalom Ministarstva finansija RS.\n\n" +
+                "1. PODEŠAVANJE SEF KONEKCIJE:\n" +
+                "• U meniju '⚙️ Podešavanja' -> tab '⚡ SEF e-Fakture' unesite SEF API Ključ (ApiKey) izdat za vašu firmu.\n" +
+                "• Izaberite okruženje: 'Demo' za testiranje ili 'Production' za slanje pravih zvaničnih faktura.\n" +
+                "• Po potrebi unesite JBKJS broj (za budžetske korisnike) i E-mail adresu.\n" +
+                "• Kliknite '⚡ Testiraj SEF Konekciju' da potvrdite ispravnost ključa.\n\n" +
+                "2. SLANJE IZLAZNIH E-FAKTURA NA SEF:\n" +
+                "• U meniju 'Trgovina / Fakture' selektujte željeni račun-otpremnicu i kliknite dugme '📤 Pošalji na SEF'.\n" +
+                "• Aplikacija automatski generiše zvanični UBL 2.1 XML dokument po srpskom profilu e-Faktura i šalje ga na SEF.\n" +
+                "• Polje 'SEF Status' u tabeli prikazuje trenutno stanje (Poslata, Odobrena, Odbijena).\n\n" +
+                "3. PROVERA STATUSA I UBL XML IZVOZ:\n" +
+                "• Dugme '🔄 SEF Status' proverava da li je kupac prihvatio ili odbio e-fakturu na SEF-u.\n" +
+                "• Dugme '📄 UBL XML' sačuvava XML fajl fakture lokalno na vašem računaru.\n\n" +
+                "4. PREUZIMANJE ULAZNIH E-FAKTURA DOBAVLJAČA:\n" +
+                "• Klikom na dugme '📥 Ulazne SEF' otvara se prozor za preuzimanje i uvid u fakture koje su vam poslali dobavljači sa SEF-a.",
+            Kljuc = "Sef"
+        },
+        new PomocTema
+        {
             Naslov = "⌨️ Korisne prečice i tasteri",
             Sadrzaj =
                 "Za maksimalnu brzinu u radu bez miša podržane su standardne tastaturne prečice:\n\n" +

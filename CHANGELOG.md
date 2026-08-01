@@ -4,6 +4,23 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.38] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **SEF API Integracija (e-Fakture RS)** — ugrađena direktna konekcija sa državnim Sistemom Elektronskih Faktura (SEF) Ministarstva finansija Republike Srbije.
+  - **UBL 2.1 XML Generator (`SefUblGenerator`)**: Generisanje zvaničnih XML e-Faktura po srpskom profilu e-Fakture (`urn:cen.eu:en16931:2017#compliant#urn:mfin.gov.rs:srbdt:2021`).
+  - **REST API Klijent & Biznis Sloj (`SefApiClient`, `SefService`)**: Slanje e-faktura (`POST /sales-invoice/ubl`), provera statusa u realnom vremenu i preuzimanje ulaznih e-faktura dobavljača.
+  - **SEF Podešavanja u Podešavanjima (`PodesavanjaView`)**: Nov tab "⚡ SEF e-Fakture" za unos API ključa, izbor Demo/Produkcionog okruženja, JBKJS broja i dugme "⚡ Testiraj SEF Konekciju". SEF podešavanja su izolovana po firmi.
+  - **Upravljanje fakturama i statusi (`TrgovinaView`)**: Tabela računa obogaćena kolonom "SEF Status" i dugmadima `📤 Pošalji na SEF`, `🔄 SEF Status`, `📄 UBL XML` i `📥 Ulazne SEF`.
+  - **Pregled ulaznih e-Faktura (`SefUlazneFaktureWindow`)**: Namenski prozor za preuzimanje i uvid u ulazne e-fakture dobavljača sa SEF-a.
+  - **EF Core Migracija**: Dodana migracija `DodajSefPolja` i nov enum `SefStatusFakture`.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata nova tema "⚡ SEF e-Fakture" u ugrađenu Pomoć (`PomocView`).
+- Ažurirani `README.md` i `ANALIZA_I_PLAN.md` sa dokumentovanim SEF API modulom.
+
+---
+
 ## [1.0.36] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti

@@ -33,6 +33,18 @@ public class Firma
     [MaxLength(30)]
     public string? MaticniBroj { get; set; }
 
+    [MaxLength(20)]
+    public string? JbkjsBroj { get; set; }
+
+    [MaxLength(100)]
+    public string? Email { get; set; }
+
+    [MaxLength(250)]
+    public string? SefApiKey { get; set; }
+
+    [MaxLength(20)]
+    public string SefEnvironment { get; set; } = "Demo";
+
     public bool IsActive { get; set; } = true;
     public DateTime DatumKreiranja { get; set; } = DateTime.Now;
 }

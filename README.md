@@ -22,6 +22,11 @@
 - 📈 **Bilans Uspeha** — Obračun AOP pozicija za Poslovne prihode (Klasa 6), Poslovne rashode (Klasa 5), Finansijske prihode/rashode i obračun Neto dobitka ili gubitka perioda.
 - 📥 **PDF Štampa Bilansa** — Izvoz zvaničnih PDF izveštaja Bilansa Stanja i Bilansa Uspeha.
 
+### SEF e-Fakture (Sistem Elektronskih Faktura RS)
+- ⚡ **Direktna SEF API konekcija** — Slanje izlaznih e-faktura direktno na SEF portal (`POST /sales-invoice/ubl`), provera statusa u realnom vremenu i preuzimanje ulaznih e-faktura dobavljača.
+- 📄 **UBL 2.1 XML Generator** — Zvaničan XML format po specifikaciji e-Faktura RS (`urn:cen.eu:en16931:2017#compliant#urn:mfin.gov.rs:srbdt:2021`).
+- 🔑 **Podešavanja po firmi** — Unos API ključa, izbor Demo vs Produkcionog okruženja, JBKJS broja i dugme za testiranje konekcije.
+
 ### PDV Evidencija (KIR, KPR i POPDV)
 - 🧾 **KIR (Knjiga Izdatih Računa)** i **KPR (Knjiga Primljenih Računa)** — Automatsko prikupljanje izlaznih računa i ulaznih kalkulacija sa raščlanjavanjem osnovice i PDV-a (20%, 10%, 0%).
 - ⚖️ **POPDV Rekapitulacija Obaveze** — Obračun PDV obaveze za uplatu ili prava na povraćaj.

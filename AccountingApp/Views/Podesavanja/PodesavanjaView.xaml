@@ -31,6 +31,50 @@
                 <backup:BackupView Margin="0,12,0,0"/>
             </TabItem>
 
+            <!-- TAB: SEF e-Fakture -->
+            <TabItem Header="⚡ SEF e-Fakture">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <StackPanel Margin="0,0,10,0">
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="⚡ Podešavanja za Sistem Elektronskih Faktura (SEF RS)" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Povezivanje sa državnim SEF portalom Ministarstva finansija za slanje i preuzimanje e-faktura." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                                <!-- API Ključ -->
+                                <TextBlock Text="SEF API Ključ (ApiKey)" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtSefApiKey" Height="36" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,14" FontFamily="Consolas"/>
+
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="SEF Okruženje" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <ComboBox x:Name="CmbSefEnvironment" Height="36" VerticalContentAlignment="Center">
+                                            <ComboBoxItem Content="Demo (demoefaktura.mfin.gov.rs)" IsSelected="True"/>
+                                            <ComboBoxItem Content="Production (efaktura.mfin.gov.rs)"/>
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="JBKJS Broj (Za budžetske korisnike)" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtJbkjsBroj" Height="36" VerticalContentAlignment="Center" Padding="8,0" MaxLength="20"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="E-Mail Adresa Firme za e-Fakture" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtFirmaEmail" Height="36" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,16"/>
+
+                                <Button Content="⚡ Testiraj SEF Konekciju" Height="38" Padding="20,0" HorizontalAlignment="Left" Background="#0284C7" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="BtnTestirajSef_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <!-- TAB: Postavke programa -->
             <TabItem Header="💻 Postavke programa">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">

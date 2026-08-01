@@ -52,6 +52,12 @@ public class RacunOtpremnica
     [ForeignKey(nameof(NalogId))]
     public Nalog? Nalog { get; set; }
 
+    public long? SefId { get; set; }
+    public SefStatusFakture SefStatus { get; set; } = SefStatusFakture.NijePoslata;
+    public DateTime? SefDatumSlanja { get; set; }
+    [MaxLength(500)]
+    public string? SefPoruka { get; set; }
+
     public List<RacunOtpremnicaStavka> Stavke { get; set; } = new();
 
     [MaxLength(20)]
