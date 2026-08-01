@@ -2466,11 +2466,37 @@ public partial class TrgovinaView : UserControl
     private void BtnExportExcelPonude_Click(object sender, RoutedEventArgs e)
         => ExcelExportService.ExportDataGridToExcel(DgPonude, "Ponude i predračuni", "Ponude_i_Predracuni");
 
-    private void BtnStampaPonuda_Click(object sender, RoutedEventArgs e)
+    private async void BtnStampaPonuda_Click(object sender, RoutedEventArgs e)
     {
-        if (DgPonude?.SelectedItem is PonudaPredracun p)
+        if (DgPonude?.SelectedItem is not PonudaPredracun selektovana)
         {
-            MessageBox.Show($"Generisanje PDF ponude br. {p.BrojDokumenta} je pripremljeno za štampu.", "Štampa", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Izaberite ponudu ili predračun za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>().UseSqlite($"Data Source={AppConfig.DbPath}").Options;
+            using var db = new AccountingDbContext(options);
+
+            var ponudaFull = await new KomercijalaService(db).GetPonudaByIdAsync(selektovana.PonudaPredracunId);
+            if (ponudaFull == null) return;
+
+            Partner? partner = ponudaFull.PartnerId.HasValue
+                ? await db.Partneri.FirstOrDefaultAsync(x => x.PartnerId == ponudaFull.PartnerId.Value)
+                : null;
+
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "ARHIBEL DOO", Pib = "100000000" };
+
+            byte[] pdf = PdfReportService.GenerisiPonudaPredracunPdf(firma, ponudaFull, partner);
+            string tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{ponudaFull.VrstaDokumenta}_{ponudaFull.BrojDokumenta.Replace("/", "-")}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            await System.IO.File.WriteAllBytesAsync(tempFile, pdf);
+
+            Process.Start(new ProcessStartInfo(tempFile) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri štampi dokumenta: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

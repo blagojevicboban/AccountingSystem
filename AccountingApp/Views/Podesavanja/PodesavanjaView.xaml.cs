@@ -2,6 +2,8 @@ using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Navigation;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -65,16 +67,37 @@ public partial class PodesavanjaView : UserControl
 
     private void OsveziStatusWebServera()
     {
+        TxtWebServerStatus.Inlines.Clear();
+
         if (AccountingWebServer.IsRunning)
         {
-            TxtWebServerStatus.Text = $"🟢 Server je aktivan na http://localhost:{AccountingWebServer.Port}";
+            string url = $"http://localhost:{AccountingWebServer.Port}";
+            TxtWebServerStatus.Inlines.Add(new Run("🟢 Server je aktivan na "));
+
+            var link = new Hyperlink(new Run(url)) { NavigateUri = new Uri(url) };
+            link.RequestNavigate += WebServerLink_RequestNavigate;
+            TxtWebServerStatus.Inlines.Add(link);
+
             TxtWebServerStatus.Foreground = System.Windows.Media.Brushes.Green;
         }
         else
         {
-            TxtWebServerStatus.Text = "🔴 Server je zaustavljen";
+            TxtWebServerStatus.Inlines.Add(new Run("🔴 Server je zaustavljen"));
             TxtWebServerStatus.Foreground = System.Windows.Media.Brushes.Red;
         }
+    }
+
+    private void WebServerLink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju pretraživača: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        e.Handled = true;
     }
 
     private void BtnPokreniWebServer_Click(object sender, RoutedEventArgs e)

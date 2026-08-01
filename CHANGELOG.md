@@ -4,6 +4,17 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.53] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti i Poboljšanja
+- **PDF Štampa Ponuda i Predračuna (`PdfReportService.GenerisiPonudaPredracunPdf`)**:
+  - Brendirano generisanje PDF dokumenta za ponude i proforme sa detaljima partnera, stavkama, obračunom PDV-a, uslovima i ugrađenim potpisnim linijama.
+  - Automatsko otvaranje generisanog PDF-a u sistemskom pregledaču u 1-klik (`TrgovinaView.xaml.cs`).
+- **Klikabilni Link Web Servera u Podešavanjima (`PodesavanjaView.xaml.cs`)**:
+  - Prikaz statusa ugrađenog Web Servera kao klikabilnog hiperlinka (`http://localhost:5050`) koji direktno otvara pretpregled u browseru.
+
+---
+
 ## [1.1.1] - 2026-08-01
 
 ### 🎨 UI / UX
