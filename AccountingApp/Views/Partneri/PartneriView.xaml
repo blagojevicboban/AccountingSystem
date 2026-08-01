@@ -39,6 +39,8 @@
                     <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <TextBlock Text="Saldo: " VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
                         <TextBlock x:Name="TxtSaldoPartnera" Text="0,00" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#7C3AED" Margin="0,0,16,0"/>
+                        <Button x:Name="BtnKursnaLista" Content="💱 Kursna lista NBS" Style="{StaticResource ActionButtonStyle}" Background="#0284C7" Margin="0,2,10,2" ToolTip="Prikaz kursne liste NBS i kalkulator valuta" Click="BtnKursnaLista_Click"/>
+                        <Button x:Name="BtnVerifikujRacun" Content="🔍 Verifikuj račun (NBS)" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,10,2" ToolTip="Provera tekućeg računa i blokada u NBS registru" Click="BtnVerifikujRacun_Click"/>
                         <Button x:Name="BtnStampajIOS" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Width="36" Padding="0" ToolTip="Izvezi IOS (PDF)" Margin="0,2,10,2" Click="BtnStampajIOS_Click"/>
                         <Button x:Name="BtnObracunKamate" Content="💰 Obračun kamate" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,10,2" Click="BtnObracunKamate_Click"/>
                         <Button x:Name="BtnExportExcelPartneri" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelPartneri_Click"/>

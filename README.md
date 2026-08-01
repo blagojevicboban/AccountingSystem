@@ -12,8 +12,9 @@
 - 📋 **Kontni plan i kartice konta** — namensko upravljanje kontnim planom (`📋 Kontni plan` - unos novog konta, izmena, brisanje, PDF štampa), filter konta sa prometom (`[x] Samo konta sa knjiženjima`), hronološka kartica konta sa kumulativnim saldom.
 - 📅 **Nova godina** — prenos zaključnog salda svih konta u nalog za početno stanje naredne godine; **odbija prenos ako knjige nisu u ravnoteži** (bezbednosna provera pre nego što se nešto pogrešno prenese).
 
-### Partneri i analitika (ANAL)
+### Partneri, Analitika i NBS Konekcija (ANAL)
 - 👥 **Partneri — otvorene stavke i IOS** — praćenje dugovnih stavki po partneru (kupci/dobavljači), PDF **IOS obrazac**.
+- 💱 **NBS Kursna lista & Registar tekućih računa** — Preuzimanje zvaničnih kursnih lista Narodne banke Srbije (`nbs.rs`), kalkulator konverzije deviza u RSD i verifikacija žiro-računa i statusa blokada partnera u registru NBS.
 - 💰 **Kamate** — obračun zatezne kamate po danu kašnjenja, sa podrškom za više kamatnih stopa kroz vreme; unos novih stopa iz aplikacije.
 - 📊 **Bruto bilans analitike** — promet i saldo po partneru (paralelno finansijskom bruto bilansu po kontu).
 

@@ -313,6 +313,20 @@ public partial class PomocView : UserControl
         },
         new PomocTema
         {
+            Naslov = "💱 Kursna lista NBS i Registar partnera",
+            Sadrzaj =
+                "Aplikacija je povezana sa web servisima Narodne banke Srbije (NBS) za kursne liste i registar računa.\n\n" +
+                "1. PREGLED I PREUZIMANJE KURSNE LISTE:\n" +
+                "• Klikom na dugme '💱 Kursna lista NBS' (u meniju Partneri) otvara se ekran sa zvaničnim dnevnim srednjim, kupovnim i prodajnim kursevima deviza (EUR, USD, CHF, GBP, BAM, RUB, JPY, itd.).\n" +
+                "• Dugme '🔄 Preuzmi sa NBS' preuzima najsvežiju dnevnu kursnu listu direktno sa servera NBS i sačuvava je u bazi.\n\n" +
+                "2. KALKULATOR KONVERZIJE VALUTA:\n" +
+                "• U desnom delu ekrana dostupan je brzi kalkulator deviza: unesite iznos (npr. 1.000 EUR) i aplikacija će izračunati tačnu dinarsku protivvrednost (RSD) po srednjem kursu NBS za taj datum.\n\n" +
+                "3. PROVERA TEKUĆIH RAČUNA PARTNERA U REGISTRU NBS:\n" +
+                "• Selektujte partnera na listi i kliknite '🔍 Verifikuj račun (NBS)'. Aplikacija vrši proveru u Jedinstvenom registru računa NBS i prikazuje verifikovani žiro-račun i trenutni status naloga (npr. Aktivan ili U blokadi).",
+            Kljuc = "Nbs"
+        },
+        new PomocTema
+        {
             Naslov = "⌨️ Korisne prečice i tasteri",
             Sadrzaj =
                 "Za maksimalnu brzinu u radu bez miša podržane su standardne tastaturne prečice:\n\n" +

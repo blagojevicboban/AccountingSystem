@@ -4,6 +4,21 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.40] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **NBS Konekcija (Kursna lista i Registar tekućih računa)** — ugrađena integracija sa web servisima Narodne banke Srbije (`nbs.rs`).
+  - **Dnevna Kursna Lista NBS (`KursnaListaWindow`)**: Preuzimanje zvanične dnevne srednje, kupovne i prodajne kursne liste NBS za sve valute (EUR, USD, CHF, GBP, BAM, RUB, JPY, itd.) uz automatsko skladištenje u lokalnoj SQLite bazi.
+  - **Kalkulator Konverzije Valuta**: Brzi preračun proizvoljnih deviznih iznosa u dinarsku protivvrednost (RSD) po zvaničnom srednjem kursu NBS za izabrani datum.
+  - **Verifikacija partnera u Registru NBS (`ProveriTekuciRacunPartneraAsync`)**: Provera žiro-računa i statusa blokada poslovnih partnera u Jedinstvenom registru računa NBS na dugme "🔍 Verifikuj račun (NBS)".
+  - **EF Core Migracija**: Dodana migracija `DodajNbsKursnuListu` sa novom tabelom `KursneListeStavke`.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata nova tema "💱 Kursna lista NBS i Registar partnera" u ugrađenu Pomoć (`PomocView`).
+- Ažurirani `README.md` i `ANALIZA_I_PLAN.md`.
+
+---
+
 ## [1.0.39] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti

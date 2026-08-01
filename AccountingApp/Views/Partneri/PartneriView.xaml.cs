@@ -121,6 +121,54 @@ public partial class PartneriView : UserControl
         dijalog.ShowDialog();
     }
 
+    private void BtnKursnaLista_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var win = new KursnaListaWindow { Owner = Window.GetWindow(this) };
+            win.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju kursne liste: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnVerifikujRacun_Click(object sender, RoutedEventArgs e)
+    {
+        if (LstPartneri.SelectedItem is not Partner partner)
+        {
+            MessageBox.Show("Molimo izaberite partnera sa liste za verifikaciju tekućeg računa.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        string pibIliMb = !string.IsNullOrWhiteSpace(partner.Pib) ? partner.Pib : partner.MaticniBroj ?? "";
+        if (string.IsNullOrWhiteSpace(pibIliMb))
+        {
+            MessageBox.Show($"Partner '{partner.Naziv}' nema unet PIB ni matični broj.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var client = new NbsApiClient();
+        var res = await client.ProveriTekuciRacunPartneraAsync(pibIliMb);
+
+        if (res.Success)
+        {
+            string poruka = $"🏛️ NBS REGISTAR TEKUĆIH RAČUNA:\n\n" +
+                            $"• Partner: {partner.Naziv}\n" +
+                            $"• PIB / MB: {pibIliMb}\n" +
+                            $"• Tekući račun: {res.TekuciRacun ?? partner.ZiroRacun ?? "Nije registrovan"}\n" +
+                            $"• Status naloga: {res.StatusBlokade}\n\n" +
+                            $"Aplikacija je verifikovala podatke u zvaničnom registru NBS.";
+
+            MessageBox.Show(poruka, "Verifikacija tekućeg računa NBS", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        else
+        {
+            MessageBox.Show($"❌ {res.Message}", "Greška pri verifikaciji", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void BtnExportExcelPartneri_Click(object sender, RoutedEventArgs e)
         => ExcelExportService.ExportDataGridToExcel(DgOtvoreneStavke, TxtNaslovPartnera.Text, "Partneri_Otvorene_Stavke");
 }

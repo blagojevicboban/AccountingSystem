@@ -35,6 +35,7 @@ public class AccountingDbContext : DbContext
     public DbSet<NivelacijaStavka> NivelacijaStavke => Set<NivelacijaStavka>();
     public DbSet<PoreskaTarifa> PoreskeTarife => Set<PoreskaTarifa>();
     public DbSet<NalogAudit> NalogAuditi => Set<NalogAudit>();
+    public DbSet<KursnaListaStavka> KursneListeStavke => Set<KursnaListaStavka>();
 
     public AccountingDbContext(DbContextOptions<AccountingDbContext> options) : base(options)
     {
