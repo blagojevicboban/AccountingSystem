@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using Microsoft.EntityFrameworkCore;
@@ -106,5 +108,31 @@ public partial class MaterijalEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "🧱 Pomoć — Materijal",
+            "Šifarnik materijala korišćen u ulazima, trebovanjima i primopredajama.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+            },
+            "Šifra materijala mora biti jedinstvena. Jedinica mere se koristi u svim kasnijim dokumentima (ulaz, trebovanje, primopredaja, popis) vezanim za ovaj materijal."
+        ) { Owner = this }.ShowDialog();
     }
 }

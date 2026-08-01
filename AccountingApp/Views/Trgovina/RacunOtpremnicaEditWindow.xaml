@@ -4,7 +4,7 @@
         Title="Račun - Otpremnica" Height="660" Width="920"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResizeWithGrip"
-        Background="{StaticResource BackgroundBrush}">
+        Background="{StaticResource BackgroundBrush}" KeyDown="Window_KeyDown">
 
     <Grid Margin="24">
         <Grid.RowDefinitions>

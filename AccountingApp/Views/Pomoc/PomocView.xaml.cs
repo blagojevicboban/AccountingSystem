@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Windows.Controls;
 
 namespace AccountingApp.Views.Pomoc;
@@ -45,7 +47,25 @@ public partial class PomocView : UserControl
                 "• Broj artikala u robnom i materijalnom šifarniku sa trenutnim stanjem zaliha.\n" +
                 "• Broj registrovanih poslovnih partnera.\n\n" +
                 "BRZE AKCIJE:\n" +
-                "Preko dugmadi na radnoj tabli možete jednim klikom otvoriti unos novog naloga, pregled kartica ili generisati bruto bilans."
+                "Preko dugmadi na radnoj tabli možete jednim klikom otvoriti unos novog naloga, pregled kartica ili generisati bruto bilans.",
+            Kljuc = "Dashboard"
+        },
+        new PomocTema
+        {
+            Naslov = "📋 Kontni plan",
+            Sadrzaj =
+                "Meni '📋 Kontni plan' (u sekciji MATIČNI PODACI) sadrži šifarnik svih konta koja se koriste u knjiženju.\n\n" +
+                "1. HIJERARHIJA KONTA:\n" +
+                "• Konta su organizovana po broju cifara: klasa (1 cifra), grupa (2 cifre), sintetika (3 cifre) i analitika (4+ cifara, npr. konto partnera ili artikla).\n" +
+                "• Analitička konta (npr. 204015 — konkretan kupac) nasleđuju naziv i tip od svoje sintetike.\n\n" +
+                "2. DODAVANJE, IZMENA I BRISANJE:\n" +
+                "• Dugme '➕ Novi konto' otvara formu za unos broja i naziva konta i njegovog tipa (aktiva/pasiva/prihod/rashod).\n" +
+                "• Izmena i brisanje su dozvoljeni samo dok na kontu nema proknjiženog prometa — konta sa istorijom knjiženja se ne mogu obrisati radi očuvanja tačnosti izveštaja.\n\n" +
+                "3. PRETRAGA I IZVOZ:\n" +
+                "• Polje za pretragu filtrira po broju ili nazivu konta u realnom vremenu.\n" +
+                "• Dugmad '🖨️ PDF' i '📊 Excel' izvoze trenutno prikazan kontni plan.\n\n" +
+                "Kontni plan je osnovni šifarnik na koji se oslanjaju Nalozi, Kartice i Bilansi — bez definisanog konta nije moguće knjižiti niti generisati izveštaje za njega.",
+            Kljuc = "Konta"
         },
         new PomocTema
         {
@@ -62,7 +82,10 @@ public partial class PomocView : UserControl
                 "• Dugme 'Proknjiži' zaključava nalog i upisuje stavke u glavnu knjigu.\n" +
                 "• Dugme 'Rasknjiži' (dostupno administratorima) vraća proknjižen nalog u status nacrta radi ispravke grešaka, uz obavezno evidentiranje u audit logu.\n\n" +
                 "3. PRENOS U NOVU POSLOVNU GODINU:\n" +
-                "• Dugme 'Nova godina' kreira nalog početnog stanja na dan 01.01. naredne godine sa preneta 6 kolona salda iz tekuće godine."
+                "• Dugme 'Nova godina' kreira nalog početnog stanja na dan 01.01. naredne godine sa preneta 6 kolona salda iz tekuće godine.\n\n" +
+                "4. MASOVNO PREKNJIŽAVANJE:\n" +
+                "• Za reklasifikaciju više naloga odjednom (npr. promena konta na većem broju stavki) koristi se prozor za preknjižavanje, dostupan iz liste naloga.",
+            Kljuc = "Nalozi"
         },
         new PomocTema
         {
@@ -76,7 +99,8 @@ public partial class PomocView : UserControl
                 "2. MASOVNA ŠTAMPA IZABRANIH KARTICA:\n" +
                 "• U levoj listi konta štriklirajte CheckBox pored više konta koje želite štampati.\n" +
                 "• Kliknite na dugme '🖨️ Štampaj izabrane (PDF)' — aplikacija će u jednom PDF dokumentu izgenerisati sve označene kartice pojedinačno po kontima.\n" +
-                "• Dugme '📊 Excel' izvozi trenutno prikazanu karticu u Excel tabelu."
+                "• Dugme '📊 Excel' izvozi trenutno prikazanu karticu u Excel tabelu.",
+            Kljuc = "Kartice"
         },
         new PomocTema
         {
@@ -93,7 +117,10 @@ public partial class PomocView : UserControl
                 "• CheckBox 'Samo neusaglašeni (nenulti) saldo' filtrira partnere koji imaju nezatvoren saldo.\n" +
                 "• Dugme '📄 Štampaj prikazanu (PDF)': Generiše zvanični IOS obrazac sa potvrdom/osporavanjem samo za trenutno izabranog partnera.\n" +
                 "• Dugme '🖨️ Štampaj izabrane (PDF)': Generiše zbirni PDF sa IOS obrascima za sve štriklirane partnere.\n" +
-                "• Dugme '📥 Izvezi sve (PDF)': Generiše zbirni PDF za sve prikazane partnere sa liste."
+                "• Dugme '📥 Izvezi sve (PDF)': Generiše zbirni PDF za sve prikazane partnere sa liste.\n\n" +
+                "3. OBRAČUN ZATEZNE KAMATE:\n" +
+                "• Za partnere sa neplaćenim otvorenim stavkama, prozor za obračun kamate izračunava zateznu kamatu na osnovu unetog perioda i stope.",
+            Kljuc = "Partneri"
         },
         new PomocTema
         {
@@ -105,7 +132,8 @@ public partial class PomocView : UserControl
                 "• Sadrži međuzbirove po sintetičkim kontima (3 cifre) i celim klasama (0 do 9).\n\n" +
                 "2. DNEVNIK GLAVNE KNJIGE:\n" +
                 "• Hronološki štampani pregled svih proknjiženih stavki po datumu i broju naloga.\n\n" +
-                "3. KARTICE PARTNERA I IOS ZBIRNI IZVEŠTAJI."
+                "3. KARTICE PARTNERA I IOS ZBIRNI IZVEŠTAJI.",
+            Kljuc = "Izvestaji"
         },
         new PomocTema
         {
@@ -125,7 +153,10 @@ public partial class PomocView : UserControl
                 "• Interni prenosi robe između magacina, sa filterom 'Svi / Proknjiženi / Neproknjiženi' iznad svake tabele.\n\n" +
                 "5. RASKNJIŽAVANJE (svi tabovi gde se knjiži — Zaduženja, Razduženja, Primopredaje, Kalkulacije, Računi-Otpremnice, Nivelacije):\n" +
                 "• Klik na 'Izmeni' nad proknjiženim dokumentom nudi pitanje 'Da li želite da rasknjižite radi izmene?' (isto kao kod naloga glavne knjige).\n" +
-                "• Dostupno samo administratorima. Rasknjižavanje bezbedno poništava samo promet koji je taj dokument upisao — ako je u međuvremenu nešto knjiženo posle njega za isti artikal/magacin, rasknjižavanje se odbija radi zaštite tačnosti zaliha."
+                "• Dostupno samo administratorima. Rasknjižavanje bezbedno poništava samo promet koji je taj dokument upisao — ako je u međuvremenu nešto knjiženo posle njega za isti artikal/magacin, rasknjižavanje se odbija radi zaštite tačnosti zaliha.\n\n" +
+                "6. ŠIFARNIK ARTIKALA I PORESKIH TARIFA:\n" +
+                "• Artikli (naziv, jedinica mere, cena) i poreske tarife (stope PDV-a) koje se koriste u kalkulacijama i fakturama uređuju se u posebnim formama dostupnim iz šifarnika robe.",
+            Kljuc = "Robno"
         },
         new PomocTema
         {
@@ -144,20 +175,101 @@ public partial class PomocView : UserControl
                 "5. RASKNJIŽAVANJE (Ulazi, Trebovanja, Primopredaje):\n" +
                 "• Klik na 'Izmeni' nad proknjiženim dokumentom nudi pitanje 'Da li želite da rasknjižite radi izmene?', dostupno samo administratorima — isti princip kao u Robnom knjigovodstvu i Glavnoj knjizi.\n\n" +
                 "6. POPISNE LISTE I NIKAD VEĆA PRECIZNOST:\n" +
-                "• Unos stvarnog popisanog stanja i automatski proračun viškova i manjkova materijala."
+                "• Unos stvarnog popisanog stanja i automatski proračun viškova i manjkova materijala.\n\n" +
+                "7. PROVERA KARTICA:\n" +
+                "• Alat za proveru integriteta podataka — upoređuje izračunato stanje po karticama materijala sa evidentiranim prometom i prijavljuje eventualna odstupanja.",
+            Kljuc = "Magacin"
         },
         new PomocTema
         {
-            Naslov = "🧾 PDV Evidencija & APR Bilansi",
+            Naslov = "🧾 PDV Evidencija (KPR i KIR)",
             Sadrzaj =
                 "1. PDV EVIDENCIJA (KPR i KIR):\n" +
                 "• Knjiga primljenih računa (KPR) — uvoz nabavki i ulaznog PDV-a koji se odbija.\n" +
                 "• Knjiga izdatih računa (KIR) — uvoz izlaznih faktura i izlaznog PDV-a.\n" +
                 "• Automatska priprema podataka za POPDV prijavu Poreskoj upravi.\n\n" +
                 "2. ZVANIČNI APR BILANSI:\n" +
-                "• Bilans stanja (Imovina, Kapital i Obaveze).\n" +
-                "• Bilans uspeha (Prihodi, Rashodi i Finansijski rezultat).\n" +
-                "• Izvoz i štampa obrazaca za zvaničnu predaju APR-u."
+                "• Za Bilans stanja i Bilans uspeha pogledajte posebnu temu '🏛️ Bilansi (APR)'.",
+            Kljuc = "Pdv"
+        },
+        new PomocTema
+        {
+            Naslov = "🏛️ Bilansi (APR)",
+            Sadrzaj =
+                "Meni '🏛️ Bilansi (APR)' generiše zvanične finansijske izveštaje za predaju Agenciji za privredne registre.\n\n" +
+                "1. DVA TABA:\n" +
+                "• Bilans stanja — Imovina, Kapital i Obaveze na dan izveštavanja.\n" +
+                "• Bilans uspeha — Prihodi, Rashodi i Finansijski rezultat za period.\n\n" +
+                "2. OSVEŽAVANJE OBRAČUNA:\n" +
+                "• Dugme '🔄 Osveži obračun' ponovo izračunava vrednosti na osnovu svih proknjiženih (ne i nacrt) naloga glavne knjige.\n\n" +
+                "3. AOP KOLONE:\n" +
+                "• Svaka pozicija bilansa (AOP) mapirana je na opseg konta iz Kontnog plana — izmena kontnog plana može uticati na koje AOP pozicije se sabira konto.\n\n" +
+                "4. IZVOZ:\n" +
+                "• Dugmad '🖨️ PDF' i '📊 Excel' izvoze trenutno prikazan tab (Bilans stanja ili Bilans uspeha) posebno.",
+            Kljuc = "Bilansi"
+        },
+        new PomocTema
+        {
+            Naslov = "🏢 Upravljanje firmama",
+            Sadrzaj =
+                "Meni '🏢 Upravljanje firmama' (u sekciji PODEŠAVANJA I SISTEM) služi za rad sa više pravnih lica u istoj instalaciji aplikacije.\n\n" +
+                "1. IZOLOVANE BAZE PODATAKA:\n" +
+                "• Svaka firma ima sopstvenu, potpuno izolovanu SQLite bazu — podaci jedne firme nikada nisu vidljivi u drugoj.\n\n" +
+                "2. NOVA FIRMA:\n" +
+                "• Dugme '➕ Nova firma' kreira novu praznu bazu sa unetim nazivom i šifrom firme.\n\n" +
+                "3. AKTIVACIJA I PROMENA:\n" +
+                "• Dugme '⭐ Aktiviraj' postavlja firmu kao trenutno aktivnu za rad — isto se postiže klikom na karticu 'Aktivna firma' u bočnom meniju.\n\n" +
+                "4. IZMENA I BRISANJE:\n" +
+                "• '✏️ Izmeni' menja naziv/šifru firme. '🗑️ Briši' trajno uklanja firmu i njenu bazu podataka — akcija je nepovratna, pre brisanja obavezno napraviti rezervnu kopiju (vidi temu 'Rezervne kopije').",
+            Kljuc = "Firme"
+        },
+        new PomocTema
+        {
+            Naslov = "⚙️ Podešavanja",
+            Sadrzaj =
+                "Meni '⚙️ Podešavanja' sadrži osnovna podešavanja aplikacije, podeljena u nekoliko celina:\n\n" +
+                "1. GENERALNA PODEŠAVANJA:\n" +
+                "• Putanja do SQLite baze podataka i opcija 'Pokreni maksimizovano' pri sledećem startu aplikacije.\n\n" +
+                "2. PODACI ZA ŠTAMPU/PDF:\n" +
+                "• Naziv firme i ime ovlašćenog lica koji se ispisuju u zaglavlju/podnožju svih PDF izveštaja (bilansi, kartice, IOS, fakture).\n\n" +
+                "3. BEZBEDNOSNE PROVERE:\n" +
+                "• Uključivanje/isključivanje potvrde pre rasknjižavanja i potvrde pre brisanja stavki.\n\n" +
+                "4. INFORMACIJE O APLIKACIJI:\n" +
+                "• Prikaz verzije aplikacije i tehničkih podataka (bez mogućnosti izmene).\n\n" +
+                "5. UVOZ PODATAKA IZ LEGACY DOS SISTEMA:\n" +
+                "• Dugme koje otvara čarobnjak za uvoz — detaljno objašnjeno u temi '🔄 Uvoz iz legacy DOS / Clipper sistema'.",
+            Kljuc = "Podesavanja"
+        },
+        new PomocTema
+        {
+            Naslov = "💾 Rezervne kopije (Backup & Restore)",
+            Sadrzaj =
+                "Meni '💾 Rezervne kopije' omogućava zaštitu podataka pravljenjem i vraćanjem rezervnih kopija baze.\n\n" +
+                "1. RUČNI BACKUP:\n" +
+                "• Dugme '💾 Napravi ručni backup' odmah kreira kopiju tekuće baze podataka.\n\n" +
+                "2. AUTOMATSKI BACKUP:\n" +
+                "• Učestalost se bira između tri opcije: 'Nikada', 'Pri svakom izlasku iz aplikacije' i 'Jednom dnevno'.\n\n" +
+                "3. VRAĆANJE (RESTORE):\n" +
+                "• Dugme '📥 Vrati iz fajla' učitava proizvoljnu rezervnu kopiju sa diska.\n" +
+                "• Lista istorije backup-a nudi 'Vrati' i 'Izbriši' za svaku pojedinačnu kopiju.\n\n" +
+                "4. LOKACIJA KOPIJA:\n" +
+                "• Kopije se čuvaju u podfolderu 'Baze\\RezervneKopije' unutar foldera aplikacije.\n\n" +
+                "5. PRISTUP I PREPORUKA:\n" +
+                "• Ova funkcija je dostupna samo administratorima. Preporučuje se ručni backup pre rizičnih operacija poput rasknjižavanja, prenosa u novu poslovnu godinu ili uvoza iz DOS sistema.",
+            Kljuc = "Backup"
+        },
+        new PomocTema
+        {
+            Naslov = "👤 Korisnici i Uloge — administracija naloga",
+            Sadrzaj =
+                "Meni '👤 Korisnici i Uloge' služi za upravljanje korisničkim nalozima. Za opis šta svaka uloga sme da radi pogledajte temu '🔐 Prijava, korisnici i bezbednost' — ova tema objašnjava samo kako se nalozi kreiraju i menjaju na ovom ekranu.\n\n" +
+                "1. NOVI KORISNIK:\n" +
+                "• Dugme '➕ Novi korisnik' otvara formu: korisničko ime, ime i prezime, izbor uloge (Administrator / Knjigovođa / Gledalac), lozinka i CheckBox 'Nalog je aktivan'.\n\n" +
+                "2. IZMENA POSTOJEĆEG KORISNIKA:\n" +
+                "• Polje lozinke se pri izmeni po pravilu ostavlja prazno — u tom slučaju postojeća lozinka ostaje nepromenjena; unosi se samo ako se lozinka zaista menja.\n\n" +
+                "3. DEAKTIVACIJA:\n" +
+                "• Umesto brisanja naloga, preporučuje se skidanje CheckBox-a 'Nalog je aktivan' čime korisnik gubi mogućnost prijave, ali istorija njegovih radnji u audit logu ostaje sačuvana.",
+            Kljuc = "Korisnici"
         },
         new PomocTema
         {
@@ -187,11 +299,13 @@ public partial class PomocView : UserControl
         }
     };
 
-    public PomocView()
+    public PomocView(string? initijalnaTema = null)
     {
         InitializeComponent();
         LstTeme.ItemsSource = _teme;
-        if (_teme.Count > 0) LstTeme.SelectedIndex = 0;
+
+        var tema = initijalnaTema is not null ? _teme.FirstOrDefault(t => t.Kljuc == initijalnaTema) : null;
+        LstTeme.SelectedItem = tema ?? (_teme.Count > 0 ? _teme[0] : null);
     }
 
     private void LstTeme_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -200,6 +314,30 @@ public partial class PomocView : UserControl
         {
             TxtNaslovTeme.Text = tema.Naslov;
             TxtSadrzajTeme.Text = tema.Sadrzaj;
+        }
+    }
+
+    private void TxtPretragaTema_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        var upit = TxtPretragaTema.Text?.Trim() ?? string.Empty;
+        var prethodnaSelekcija = LstTeme.SelectedItem as PomocTema;
+
+        var filtrirano = upit.Length == 0
+            ? _teme
+            : _teme.Where(t =>
+                t.Naslov.Contains(upit, StringComparison.OrdinalIgnoreCase) ||
+                t.Sadrzaj.Contains(upit, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        LstTeme.ItemsSource = filtrirano;
+
+        if (prethodnaSelekcija is not null && filtrirano.Contains(prethodnaSelekcija))
+            LstTeme.SelectedItem = prethodnaSelekcija;
+        else if (filtrirano.Count > 0)
+            LstTeme.SelectedIndex = 0;
+        else
+        {
+            TxtNaslovTeme.Text = "Nema rezultata";
+            TxtSadrzajTeme.Text = "Nijedna tema pomoći ne odgovara pretrazi.";
         }
     }
 }

@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using Microsoft.EntityFrameworkCore;
@@ -44,5 +46,31 @@ public partial class ProveraKarticaWindow : Window
     private void BtnZatvori_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "⚠️ Pomoć — Provera materijalnih kartica",
+            "Alat za proveru integriteta podataka materijalnog knjigovodstva.",
+            new (string, string)[]
+            {
+                ("Esc", "Zatvara prozor."),
+                ("🖨️", "Izvozi prikazanu listu u PDF."),
+            },
+            "Lista prikazuje stavke gde je izračunato stanje ili cena na materijalnoj kartici negativno — što obično ukazuje na grešku u redosledu unosa dokumenata (npr. trebovanje pre odgovarajućeg ulaza)."
+        ) { Owner = this }.ShowDialog();
     }
 }

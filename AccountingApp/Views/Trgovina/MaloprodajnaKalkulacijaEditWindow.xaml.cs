@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -240,5 +242,32 @@ public partial class MaloprodajnaKalkulacijaEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "📦 Pomoć — Kalkulacija (maloprodaja)",
+            "Obračun ukalkulisane marže i PDV-a pri prenosu robe iz veleprodajnog u maloprodajni magacin.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+                ("➕ Dodaj stavku", "Dodaje artikal — ako se unesu stavke, prodajna cena se izračunava po artiklu."),
+            },
+            "Rabat dobavljača je informativni obračun i ne umanjuje prodajnu vrednost. Kalkulacija knjiži izlaz iz magacina 'daje' i ulaz u magacin 'prima'."
+        ) { Owner = this }.ShowDialog();
     }
 }

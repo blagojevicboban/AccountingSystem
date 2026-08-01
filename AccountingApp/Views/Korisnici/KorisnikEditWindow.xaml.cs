@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 
@@ -56,6 +58,31 @@ public partial class KorisnikEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            BtnCancel_Click(sender, e);
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "👤 Pomoć — Korisnički nalog",
+            "Kreiranje i izmena korisničkih naloga i njihovih uloga (RBAC).",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+            },
+            "Pri izmeni postojećeg korisnika, polje lozinke ostavite prazno da zadržite postojeću lozinku — unesite novu samo ako je zaista menjate. Za opis šta svaka uloga (Administrator/Knjigovođa/Gledalac) sme da radi, pogledajte temu '🔐 Prijava, korisnici i bezbednost' u glavnom Help meniju."
+        ) { Owner = this }.ShowDialog();
     }
 
     private void BtnSave_Click(object sender, RoutedEventArgs e)

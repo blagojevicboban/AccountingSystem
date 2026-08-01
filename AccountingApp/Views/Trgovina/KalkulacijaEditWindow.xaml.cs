@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -238,5 +240,32 @@ public partial class KalkulacijaEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "📦 Pomoć — Kalkulacija (veleprodaja)",
+            "Obračun nabavne i prodajne vrednosti robe uz zavisne troškove i maržu.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+                ("➕ Dodaj stavku", "Dodaje artikal — ako se unesu stavke, prodajna cena se izračunava po artiklu."),
+            },
+            "Ako se ne unesu stavke, kalkulacija ostaje na nivou dokumenta (samo zbirni iznosi), kao u starom sistemu. Prodajna vrednost = nabavno + troškovi + marža + PDV."
+        ) { Owner = this }.ShowDialog();
     }
 }

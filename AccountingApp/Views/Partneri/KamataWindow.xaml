@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Obračun kamate" Height="640" Width="1000"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundBrush}">
+        Background="{StaticResource BackgroundBrush}" KeyDown="Window_KeyDown">
 
     <Grid Margin="20">
         <Grid.ColumnDefinitions>

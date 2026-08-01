@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
 using System.Windows;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using Microsoft.EntityFrameworkCore;
@@ -107,5 +109,31 @@ public partial class PoreskaTarifaEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "🧾 Pomoć — Poreska tarifa",
+            "Šifarnik poreskih stopa (PDV) koje se dodeljuju artiklima.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+            },
+            "Ako je uključeno 'Porez u ceni', uneta prodajna cena artikla se tretira kao cena sa uračunatim PDV-om, a stopa se koristi za obračun poreza unutar te cene, umesto dodavanja na nju."
+        ) { Owner = this }.ShowDialog();
     }
 }

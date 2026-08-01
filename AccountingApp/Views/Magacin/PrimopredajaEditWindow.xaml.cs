@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -168,5 +169,24 @@ public partial class PrimopredajaEditWindow : Window
             DialogResult = false;
             Close();
         }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "🔄 Pomoć — Primopredaja materijala",
+            "Interni prenos materijala iz magacina u magacin (M4).",
+            new (string, string)[]
+            {
+                ("Insert / ➕", "Dodaje novu stavku primopredaje."),
+                ("Ctrl+Delete / 🗑", "Briše selektovanu stavku."),
+                ("Esc", "Otkazuje unos bez čuvanja."),
+            },
+            "Obavezno izabrati različite magacine 'Daje' i 'Prima'. Prosečna nabavna cena se automatski prenosi po trenutnoj vrednosti u izlaznom magacinu."
+        ) { Owner = this }.ShowDialog();
     }
 }

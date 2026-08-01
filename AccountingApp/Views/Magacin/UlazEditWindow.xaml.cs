@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -171,5 +173,32 @@ public partial class UlazEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "📦 Pomoć — Ulaz materijala",
+            "Prijem sirovina i materijala u magacin sa ulaznom fakturnom cenom (M2).",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+                ("➕ Dodaj stavku", "Dodaje red materijala na ulaz."),
+            },
+            "Unos ulaza formira novu prosečnu (ponderisanu) nabavnu cenu materijala u tom magacinu, na osnovu postojeće zalihe i cene ove nove nabavke."
+        ) { Owner = this }.ShowDialog();
     }
 }

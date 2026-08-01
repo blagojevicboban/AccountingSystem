@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using Microsoft.EntityFrameworkCore;
@@ -194,5 +195,22 @@ public partial class PromeneWindow : Window
             DialogResult = true;
             Close();
         }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "📝 Pomoć — Šifarnik opisa promena",
+            "Standardni opisi knjižnih promena za brži unos stavki naloga.",
+            new (string, string)[]
+            {
+                ("Esc", "Zatvara prozor."),
+            },
+            "Šifra i opis definisani ovde dostupni su kao brzi izbor (F2) prilikom unosa opisa stavke u Glavnoj knjizi."
+        ) { Owner = this }.ShowDialog();
     }
 }

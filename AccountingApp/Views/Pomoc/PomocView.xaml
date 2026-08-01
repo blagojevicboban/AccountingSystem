@@ -14,6 +14,8 @@
         <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="16" Margin="0,0,16,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
                 <TextBlock Text="❓ Teme pomoći" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
+                <TextBox x:Name="TxtPretragaTema" DockPanel.Dock="Top" Margin="0,0,0,10" Padding="8,6" FontSize="12"
+                         ToolTip="Pretraga tema pomoći" TextChanged="TxtPretragaTema_TextChanged"/>
                 <ListBox x:Name="LstTeme" BorderThickness="0" SelectionChanged="LstTeme_SelectionChanged">
                     <ListBox.ItemTemplate>
                         <DataTemplate>

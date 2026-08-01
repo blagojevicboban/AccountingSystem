@@ -16,6 +16,7 @@ namespace AccountingApp;
 public partial class MainWindow : Window
 {
     private readonly AccountingDbContext _db;
+    private string? _trenutnaSekcijaKljuc;
 
     public MainWindow(AccountingDbContext db)
     {
@@ -89,6 +90,7 @@ public partial class MainWindow : Window
     {
         TxtHeaderTitle.Text = "📊 Radna tabla";
         MainContentHost.Content = new DashboardView();
+        _trenutnaSekcijaKljuc = "Dashboard";
     }
 
     private void NavDashboard_Click(object sender, RoutedEventArgs e)
@@ -100,66 +102,77 @@ public partial class MainWindow : Window
     {
         TxtHeaderTitle.Text = "📋 Kontni plan (Šifarnik konta)";
         MainContentHost.Content = new Views.Konta.KontaView();
+        _trenutnaSekcijaKljuc = "Konta";
     }
 
     public void NavNalozi_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📖 Glavna knjiga (Nalozi za knjiženje)";
         MainContentHost.Content = new NaloziView();
+        _trenutnaSekcijaKljuc = "Nalozi";
     }
 
     private void NavKartice_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📋 Kartice konta";
         MainContentHost.Content = new KarticeView();
+        _trenutnaSekcijaKljuc = "Kartice";
     }
 
     private void NavPartneri_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "👥 Partneri (Analitika i otvorene stavke)";
         MainContentHost.Content = new PartneriView();
+        _trenutnaSekcijaKljuc = "Partneri";
     }
 
     private void NavMagacin_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📦 Magacini i zalihe";
         MainContentHost.Content = new MagacinView();
+        _trenutnaSekcijaKljuc = "Magacin";
     }
 
     private void NavMaterijalnoDashboard_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📊 Radna tabla — Materijalno knjigovodstvo";
         MainContentHost.Content = new MaterijalnoDashboardView();
+        _trenutnaSekcijaKljuc = "Magacin";
     }
 
     private void NavKalkulacije_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📦 Robno knjigovodstvo (Kalkulacije, Otpremnice, Nivelacije, Robne kartice, Računopolagači)";
         MainContentHost.Content = new TrgovinaView();
+        _trenutnaSekcijaKljuc = "Robno";
     }
 
     private void NavRobnoDashboard_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📊 Radna tabla — Robno knjigovodstvo";
         MainContentHost.Content = new RobnoDashboardView();
+        _trenutnaSekcijaKljuc = "Robno";
     }
 
     public void NavIzvestaji_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📄 Izveštaji i PDF";
         MainContentHost.Content = new IzvestajiView();
+        _trenutnaSekcijaKljuc = "Izvestaji";
     }
 
     private void NavBilansi_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "🏛️ Zvanični Finansijski Izveštaji za APR";
         MainContentHost.Content = new Views.Bilansi.BilansiView();
+        _trenutnaSekcijaKljuc = "Bilansi";
     }
 
     private void NavPdv_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "🧾 PDV Evidencija (KIR i KPR)";
         MainContentHost.Content = new Views.Pdv.PdvEvidencijaView();
+        _trenutnaSekcijaKljuc = "Pdv";
     }
 
     private void NavFirme_Click(object sender, RoutedEventArgs e)
@@ -177,30 +190,40 @@ public partial class MainWindow : Window
     {
         TxtHeaderTitle.Text = "🏢 Upravljanje firmama";
         MainContentHost.Content = new Views.Firme.FirmeView();
+        _trenutnaSekcijaKljuc = "Firme";
     }
 
     public void NavPodesavanja_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "⚙️ Podešavanja aplikacije";
         MainContentHost.Content = new Views.Podesavanja.PodesavanjaView();
+        _trenutnaSekcijaKljuc = "Podesavanja";
     }
 
     private void NavBackup_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "💾 Rezervne kopije i restauracija (Backup & Restore)";
         MainContentHost.Content = new BackupView();
+        _trenutnaSekcijaKljuc = "Backup";
     }
 
     private void NavKorisnici_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "👤 Administracija korisnika i uloga (RBAC)";
         MainContentHost.Content = new Views.Korisnici.KorisniciView(_db);
+        _trenutnaSekcijaKljuc = "Korisnici";
     }
 
     private void NavPomoc_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "❓ Pomoć";
         MainContentHost.Content = new PomocView();
+    }
+
+    private void OtvoriPomocKontekstualno()
+    {
+        TxtHeaderTitle.Text = "❓ Pomoć";
+        MainContentHost.Content = new PomocView(_trenutnaSekcijaKljuc);
     }
 
     private void BtnOdjava_Click(object sender, RoutedEventArgs e)
@@ -240,7 +263,7 @@ public partial class MainWindow : Window
         }
         else if (e.Key == System.Windows.Input.Key.F1)
         {
-            NavPomoc_Click(sender, e);
+            OtvoriPomocKontekstualno();
             e.Handled = true;
         }
     }

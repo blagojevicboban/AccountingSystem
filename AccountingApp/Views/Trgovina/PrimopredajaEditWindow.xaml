@@ -4,7 +4,7 @@
         Title="Nalog za primopredaju robe" Height="620" Width="840"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResizeWithGrip"
-        Background="{StaticResource BackgroundBrush}">
+        Background="{StaticResource BackgroundBrush}" KeyDown="Window_KeyDown">
 
     <Grid Margin="24">
         <Grid.RowDefinitions>

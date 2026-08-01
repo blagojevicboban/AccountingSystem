@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using Microsoft.EntityFrameworkCore;
@@ -115,5 +117,31 @@ public partial class MagacinEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "🏢 Pomoć — Računopolagač / Magacin",
+            "Šifarnik magacina (skladišta) i računopolagača korišćen u svim robnim i materijalnim dokumentima.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+            },
+            "Vrsta magacina (Veleprodaja/Maloprodaja/Proizvodnja/Tranzit) utiče na to koje kalkulacije i dokumenti su dostupni za taj magacin."
+        ) { Owner = this }.ShowDialog();
     }
 }

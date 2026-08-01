@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -168,5 +170,32 @@ public partial class TrebovanjeEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "📦 Pomoć — Trebovanje materijala",
+            "Razduženje materijala iz magacina i prenos na konto troškova (M3).",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+                ("➕ Dodaj stavku", "Dodaje red materijala na trebovanje."),
+            },
+            "Cena se ne unosi ručno — trebovanje se knjiži po trenutnoj prosečnoj nabavnoj ceni materijala u magacinu koji izdaje. Konto troška određuje na koji konto ide vrednost utrošenog materijala."
+        ) { Owner = this }.ShowDialog();
     }
 }

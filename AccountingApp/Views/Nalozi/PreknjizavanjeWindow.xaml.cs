@@ -1,5 +1,7 @@
 using System;
 using System.Windows;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Services;
 using Microsoft.EntityFrameworkCore;
@@ -66,5 +68,30 @@ public partial class PreknjizavanjeWindow : Window
     private void BtnOdustani_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = false;
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            BtnOdustani_Click(sender, e);
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "🔄 Pomoć — Preknjižavanje konta",
+            "Masovna zamena broja konta na svim stavkama naloga glavne knjige (analogno DOS proceduri 'prekm').",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje bez izvršavanja."),
+            },
+            "Akcija menja SVE stavke koje trenutno koriste 'Staro konto' na 'Novo konto', bez obzira na nalog kom pripadaju. Preporučuje se rezervna kopija baze pre pokretanja."
+        ) { Owner = this }.ShowDialog();
     }
 }

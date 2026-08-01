@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -200,6 +202,34 @@ public partial class RacunOtpremnicaEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "📜 Pomoć — Račun / Otpremnica",
+            "Izdavanje izlaznih faktura kupcima sa automatskim razduženjem zaliha.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+                ("➕ Dodaj stavku", "Dodaje red robe/artikla na račun."),
+                ("🗑️", "Uklanja stavku iz reda u tabeli."),
+            },
+            "Checkbox 'Predračun' pravi dokument koji se NE knjiži i ne razdužuje zalihe dok se ne pretvori u pravi račun. PDV i ukupan iznos se automatski računaju po stavci na osnovu poreske tarife artikla i unetog rabata."
+        ) { Owner = this }.ShowDialog();
     }
 }
 

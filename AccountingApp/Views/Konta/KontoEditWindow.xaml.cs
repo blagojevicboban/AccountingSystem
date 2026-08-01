@@ -1,6 +1,8 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -89,5 +91,30 @@ public partial class KontoEditWindow : Window
     private void BtnOdustani_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = false;
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            BtnOdustani_Click(sender, e);
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "📋 Pomoć — Konto",
+            "Unos i izmena stavke Kontnog plana.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+            },
+            "Broj konta određuje hijerarhijski nivo (klasa/grupa/sintetika/analitika) na osnovu broja cifara. Konta sa proknjiženim prometom ne mogu se brisati."
+        ) { Owner = this }.ShowDialog();
     }
 }

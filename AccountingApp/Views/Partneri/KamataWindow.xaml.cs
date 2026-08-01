@@ -2,7 +2,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using AccountingApp.Services;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -135,5 +137,28 @@ public partial class KamataWindow : Window
         {
             MessageBox.Show($"Greška pri generisanju PDF-a: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "💰 Pomoć — Obračun kamate",
+            "Obračun zatezne kamate na neplaćene otvorene stavke partnera.",
+            new (string, string)[]
+            {
+                ("➕ Dodaj stopu", "Dodaje novu kamatnu stopu koja važi od unetog datuma."),
+                ("🧮 Obračunaj", "Izračunava kamatu za sve dugovane stavke partnera do datuma obračuna."),
+                ("🖨️", "Izvozi obračun u PDF."),
+            },
+            "Kamata se obračunava po danima kašnjenja svake pojedinačne stavke, primenjujući stopu koja je važila na dan kašnjenja (ako je bilo više izmena stope u periodu)."
+        ) { Owner = this }.ShowDialog();
     }
 }

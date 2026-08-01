@@ -3,6 +3,8 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using Microsoft.EntityFrameworkCore;
@@ -138,5 +140,31 @@ public partial class ArtikalEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "🛒 Pomoć — Artikal / Roba",
+            "Šifarnik artikala korišćen u kalkulacijama, fakturama i nivelacijama.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+            },
+            "Šifra artikla mora biti jedinstvena. Poreska tarifa se bira iz šifarnika poreskih tarifa i određuje stopu PDV-a koja se primenjuje pri prodaji ovog artikla."
+        ) { Owner = this }.ShowDialog();
     }
 }

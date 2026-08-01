@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Novo trebovanje" Height="600" Width="800"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundBrush}">
+        Background="{StaticResource BackgroundBrush}" KeyDown="Window_KeyDown">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>

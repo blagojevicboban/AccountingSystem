@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Nova kalkulacija (veleprodaja)" Height="860" Width="900"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundBrush}">
+        Background="{StaticResource BackgroundBrush}" KeyDown="Window_KeyDown">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>

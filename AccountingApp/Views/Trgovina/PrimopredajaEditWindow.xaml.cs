@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using AccountingData;
 using AccountingData.Models;
 using AccountingData.Services;
@@ -170,6 +172,34 @@ public partial class PrimopredajaEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+        }
+        else if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "🔄 Pomoć — Primopredaja robe",
+            "Interni prenos robe između magacina.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+                ("➕ Dodaj stavku", "Dodaje artikal u nalog za primopredaju."),
+                ("🗑️", "Uklanja stavku iz reda u tabeli."),
+            },
+            "Obavezno izabrati različite magacine 'daje' i 'prima'. Primopredaja se knjiži kao izlaz iz jednog i ulaz u drugi magacin po istoj vrednosti."
+        ) { Owner = this }.ShowDialog();
     }
 }
 

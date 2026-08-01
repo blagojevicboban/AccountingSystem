@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using AccountingApp.Views.Pomoc;
 using Microsoft.EntityFrameworkCore;
 using AccountingData;
 using AccountingData.Models;
@@ -145,5 +147,28 @@ public partial class NivelacijaEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.F1)
+        {
+            OtvoriPomoc();
+        }
+    }
+
+    private void OtvoriPomoc()
+    {
+        new EditHelpWindow(
+            "🏷️ Pomoć — Nivelacija cena",
+            "Zapisnik o promeni prodajnih cena artikala po magacinu.",
+            new (string, string)[]
+            {
+                ("Esc", "Odustaje od unosa bez čuvanja."),
+                ("➕ Dodaj stavku", "Dodaje artikal u zapisnik nivelacije."),
+                ("🗑️ Ukloni stavku", "Uklanja selektovanu stavku."),
+            },
+            "Uk. Razlika po stavci = (Nova cena − Stara cena) × Zaliha. Nivelacija automatski svodi vrednost zaliha artikla na novu cenu i evidentira razliku."
+        ) { Owner = this }.ShowDialog();
     }
 }
