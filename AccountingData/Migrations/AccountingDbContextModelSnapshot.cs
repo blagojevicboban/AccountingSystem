@@ -1680,6 +1680,49 @@ namespace AccountingData.Migrations
                     b.ToTable("UvozneStavke");
                 });
 
+            modelBuilder.Entity("AccountingData.Models.ZatvaranjeStavke", b =>
+                {
+                    b.Property<int>("ZatvaranjeStavkeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DatumZatvaranja")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Iznos")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("KorisnickoIme")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("KorisnikId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Napomena")
+                        .HasMaxLength(250)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StavkaDugujeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StavkaPotrazujeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("VrstaZatvaranja")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ZatvaranjeStavkeId");
+
+                    b.HasIndex("StavkaDugujeId");
+
+                    b.HasIndex("StavkaPotrazujeId");
+
+                    b.ToTable("ZatvaranjaStavki");
+                });
+
             modelBuilder.Entity("AccountingData.Models.DokumentPrilog", b =>
                 {
                     b.HasOne("AccountingData.Models.Kalkulacija", "Kalkulacija")
@@ -1879,6 +1922,25 @@ namespace AccountingData.Migrations
                     b.Navigation("Artikal");
 
                     b.Navigation("UvoznaKalkulacija");
+                });
+
+            modelBuilder.Entity("AccountingData.Models.ZatvaranjeStavke", b =>
+                {
+                    b.HasOne("AccountingData.Models.StavkaNaloga", "StavkaDuguje")
+                        .WithMany()
+                        .HasForeignKey("StavkaDugujeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AccountingData.Models.StavkaNaloga", "StavkaPotrazuje")
+                        .WithMany()
+                        .HasForeignKey("StavkaPotrazujeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("StavkaDuguje");
+
+                    b.Navigation("StavkaPotrazuje");
                 });
 
             modelBuilder.Entity("AccountingData.Models.Kalkulacija", b =>

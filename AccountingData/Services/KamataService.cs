@@ -75,7 +75,10 @@ public class KamataService
 
     /// <summary>
     /// Obračun zatezne kamate na dugovne (Duguje) otvorene stavke partnera po konformnom metodu
-    /// (analogno legacy obrac_kamate proceduri iz FIN2.PRG).
+    /// (analogno legacy obrac_kamate proceduri iz FIN2.PRG). Osnovica je preostali (nezatvoreni)
+    /// iznos svake stavke — ako je faktura delimično/potpuno zatvorena uplatom kroz
+    /// ZatvaranjeStavkiService, kamata se računa samo na ono što stvarno stoji otvoreno na
+    /// datumObracuna, ne na pun originalni Duguje iznos.
     /// </summary>
     public async Task<List<KamataStavka>> ObracunajKamatuAsync(int partnerId, DateTime datumObracuna)
     {
@@ -85,29 +88,26 @@ public class KamataService
             throw new InvalidOperationException("Nema unetih kamatnih stopa — unesite bar jednu stopu pre obračuna.");
         }
 
-        var stavke = await _db.StavkeNaloga
-            .Include(s => s.Nalog)
-            .Where(s => s.PartnerId == partnerId && s.Nalog != null && s.Nalog.IsKnjizen && s.Duguje > 0)
-            .OrderBy(s => s.Nalog!.DatumNaloga)
-            .ToListAsync();
+        var zatvaranjeService = new ZatvaranjeStavkiService(_db);
+        var otvoreneStavke = await zatvaranjeService.GetOtvoreneStavkeZaPartneraAsync(partnerId, datumObracuna, samoOtvorene: true);
 
         var rezultat = new List<KamataStavka>();
-        foreach (var s in stavke)
+        foreach (var s in otvoreneStavke.Where(s => s.Strana == "Duguje"))
         {
-            var datumDuga = s.Nalog!.DatumNaloga.Date;
+            var datumDuga = s.Datum.Date;
             if (datumDuga >= datumObracuna.Date) continue;
 
             int dana = (datumObracuna.Date - datumDuga).Days;
-            decimal kamata = ObracunajKamatuZaPeriod(s.Duguje, datumDuga, datumObracuna.Date, stope);
+            decimal kamata = ObracunajKamatuZaPeriod(s.Preostalo, datumDuga, datumObracuna.Date, stope);
 
             if (kamata > 0)
             {
                 rezultat.Add(new KamataStavka
                 {
                     Datum = datumDuga,
-                    BrojNaloga = s.Nalog.BrojNaloga,
-                    Opis = string.IsNullOrWhiteSpace(s.Opis) ? s.Nalog.Opis : s.Opis,
-                    Iznos = s.Duguje,
+                    BrojNaloga = s.BrojNaloga,
+                    Opis = s.Opis,
+                    Iznos = s.Preostalo,
                     BrojDanaKasnjenja = dana,
                     ObracunataKamata = kamata
                 });

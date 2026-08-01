@@ -13,6 +13,7 @@ namespace AccountingApp.Views.Partneri;
 public partial class PartneriView : UserControl
 {
     private List<Partner> _sviPartneri = new();
+    private Partner? _izabraniPartner;
 
     public PartneriView()
     {
@@ -55,6 +56,7 @@ public partial class PartneriView : UserControl
             return;
         }
 
+        _izabraniPartner = partner;
         TxtNaslovPartnera.Text = partner.Naziv;
         TxtPodnaslovPartnera.Text = $"Šifra: {partner.SifraPartnera}" + (string.IsNullOrWhiteSpace(partner.Pib) ? "" : $" | PIB: {partner.Pib}");
 
@@ -74,6 +76,74 @@ public partial class PartneriView : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri učitavanju otvorenih stavki: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        if (TabStavke.SelectedIndex == 1)
+        {
+            await LoadPraveOtvoreneStavkeAsync();
+        }
+    }
+
+    private async void TabStavke_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (TabStavke.SelectedIndex == 1 && _izabraniPartner != null)
+        {
+            await LoadPraveOtvoreneStavkeAsync();
+        }
+    }
+
+    private async Task LoadPraveOtvoreneStavkeAsync()
+    {
+        if (_izabraniPartner == null) return;
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+            var service = new ZatvaranjeStavkiService(db);
+
+            DgPraveOtvoreneStavke.ItemsSource = await service.GetOtvoreneStavkeZaPartneraAsync(_izabraniPartner.PartnerId);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri učitavanju otvorenih stavki (IOS): {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnZatvoriStavke_Click(object sender, RoutedEventArgs e)
+    {
+        if (_izabraniPartner == null)
+        {
+            MessageBox.Show("Izaberite partnera.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var izabraniIds = DgPraveOtvoreneStavke.SelectedItems
+            .OfType<OtvorenaStavkaRed>()
+            .Select(s => s.StavkaNalogaId);
+
+        var dijalog = new ZatvaranjeStavkiWindow(_izabraniPartner, izabraniIds) { Owner = Window.GetWindow(this) };
+        if (dijalog.ShowDialog() == true)
+        {
+            await LoadPraveOtvoreneStavkeAsync();
+        }
+    }
+
+    private void BtnIstorijaZatvaranja_Click(object sender, RoutedEventArgs e)
+    {
+        if (_izabraniPartner == null)
+        {
+            MessageBox.Show("Izaberite partnera.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var dijalog = new IstorijaZatvaranjaWindow(_izabraniPartner) { Owner = Window.GetWindow(this) };
+        dijalog.ShowDialog();
+        if (dijalog.NestoOtkazano)
+        {
+            _ = LoadPraveOtvoreneStavkeAsync();
         }
     }
 

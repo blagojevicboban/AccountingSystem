@@ -17,6 +17,7 @@ public partial class NaloziView : UserControl
 {
     private List<Nalog> _allNalozi = new();
     private Dictionary<int, string> _promeneMap = new();
+    private Shared.NapredniFilterCriteria _napredniFilter = new();
 
     public NaloziView()
     {
@@ -58,7 +59,14 @@ public partial class NaloziView : UserControl
         var filtered = _allNalozi.Where(n =>
             (string.IsNullOrEmpty(search) || n.BrojNaloga.ToString().Contains(search) || (n.Opis != null && n.Opis.ToLower().Contains(search))) &&
             (!samoProknjizeni || n.IsKnjizen) &&
-            (!samoNeproknjizeni || !n.IsKnjizen)
+            (!samoNeproknjizeni || !n.IsKnjizen) &&
+            (!_napredniFilter.DatumOd.HasValue || n.DatumNaloga >= _napredniFilter.DatumOd.Value.Date) &&
+            (!_napredniFilter.DatumDo.HasValue || n.DatumNaloga <= _napredniFilter.DatumDo.Value.Date.AddDays(1).AddTicks(-1)) &&
+            (!_napredniFilter.IznosMin.HasValue || n.UkupnoDuguje >= _napredniFilter.IznosMin.Value) &&
+            (!_napredniFilter.IznosMax.HasValue || n.UkupnoDuguje <= _napredniFilter.IznosMax.Value) &&
+            (string.IsNullOrEmpty(_napredniFilter.BrojDokumenta) || n.BrojNaloga.ToString().Contains(_napredniFilter.BrojDokumenta) || (n.Opis != null && n.Opis.Contains(_napredniFilter.BrojDokumenta, StringComparison.OrdinalIgnoreCase))) &&
+            (string.IsNullOrEmpty(_napredniFilter.Konto) || (n.Stavke != null && n.Stavke.Any(s => s.BrojKonta.Contains(_napredniFilter.Konto, StringComparison.OrdinalIgnoreCase)))) &&
+            (!_napredniFilter.SelectedPartnerId.HasValue || (n.Stavke != null && n.Stavke.Any(s => s.PartnerId == _napredniFilter.SelectedPartnerId.Value)))
         ).OrderByDescending(n => n.BrojNaloga).ToList();
 
         DgNalozi.ItemsSource = filtered;
@@ -226,6 +234,57 @@ public partial class NaloziView : UserControl
         if (editDijalog.ShowDialog() == true)
         {
             LoadNalozi();
+        }
+    }
+
+    private void BtnNapredniFilter_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var win = new Shared.NaprednaPretragaWindow(db, _napredniFilter) { Owner = Window.GetWindow(this) };
+            if (win.ShowDialog() == true)
+            {
+                _napredniFilter = win.FilterCriteria;
+                if (_napredniFilter.HasActiveFilter)
+                {
+                    BtnNapredniFilter.Background = System.Windows.Media.Brushes.DarkOrange;
+                }
+                else
+                {
+                    BtnNapredniFilter.Background = (System.Windows.Media.Brush)FindResource("PrimaryLightBrush");
+                }
+                ApplyFilter();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri filtriranju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnUvozIzvoda_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var win = new Izvodi.UvozIzvodaWindow(db) { Owner = Window.GetWindow(this) };
+            if (win.ShowDialog() == true || win.JeProknjizeno)
+            {
+                LoadNalozi();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri otvaranju uvoza izvoda: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

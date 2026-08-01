@@ -1,0 +1,76 @@
+<UserControl x:Class="AccountingApp.Views.PutniNalozi.PutniNaloziView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1100">
+
+    <UserControl.Resources>
+        <ResourceDictionary Source="/Resources/Styles.xaml"/>
+    </UserControl.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="200"/>
+        </Grid.RowDefinitions>
+
+        <!-- TOOLBAR -->
+        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel LastChildFill="True">
+                <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="BtnNoviNalog" Content="➕ Novi putni nalog" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,8,2" Click="BtnNoviNalog_Click"/>
+                    <Button x:Name="BtnIzmeni" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeni_Click"/>
+                    <Button x:Name="BtnObrisi" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" Click="BtnObrisi_Click"/>
+                    <Button x:Name="BtnKnjizi" Content="✅ Proknjiži (5330/5340)" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjizi_Click"/>
+                    <Button x:Name="BtnExportExcel" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcel_Click"/>
+                    <Button x:Name="BtnStampa" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj Obrazac Putnog Naloga" Margin="0,2,0,2" Click="BtnStampa_Click"/>
+                </WrapPanel>
+                <WrapPanel VerticalAlignment="Center">
+                    <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                    <TextBox x:Name="TxtPretraga" Height="34" Width="220" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged"/>
+                </WrapPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- MASTER DATAGRID -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DataGrid x:Name="DgPutniNalozi" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                      GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                      SelectionChanged="DgPutniNalozi_SelectionChanged">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Broj naloga" Binding="{Binding BrojNaloga}" Width="120" FontWeight="Bold"/>
+                    <DataGridTextColumn Header="Vrsta" Binding="{Binding Vrsta}" Width="100"/>
+                    <DataGridTextColumn Header="Zaposleni" Binding="{Binding ZaposleniIme}" Width="160" FontWeight="SemiBold"/>
+                    <DataGridTextColumn Header="Relacija" Binding="{Binding Relacija}" Width="*"/>
+                    <DataGridTextColumn Header="Polazak" Binding="{Binding DatumPolaska, StringFormat=\{0:dd.MM.yyyy HH:mm\}}" Width="130"/>
+                    <DataGridTextColumn Header="Povratak" Binding="{Binding DatumPovratka, StringFormat=\{0:dd.MM.yyyy HH:mm\}}" Width="130"/>
+                    <DataGridTextColumn Header="Dnevnice" Binding="{Binding BrojDnevnica, StringFormat=\{0:N1\}}" Width="80" ElementStyle="{StaticResource CenterAlign}"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" FontWeight="SemiBold"/>
+                    <DataGridTextColumn Header="Za isplatu (RSD)" Binding="{Binding UkupnoZaIsplatu, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}" FontWeight="Bold"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+        <!-- DETAILS DATAGRID -->
+        <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel>
+                <TextBlock Text="📋 Priloženi računi i stavke troškova službenog puta" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                <DataGrid x:Name="DgStavkeTroskova" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50" ElementStyle="{StaticResource CenterAlign}"/>
+                        <DataGridTextColumn Header="Vrsta troška" Binding="{Binding VrstaTroska}" Width="130" FontWeight="SemiBold"/>
+                        <DataGridTextColumn Header="Broj računa" Binding="{Binding BrojRacuna}" Width="140"/>
+                        <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
+                        <DataGridTextColumn Header="Iznos (RSD)" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}" FontWeight="Bold"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,161 @@
+<Window x:Class="AccountingApp.Views.Izvodi.UvozIzvodaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="🏦 Uvoz elektronskih bankarskih izvoda — ERPi Finansije" 
+        Height="720" Width="1050"
+        WindowStartupLocation="CenterOwner"
+        Background="#F8FAFC">
+
+    <Window.Resources>
+        <ResourceDictionary Source="/Resources/Styles.xaml"/>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header -->
+            <RowDefinition Height="Auto"/> <!-- File selector & Summary -->
+            <RowDefinition Height="*"/>    <!-- Data Grid -->
+            <RowDefinition Height="Auto"/> <!-- Action Buttons -->
+        </Grid.RowDefinitions>
+
+        <!-- ── HEADER ──────────────────────────────────────────────── -->
+        <Border Grid.Row="0" CornerRadius="8" Padding="16,12" Margin="0,0,0,12">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#1E40AF" Offset="0"/>
+                    <GradientStop Color="#2563EB" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="🏦" FontSize="32" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Uvoz elektronskih bankarskih izvoda i Automatski Matching Engine" 
+                               FontSize="18" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Podržava Halcom XML, Asseco XML, ISO 20022 CAMT.053 i SWIFT MT940 sa automatskim uparivanjem kupaca/dobavljača i IOS zatvaranjem." 
+                               FontSize="12" Foreground="#93C5FD" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ── FILE SELECTOR & SUMMARY BAR ────────────────────────── -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" Margin="0,0,0,12"
+                BorderBrush="#E2E8F0" BorderThickness="1">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" Content="📂 Izaberi fajl izvoda..." Style="{StaticResource PrimaryButton}"
+                            Height="36" Padding="16,0" Click="BtnIzaberiFajl_Click"/>
+
+                    <TextBox Grid.Column="1" x:Name="TxtFajlPutanja" IsReadOnly="True" VerticalAlignment="Center"
+                             Margin="12,0,12,0" Padding="10,6" FontSize="13" Foreground="#334155"
+                             Text="Nije izabran nijedan fajl..." Background="#F1F5F9" BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                    <Border Grid.Column="2" x:Name="BadgeFormat" Background="#E2E8F0" CornerRadius="12" Padding="12,6" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtFormatNaziv" Text="Format: Nepoznato" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
+                    </Border>
+                </Grid>
+
+                <!-- Sumarni podaci izvoda -->
+                <Grid x:Name="GridSummary" Margin="0,14,0,0" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Broj izvoda:" FontSize="11" Foreground="#64748B"/>
+                        <TextBlock x:Name="TxtBrojIzvoda" Text="—" FontSize="14" FontWeight="Bold" Foreground="#0F172A"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Datum izvoda:" FontSize="11" Foreground="#64748B"/>
+                        <TextBlock x:Name="TxtDatumIzvoda" Text="—" FontSize="14" FontWeight="Bold" Foreground="#0F172A"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Početno stanje:" FontSize="11" Foreground="#64748B"/>
+                        <TextBlock x:Name="TxtPocetnoStanje" Text="0,00" FontSize="14" FontWeight="Bold" Foreground="#0F172A"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="3">
+                        <TextBlock Text="Ukupno uplate (+):" FontSize="11" Foreground="#64748B"/>
+                        <TextBlock x:Name="TxtUkupnoUplate" Text="0,00" FontSize="14" FontWeight="Bold" Foreground="#16A34A"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="4">
+                        <TextBlock Text="Ukupno isplate (-):" FontSize="11" Foreground="#64748B"/>
+                        <TextBlock x:Name="TxtUkupnoIsplate" Text="0,00" FontSize="14" FontWeight="Bold" Foreground="#DC2626"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- ── TABLE GRID ─────────────────────────────────────────── -->
+        <Border Grid.Row="2" Background="White" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Padding="8">
+            <DataGrid x:Name="DgStavke" AutoGenerateColumns="False" CanUserAddRows="False"
+                      GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                      RowHeight="36" Background="White" RowHeaderWidth="0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="#" Binding="{Binding BrojStavke}" Width="40" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Datum" Binding="{Binding DatumValute, StringFormat=dd.MM.yyyy}" Width="85" IsReadOnly="True"/>
+                    
+                    <!-- Tip / Smer -->
+                    <DataGridTemplateColumn Header="Tip" Width="75">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Tip}" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#16A34A"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Tip}" Value="Isplata">
+                                                    <Setter Property="Foreground" Value="#DC2626"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Nalogodavac / Primalac" Binding="{Binding NazivPartnera}" Width="160" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Svrha doznake" Binding="{Binding SvrhaDoznake}" Width="*" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Poziv na broj" Binding="{Binding PozivNaBroj}" Width="110" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Iznos (RSD)" Binding="{Binding Iznos, StringFormat=N2}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource RightAlignStyle}"/>
+
+                    <!-- Status Uparenosti -->
+                    <DataGridTemplateColumn Header="Matching Status" Width="200">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding StatusOpis}" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- ── FOOTER ACTIONS ─────────────────────────────────────── -->
+        <DockPanel Grid.Row="3" Margin="0,12,0,0">
+            <Button Content="Odustani (Esc)" Style="{StaticResource SecondaryButton}" DockPanel.Dock="Left"
+                    Height="40" Padding="16,0" Click="BtnOdustani_Click"/>
+
+            <Button x:Name="BtnProknjizi" Content="🚀  Proknjiži izvod i zatvori stavke (IOS)" 
+                    Style="{StaticResource PrimaryButton}" DockPanel.Dock="Right"
+                    Height="40" Padding="24,0" IsEnabled="False" Click="BtnProknjizi_Click"/>
+        </DockPanel>
+    </Grid>
+</Window>

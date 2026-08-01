@@ -4,6 +4,123 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.52] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Mesta troška i Projekti — Cost Centers (`MestaTroskaView` & `MestaTroskaService`)** — kompletan novi modul za analitičko praćenje po poslovnim jedinicama i projektima.
+  - **Šifarnik Mesta Troška & Projekata**: Definisavanje mesta troška, gradilišta, projekata i objekata (Šifra, Naziv, Tip, Status).
+  - **Povezivanje sa Stavkama Naloga (`StavkaNaloga.MestoTroskaId`)**: Dodeljivanje analitičkog mesta troška svakoj pojedinačnoj stavci pri knjiženju u Glavnoj Knjizi.
+  - **Proračun Profitabilnosti po Projektu (`GetAnalitikaPoMestuTroskaAsync`)**: Automatski proračun ukupnih prihoda (Konto 6xx), rashoda (Konto 5xx) i neto finansijskog rezultata (Dobit/Gubitak po objektu/projektu).
+  - **Nova Kartica u Navigaciji**: Dodato dugme "🎯 Mesta troška i Projekti" u bočnu navigaciju aplikacije.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata ugrađena tema "🎯 Mesta troška i Projekti" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.52`).
+
+---
+
+## [1.0.51] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Blagajničko poslovanje — Dinarska i Devizna Blagajna (`BlagajnaView` & `BlagajnaService`)** — kompletan novi modul za blagajničko poslovanje.
+  - **Nalozi za Uplatu i Isplatu**: Unos uplatnica i isplatnica za Dinarsku (**Konto 2430**) i Deviznu (**Konto 2440**) blagajnu.
+  - **Hronološki Dnevnik Blagajne sa Saldom (`GetBlagajnickiDnevnikAsync`)**: Proračun prenetog stanja, ukupnih uplata/isplata i tekućeg salda blagajne za odabrani period.
+  - **Automatsko Knjiženje u GK (`KnjiziBlagajnickiNalogAsync`)**: Kreiranje uravnoteženog naloga `BL` u Glavnoj Knjizi sa zaduženjem ili razduženjem konta 2430/2440 i odgovarajućeg protivkonta.
+  - **Nova Kartica u Navigaciji**: Dodato dugme "💰 Dinarska i Devizna Blagajna" u bočnu navigaciju aplikacije.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata ugrađena tema "💰 Blagajničko poslovanje" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.51`).
+
+---
+
+## [1.0.50] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Putni nalozi i Dnevnice (`PutniNaloziView` & `PutniNalogService`)** — kompletan novi modul za evidenciju službenih putovanja u zemlji i inostranstvu.
+  - **Automatski Proračun Dnevnica (`IzracunajDnevnice`)**: Izračunavanje broja dnevnica na osnovu satnice puta (>12h = 1.0, 8h-12h = 0.5, <8h = 0.0) sa obračunom celih dana i preostalih sati.
+  - **Prateći Troškovi Puta**: Unos računa za gorivo, smeštaj (hoteli), prevoz/taksi i putarine uz evidenciju isplaćenih akontacija.
+  - **Automatsko Knjiženje u GK (`KnjiziPutniNalogAsync`)**: Automatsko knjiženje na **Konto 5330** (službena putovanja u zemlji) ili **Konto 5340** (službena putovanja u inostranstvu) i odobrenje Konta 4650.
+  - **Nova Kartica u Navigaciji**: Dodato dugme "🚗 Putni nalozi i Dnevnice" u bočnu navigaciju aplikacije.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata ugrađena tema "🚗 Putni nalozi i Dnevnice" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.50`).
+
+---
+
+## [1.0.49] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Kompenzacije, Asignacije i Cesije (`KompenzacijeView` & `KompenzacijaService`)** — kompletan novi modul za prebijanje obostranih dugovanja i potraživanja.
+  - **Pametni Matching Engine (`GetObostranaDugovanjaAsync`)**: Automatska detekcija partnera koji su ujedno i kupci (Konto 2040) i dobavljači (Konto 4350) sa proračunom maksimalnog iznosa kompenzacije.
+  - **Dvojne i Trojne Kompenzacije**: Kreiranje predloga poravnanja za 2 ili 3 ugovorne strane (Asignacija / Cesija).
+  - **Automatsko Knjiženje i IOS Zatvaranje (`KnjiziIZatvoriKompenzacijuAsync`)**: Generisanje proknjiženog naloga `KOM` (Konto 4350 / Konto 2040) i automatsko zatvaranje faktura u sistemu otvorenih stavki.
+  - **Nova Kartica u Navigaciji**: Dodato dugme "🤝 Kompenzacije i Cesije" u bočnu navigaciju aplikacije.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata ugrađena tema "🤝 Kompenzacije, Asignacije i Cesije" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.49`).
+
+---
+
+## [1.0.48] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Komercijala — Ponude, Predračuni i Narudžbenice (`KomercijalaService`)** — kompletna podrška za komercijalno poslovanje u sklopu sekcije Trgovina & Komercijala.
+  - **Ponude & Predračuni (Proforme)**: Unos i izdavanje ponuda kupcima u PDF-u sa obračunom rabata i PDV-a.
+  - **1-Klik Konverzija u Fakturu & SEF (`PretvoriPonuduURacunAsync`)**: Dugme za automatsko pretvaranje prihvaćene ponude u konačni izlazni račun (`RacunOtpremnica`) spremnog za slanje na e-Fakture (SEF).
+  - **Narudžbenice Dobavljačima (Purchase Orders)**: Praćenje ugovorene robe sa dobavljačima i rokova isporuke.
+  - **1-Klik Konverzija u Ulaznu Kalkulaciju (`PretvoriNarudzbenicuUKalkulacijuAsync`)**: Dugme za automatski prenos naručenih artikala u novu ulaznu kalkulaciju sa detekcijom odstupanja pristiglih količina.
+  - **Dva Nova Taba u `TrgovinaView`**: Dodati tabovi "📜 Ponude & Predračuni" i "🛒 Narudžbenice Dobavljačima".
+
+### 📚 Dokumentacija & Pomoć
+- Dodata ugrađena tema "📜 Komercijala — Ponude, Predračuni i Narudžbenice" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.48`).
+
+---
+
+## [1.0.47] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Napredno Višekriterijumsko Filtriranje Tabela (`NaprednaPretragaWindow`)** — ugrađen univerzalni sistem za kombinovanje više filtera simultano (raspon datuma Od-Do, min/max iznosi, brojevi dokumenata/naloga, partneri, konta i status knjiženja).
+- **Masovni Izvoz u Excel sa Sačuvanim Rasporedom Kolona (`ExcelExportService`)** — omogućen izvoz u Excel uz striktno poštovanje redosleda kolona koje je korisnik izmenio na ekranu prevlačenjem (`DisplayIndex`).
+- **Integracija u Glavnu Knjigu i Robno Knjigovodstvo** — dodata dugmad **"⚙️ Napredni filter"** u `NaloziView` i `TrgovinaView`.
+
+### 📚 Dokumentacija & Pomoć
+- Dodato uputstvo za napredno filtriranje i izvoz u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.47`).
+
+---
+
+## [1.0.46] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **AI / OCR Čitač Skeniranih Računa u DMS-u (`DmsOcrPreviewWindow`)** — ugrađena podrška za automatsko skeniranje, analizu i ekstrakciju podataka sa ulaznih računa (PDF i Slikovni prilozi u DMS-u).
+  - **DmsOcrInvoiceParser**: Pametno izdvajanje PIB-a dobavljača, broja ulaznog računa, datuma izdavanja, valute dospelosti, osnovice (neto), PDV iznosa (20%/10%) i ukupnog iznosa za uplatu (bruto).
+  - **DmsOcrMatchingService**: Automatsko uparivanje prepoznatog PIB-a sa šifarnikom `Partneri` u bazi i generisanje uravnoteženih stavki naloga knjiženja (Konta `5010`/`5390` nabavka/usluge, Konto `2700` ulazni PDV 20%, Konto `4350` obaveza prema dobavljaču sa `PartnerId`).
+  - **DmsWindow Integracija**: Novo dugme **"🔍 OCR Nalog"** uz svaki dokument u listi DMS priloga sa pretpregledom i pokretanjem `NalogEditWindow` u 1 klik.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata ugrađena tema "🔍 AI / OCR Čitač skeniranih računa u DMS-u" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.46`).
+
+---
+
+## [1.0.45] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **Uvoz Elektronskih Bankarskih Izvoda & Automatski Matching Engine (`UvozIzvodaWindow`)** — ugrađena kompletna podrška za uvoz i automatsku obradu bankarskih izvoda.
+  - **4 Podržana Formata**: Halcom E-Bank XML, Asseco / Office Banking XML, ISO 20022 `camt.053.001.02` XML i SWIFT MT940 TXT izvodi.
+  - **BankIzvodMatchingEngine**: Automatska detekcija formata i 3 nivoa pametnog uparivanja (PIB/žiro račun partnera, poziv na broj/broj fakture, bankarske provizije Konto 5530).
+  - **Automatsko Knjiženje u GK & IOS Zatvaranje**: Automatsko kreiranje proknjiženog naloga vrste `IZV` sa uravnoteženim stavkama za tekući račun (Konto 2410) i automatsko zatvaranje otvorenih potraživanja i dugovanja kupaca/dobavljača u sistemu otvorenih stavki.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata ugrađena tema "🏦 Uvoz elektronskih bankarskih izvoda" u Pomoć (`PomocView`).
+- Ažurirani `README.md` i `version.txt` (`1.0.45`).
+
+---
+
 ## [1.0.44] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti

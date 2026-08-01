@@ -1,0 +1,112 @@
+<Window x:Class="AccountingApp.Views.Blagajna.BlagajnickiNalogEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="💰 Nalog Blagajne — Unos uplatnice / isplatnice" 
+        Height="480" Width="680"
+        WindowStartupLocation="CenterOwner"
+        Background="#F8FAFC">
+
+    <Window.Resources>
+        <ResourceDictionary Source="/Resources/Styles.xaml"/>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header -->
+            <RowDefinition Height="*"/>    <!-- Form Fields -->
+            <RowDefinition Height="Auto"/> <!-- Footer Actions -->
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Border Grid.Row="0" CornerRadius="8" Padding="16,10" Margin="0,0,0,14">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#059669" Offset="0"/>
+                    <GradientStop Color="#10B981" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="💰" FontSize="28" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtNaslov" Text="Nalog za uplatu / isplatu iz blagajne" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Evidencija blagajničkih transakcija dinarske (2430) i devizne (2440) blagajne." FontSize="11" Foreground="#D1FAE5"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- FORM FIELDS -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Vrsta blagajne & Vrsta naloga -->
+                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,12">
+                    <TextBlock Text="Blagajna:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="CmbVrstaBlagajne" Height="32">
+                        <ComboBoxItem Content="Dinarska blagajna (Konto 2430)" IsSelected="True"/>
+                        <ComboBoxItem Content="Devizna blagajna (Konto 2440)"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,12">
+                    <TextBlock Text="Vrsta naloga:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="CmbVrstaNaloga" Height="32">
+                        <ComboBoxItem Content="📥 Nalog za UPLATU u blagajnu" IsSelected="True"/>
+                        <ComboBoxItem Content="📤 Nalog za ISPLATU iz blagajne"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Datum & Protivkonto -->
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,12">
+                    <TextBlock Text="Datum naloga:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <DatePicker x:Name="DpDatum" Height="32"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,12">
+                    <TextBlock Text="Broj protivkonta (Konto):" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtKontoProtu" FontSize="13" Padding="8,4" Text="2410" Height="32"/>
+                </StackPanel>
+
+                <!-- Uplatilac / Isplatilac -->
+                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,12">
+                    <TextBlock x:Name="LblLice" Text="Uplatilac / Primalac isplate (Ime / Firma):" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtUplatilacIsplatilac" FontSize="13" Padding="8,4" Height="32"/>
+                </StackPanel>
+
+                <!-- Svrha uplate/isplate -->
+                <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,0,0,12">
+                    <TextBlock Text="Svrha uplate / isplate:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtSvrha" FontSize="13" Padding="8,4" Height="32"/>
+                </StackPanel>
+
+                <!-- Iznos -->
+                <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,10,0">
+                    <TextBlock Text="Iznos (RSD / Devize):" FontSize="12" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtIznos" FontSize="15" FontWeight="Bold" Padding="8,4" Height="34" TextAlignment="Right" Foreground="#059669"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- FOOTER ACTIONS -->
+        <DockPanel Grid.Row="2" Margin="0,12,0,0">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="Odustani" Style="{StaticResource SecondaryButton}" Height="38" Padding="14,0" Margin="0,0,8,0" Click="BtnOdustani_Click"/>
+                <Button Content="💾 Sačuvaj nalog" Style="{StaticResource PrimaryButton}" Height="38" Padding="18,0" Click="BtnSacuvaj_Click"/>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

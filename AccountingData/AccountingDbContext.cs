@@ -40,6 +40,22 @@ public class AccountingDbContext : DbContext
     public DbSet<DokumentPrilog> DokumentiPrilozi => Set<DokumentPrilog>();
     public DbSet<UvoznaKalkulacija> UvozneKalkulacije => Set<UvoznaKalkulacija>();
     public DbSet<UvoznaStavka> UvozneStavke => Set<UvoznaStavka>();
+    public DbSet<ZatvaranjeStavke> ZatvaranjaStavki => Set<ZatvaranjeStavke>();
+
+    public DbSet<PonudaPredracun> PonudePredracuni => Set<PonudaPredracun>();
+    public DbSet<PonudaStavka> PonudeStavke => Set<PonudaStavka>();
+    public DbSet<NarudzbenicaDobavljacu> NarudzbeniceDobavljacima => Set<NarudzbenicaDobavljacu>();
+    public DbSet<NarudzbenicaStavka> NarudzbeniceStavke => Set<NarudzbenicaStavka>();
+
+    public DbSet<Kompenzacija> Kompenzacije => Set<Kompenzacija>();
+    public DbSet<KompenzacijaStavka> KompenzacijeStavke => Set<KompenzacijaStavka>();
+
+    public DbSet<PutniNalog> PutniNalozi => Set<PutniNalog>();
+    public DbSet<PutniNalogTrosakStavka> PutniNaloziTroskoviStavke => Set<PutniNalogTrosakStavka>();
+
+    public DbSet<BlagajnickiNalog> BlagajnickiNalozi => Set<BlagajnickiNalog>();
+
+    public DbSet<MestoTroska> MestaTroska => Set<MestoTroska>();
 
     public AccountingDbContext(DbContextOptions<AccountingDbContext> options) : base(options)
     {
@@ -151,6 +167,24 @@ public class AccountingDbContext : DbContext
 
         modelBuilder.Entity<NalogAudit>()
             .HasIndex(a => a.NalogId);
+
+        modelBuilder.Entity<ZatvaranjeStavke>()
+            .HasOne(z => z.StavkaDuguje)
+            .WithMany()
+            .HasForeignKey(z => z.StavkaDugujeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ZatvaranjeStavke>()
+            .HasOne(z => z.StavkaPotrazuje)
+            .WithMany()
+            .HasForeignKey(z => z.StavkaPotrazujeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ZatvaranjeStavke>()
+            .HasIndex(z => z.StavkaDugujeId);
+
+        modelBuilder.Entity<ZatvaranjeStavke>()
+            .HasIndex(z => z.StavkaPotrazujeId);
     }
 
     private const int PasswordSaltSize = 16;

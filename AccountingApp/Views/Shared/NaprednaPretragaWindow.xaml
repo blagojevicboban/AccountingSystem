@@ -1,0 +1,122 @@
+<Window x:Class="AccountingApp.Views.Shared.NaprednaPretragaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="⚙️ Napredno višekriterijumsko filtriranje — ERPi Finansije" 
+        Height="480" Width="620"
+        WindowStartupLocation="CenterOwner"
+        Background="#F8FAFC">
+
+    <Window.Resources>
+        <ResourceDictionary Source="/Resources/Styles.xaml"/>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header -->
+            <RowDefinition Height="*"/>    <!-- Filter Form -->
+            <RowDefinition Height="Auto"/> <!-- Footer Actions -->
+        </Grid.RowDefinitions>
+
+        <!-- ── HEADER ──────────────────────────────────────────────── -->
+        <Border Grid.Row="0" CornerRadius="8" Padding="16,12" Margin="0,0,0,14">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#4F46E5" Offset="0"/>
+                    <GradientStop Color="#7C3AED" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="⚙️" FontSize="30" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Napredno Višekriterijumsko Filtriranje Tabela" 
+                               FontSize="17" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Podesite kombinaciju više parametara istovremeno za preciznu pretragu i masovne akcije." 
+                               FontSize="12" Foreground="#C7D2FE" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ── FILTER FORM ────────────────────────────────────────── -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16"
+                BorderBrush="#E2E8F0" BorderThickness="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- Raspon Datuma -->
+                    <TextBlock Text="📅 Raspon datuma (Datum dokumenta / naloga):" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <DatePicker Grid.Column="0" x:Name="DpDatumOd" Padding="4"/>
+                        <TextBlock Grid.Column="1" Text="—" VerticalAlignment="Center" Margin="10,0"/>
+                        <DatePicker Grid.Column="2" x:Name="DpDatumDo" Padding="4"/>
+                    </Grid>
+
+                    <!-- Raspon Iznosa -->
+                    <TextBlock Text="💰 Raspon iznosa (RSD):" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" x:Name="TxtIznosMin" FontSize="13" Padding="8,4" TextAlignment="Right"/>
+                        <TextBlock Grid.Column="1" Text="do" VerticalAlignment="Center" Margin="10,0" Foreground="#64748B"/>
+                        <TextBox Grid.Column="2" x:Name="TxtIznosMax" FontSize="13" Padding="8,4" TextAlignment="Right"/>
+                    </Grid>
+
+                    <!-- Pretraga teksta i broja -->
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                            <TextBlock Text="Broj dokumenta / naloga:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                            <TextBox x:Name="TxtBrojDokumenta" FontSize="13" Padding="8,4"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                            <TextBlock Text="Konto / Šifra:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                            <TextBox x:Name="TxtKonto" FontSize="13" Padding="8,4"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Izbor Partnera -->
+                    <TextBlock Text="🏢 Partner / Dobavljač / Kupac:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="CmbPartneri" DisplayMemberPath="Naziv" SelectedValuePath="PartnerId" FontSize="13" Padding="8,4" Margin="0,0,0,12"/>
+
+                    <!-- Status Knjiženja -->
+                    <TextBlock Text="📌 Status knjiženja:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton x:Name="RbStatusSvi" Content="Svi zapisi" GroupName="OcrStatusFilter" IsChecked="True" Margin="0,0,16,0"/>
+                        <RadioButton x:Name="RbStatusProknjizeni" Content="Samo proknjiženi" GroupName="OcrStatusFilter" Margin="0,0,16,0"/>
+                        <RadioButton x:Name="RbStatusNeproknjizeni" Content="Samo neproknjiženi" GroupName="OcrStatusFilter"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ── FOOTER ACTIONS ─────────────────────────────────────── -->
+        <DockPanel Grid.Row="2" Margin="0,12,0,0">
+            <Button Content="Odustani (Esc)" Style="{StaticResource SecondaryButton}" DockPanel.Dock="Left"
+                    Height="38" Padding="14,0" Click="BtnOdustani_Click"/>
+
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="🧹 Poništi filtere" Style="{StaticResource SecondaryButton}"
+                        Height="38" Padding="14,0" Margin="0,0,8,0" Click="BtnPonisti_Click"/>
+                <Button Content="🔍  Primeni napredni filter" Style="{StaticResource PrimaryButton}"
+                        Height="38" Padding="20,0" Click="BtnPrimeni_Click"/>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

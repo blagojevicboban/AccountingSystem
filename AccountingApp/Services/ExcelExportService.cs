@@ -39,8 +39,8 @@ public static class ExcelExportService
         }
 
         var columns = dataGrid.Columns
-            .OfType<DataGridTextColumn>()
             .Where(c => c.Visibility == System.Windows.Visibility.Visible)
+            .OrderBy(c => c.DisplayIndex)
             .ToList();
 
         if (columns.Count == 0)
@@ -186,9 +186,9 @@ public static class ExcelExportService
         SaveAndOpenFile(workbook, defaultFileName);
     }
 
-    private static object? GetCellValue(object item, DataGridTextColumn col)
+    private static object? GetCellValue(object item, DataGridColumn col)
     {
-        if (col.Binding is Binding binding && !string.IsNullOrEmpty(binding.Path?.Path))
+        if (col is DataGridBoundColumn boundCol && boundCol.Binding is Binding binding && !string.IsNullOrEmpty(binding.Path?.Path))
         {
             string propName = binding.Path.Path;
             return GetPropertyValue(item, propName);

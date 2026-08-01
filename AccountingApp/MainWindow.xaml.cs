@@ -126,6 +126,34 @@ public partial class MainWindow : Window
         _trenutnaSekcijaKljuc = "Partneri";
     }
 
+    private void NavKompenzacije_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "🤝 Kompenzacije, Asignacije i Cesije (Poravnanje dugovanja i potraživanja)";
+        MainContentHost.Content = new Views.Kompenzacije.KompenzacijeView();
+        _trenutnaSekcijaKljuc = "Kompenzacije";
+    }
+
+    private void NavPutniNalozi_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "🚗 Putni nalozi i Dnevnice (Službena putovanja u zemlji i inostranstvu)";
+        MainContentHost.Content = new Views.PutniNalozi.PutniNaloziView();
+        _trenutnaSekcijaKljuc = "PutniNalozi";
+    }
+
+    private void NavBlagajna_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "💰 Blagajničko poslovanje (Dinarska i Devizna blagajna)";
+        MainContentHost.Content = new Views.Blagajna.BlagajnaView();
+        _trenutnaSekcijaKljuc = "Blagajna";
+    }
+
+    private void NavMestaTroska_Click(object sender, RoutedEventArgs e)
+    {
+        TxtHeaderTitle.Text = "🎯 Mesta troška i Projekti (Analitika i profitabilnost po poslovnim jedinicama)";
+        MainContentHost.Content = new Views.MestaTroska.MestaTroskaView();
+        _trenutnaSekcijaKljuc = "MestaTroska";
+    }
+
     private void NavMagacin_Click(object sender, RoutedEventArgs e)
     {
         TxtHeaderTitle.Text = "📦 Magacini i zalihe";

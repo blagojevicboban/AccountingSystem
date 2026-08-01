@@ -53,4 +53,8 @@ public class StavkaNaloga
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal DevizniPotrazuje { get; set; }
+
+    public int? MestoTroskaId { get; set; }
+    [ForeignKey(nameof(MestoTroskaId))]
+    public MestoTroska? MestoTroska { get; set; }
 }

@@ -33,10 +33,11 @@
                 <DataGridTextColumn Header="Veličina" Binding="{Binding VelicinaBytes}" Width="100"/>
                 <DataGridTextColumn Header="Datum" Binding="{Binding DatumPriloga, StringFormat=\{0:dd.MM.yyyy HH:mm\}}" Width="140"/>
                 <DataGridTextColumn Header="Priložio" Binding="{Binding Korisnik}" Width="90"/>
-                <DataGridTemplateColumn Header="Akcije" Width="160">
+                <DataGridTemplateColumn Header="Akcije" Width="280">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="🔍 OCR Nalog" Click="BtnOcrScan_Click" Padding="8,2" Margin="0,0,4,0" Background="#7C3AED" Foreground="White" BorderThickness="0" Cursor="Hand" ToolTip="Skeniraj i pripremi nalog knjiženja"/>
                                 <Button Content="👁️ Otvori" Click="BtnOtvoriFajl_Click" Padding="8,2" Margin="0,0,4,0" Background="#0284C7" Foreground="White" BorderThickness="0" Cursor="Hand"/>
                                 <Button Content="🗑️ Briši" Click="BtnObrisiFajl_Click" Padding="8,2" Background="#EF4444" Foreground="White" BorderThickness="0" Cursor="Hand"/>
                             </StackPanel>

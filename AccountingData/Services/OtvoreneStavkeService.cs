@@ -103,7 +103,8 @@ public class OtvoreneStavkeService
         string? doKonta = null,
         DateTime? odDatuma = null,
         DateTime? doDatuma = null,
-        bool samoSaSaldom = true)
+        bool samoSaSaldom = true,
+        bool koristiZatvaranje = false)
     {
         var query = _db.StavkeNaloga
             .Include(s => s.Nalog)
@@ -161,6 +162,18 @@ public class OtvoreneStavkeService
             .AsNoTracking()
             .ToDictionaryAsync(k => k.BrojKonta.Trim(), k => k.NazivKonta, StringComparer.OrdinalIgnoreCase);
 
+        Dictionary<int, decimal> zatvorenoPoDuguje = new();
+        Dictionary<int, decimal> zatvorenoPoPotrazuje = new();
+        if (koristiZatvaranje)
+        {
+            var stavkaIds = stavke.Select(s => s.StavkaNalogaId).ToList();
+            var zatvaranja = await _db.ZatvaranjaStavki
+                .Where(z => stavkaIds.Contains(z.StavkaDugujeId) || stavkaIds.Contains(z.StavkaPotrazujeId))
+                .ToListAsync();
+            zatvorenoPoDuguje = zatvaranja.GroupBy(z => z.StavkaDugujeId).ToDictionary(g => g.Key, g => g.Sum(z => z.Iznos));
+            zatvorenoPoPotrazuje = zatvaranja.GroupBy(z => z.StavkaPotrazujeId).ToDictionary(g => g.Key, g => g.Sum(z => z.Iznos));
+        }
+
         var grupeDict = new Dictionary<string, IosPartnerGrupa>();
 
         foreach (var s in stavke)
@@ -203,6 +216,29 @@ public class OtvoreneStavkeService
             decimal prethodniSaldo = grupa.Stavke.Count > 0 ? grupa.Stavke[^1].Saldo : 0m;
             decimal noviSaldo = prethodniSaldo + s.Duguje - s.Potrazuje;
 
+            decimal? preostalo = null;
+            string? statusZatvaranja = null;
+            int? danaKasnjenja = null;
+
+            if (koristiZatvaranje)
+            {
+                if (s.Duguje > 0)
+                {
+                    decimal zatvoreno = zatvorenoPoDuguje.TryGetValue(s.StavkaNalogaId, out var z1) ? z1 : 0m;
+                    (preostalo, statusZatvaranja) = ZatvaranjeStavkiService.IzracunajPreostaloIStatus(s.Duguje, zatvoreno);
+                }
+                else if (s.Potrazuje > 0)
+                {
+                    decimal zatvoreno = zatvorenoPoPotrazuje.TryGetValue(s.StavkaNalogaId, out var z2) ? z2 : 0m;
+                    (preostalo, statusZatvaranja) = ZatvaranjeStavkiService.IzracunajPreostaloIStatus(s.Potrazuje, zatvoreno);
+                }
+
+                if (s.ValutaDospela.HasValue && preostalo.HasValue && preostalo.Value > 0.01m)
+                {
+                    danaKasnjenja = Math.Max(0, (DateTime.Now.Date - s.ValutaDospela.Value.Date).Days);
+                }
+            }
+
             grupa.Stavke.Add(new KarticaRed
             {
                 Datum = s.Nalog!.DatumNaloga,
@@ -211,7 +247,11 @@ public class OtvoreneStavkeService
                 OpisPromene = s.BrojDokumenta,
                 Duguje = s.Duguje,
                 Potrazuje = s.Potrazuje,
-                Saldo = noviSaldo
+                Saldo = noviSaldo,
+                Preostalo = preostalo,
+                StatusZatvaranja = statusZatvaranja,
+                ValutaDospela = s.ValutaDospela,
+                DanaKasnjenja = danaKasnjenja
             });
         }
 

@@ -10,6 +10,50 @@ public partial class PomocView : UserControl
     {
         new PomocTema
         {
+            Naslov = "📜 Komercijala — Ponude, Predračuni i Narudžbenice",
+            Sadrzaj =
+                "1. PONUDE I PREDRAČUNI (PROFORMA FAKTURE):\n" +
+                "• Izdavanje ponuda kupcima sa automatskim obračunom rabata i PDV-a.\n" +
+                "• Klikom na dugme '🚀 Pretvori u Fakturu & SEF', sistem u 1 klik kreira novi izlazni račun (RacunOtpremnica) spreman za slanje na e-Fakture (SEF).\n\n" +
+                "2. NARUDŽBENICE DOBAVLJAČIMA (PURCHASE ORDERS):\n" +
+                "• Evidencija ugovorene robe sa dobavljačima i praćenje rokova isporuke.\n" +
+                "• Klikom na dugme '📥 Pretvori u Kalkulaciju', naručeni artikli se automatski prenose u novu ulaznu kalkulaciju sa poređenjem naručenih i pristiglih količina."
+        },
+        new PomocTema
+        {
+            Naslov = "🔍 AI / OCR Čitač skeniranih računa u DMS-u",
+            Sadrzaj =
+                "1. EKSITRAKCIJA PODATAKA SA ULAZNIH RAČUNA:\n" +
+                "• Klikom na dugme '🔍 OCR Nalog' uz bilo koji skenirani PDF ili slikovni ulazni račun u DMS-u, sistem vrši automatsko parsiranje teksta.\n" +
+                "• Pametni OCR mehanizam izvuče PIB dobavljača, broj računa, datum izdavanja, valutu dospelosti, osnovicu (neto), PDV iznos (20%/10%) i ukupan iznos za uplatu (bruto).\n\n" +
+                "2. UPARIVANJE SA PARTNERIMA I PRIPREMA NALOGA KNJIŽENJA:\n" +
+                "• Izvučeni PIB se automatski uparuje sa šifarnikom Partneri u bazi.\n" +
+                "• Klikom na dugme '🚀 Pripremi nalog knjiženja', sistem automatski kreira uravnotežene stavke naloga:\n" +
+                "  - Duguje Konto 5010 / 5390: Nabavna vrednost / Usluge (Osnovica / Neto)\n" +
+                "  - Duguje Konto 2700: Prethodni PDV po opštoj stopi (PDV iznos)\n" +
+                "  - Potražuje Konto 4350: Dobavljači u zemlji (Ukupan bruto iznos uz povezivanje PartnerId)."
+        },
+        new PomocTema
+        {
+            Naslov = "🏦 Uvoz elektronskih bankarskih izvoda",
+            Sadrzaj =
+                "1. PODRŽANI FORMATI BANKARSKIH IZVODA:\n" +
+                "• Halcom E-Bank XML (*.xml)\n" +
+                "• Asseco / Office Banking XML (*.xml)\n" +
+                "• ISO 20022 CAMT.053 XML (*.xml)\n" +
+                "• SWIFT MT940 tekstualni izvod (*.txt, *.sta, *.940)\n\n" +
+                "2. AUTOMATSKI MATCHING ENGINE (PAMETNO UPARIVANJE):\n" +
+                "Sistem automatski analizira svaku stavku uvezenog izvoda i primenjuje 3 nivoa prepoznavanja:\n" +
+                "• Nivo 1: Uparivanje nalogodavca/primaoca po PIB-u ili tekućem računu sa šifarnikom partnera.\n" +
+                "• Nivo 2: Prepoznavanje poziva na broj / svrhe doznake i uparivanje sa izdatim fakturama ili stavkama naloga.\n" +
+                "• Nivo 3: Prepoznavanje provizije i troškova platnog prometa (automatski dodeljuje Konto 5530).\n\n" +
+                "3. AUTOMATSKO KNJIŽENJE I IOS ZATVARANJE:\n" +
+                "Klikom na dugme 'Proknjiži izvod i zatvori stavke':\n" +
+                "• Kreira se proknjiženi nalog vrste 'IZV' sa uravnoteženim stavkama za tekući račun (Konto 2410).\n" +
+                "• Automatski se zatvaraju otvorena dugovanja i potraživanja kupaca/dobavljača u sistemu otvorenih stavki (IOS)."
+        },
+        new PomocTema
+        {
             Naslov = "👋 Dobrodošli u ERPi",
             Sadrzaj =
                 "ERPi je savremena desktop ERP aplikacija za finansijsko, robno i materijalno knjigovodstvo, " +

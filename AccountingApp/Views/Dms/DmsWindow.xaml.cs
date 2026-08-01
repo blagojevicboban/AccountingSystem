@@ -120,6 +120,36 @@ public partial class DmsWindow : Window
         }
     }
 
+    private void BtnOcrScan_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.DataContext is DokumentPrilog prilog)
+        {
+            if (!File.Exists(prilog.PutanjaFajla))
+            {
+                MessageBox.Show("Fajl priloga ne postoji na navedenoj putanji na disku.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                    .UseSqlite($"Data Source={AppConfig.DbPath}")
+                    .Options;
+
+                using var db = new AccountingDbContext(options);
+                var ocrWin = new DmsOcrPreviewWindow(prilog.PutanjaFajla, db) { Owner = this };
+                if (ocrWin.ShowDialog() == true || ocrWin.JeKnjizeno)
+                {
+                    UcitajPriloge();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri otvaranju OCR čitača: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
     private async void BtnObrisiFajl_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as Button)?.DataContext is DokumentPrilog prilog)

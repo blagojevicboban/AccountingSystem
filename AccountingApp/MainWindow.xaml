@@ -113,6 +113,10 @@
                         <RadioButton x:Name="BtnNalozi" Content="📖 Glavna knjiga i Nalozi" Style="{StaticResource NavButtonStyle}" Click="NavNalozi_Click" ToolTip="Evidencija, knjiženje i pregled naloga glavne knjige"/>
                         <RadioButton x:Name="BtnKartice" Content="📋 Dnevnik i Kartice konta" Style="{StaticResource NavButtonStyle}" Click="NavKartice_Click" ToolTip="Pregled hronoloških sintetičkih i analitičkih kartica konta"/>
                         <RadioButton x:Name="BtnPartneri" Content="👥 Partneri i Otvorene stavke" Style="{StaticResource NavButtonStyle}" Click="NavPartneri_Click" ToolTip="Analitika kupaca, dobavljača i otvorene stavke (IOS)"/>
+                        <RadioButton x:Name="BtnKompenzacije" Content="🤝 Kompenzacije i Cesije" Style="{StaticResource NavButtonStyle}" Click="NavKompenzacije_Click" ToolTip="Dvojne i trojne kompenzacije, asignacije, cesije i automatsko zatvaranje IOS-a"/>
+                        <RadioButton x:Name="BtnPutniNalozi" Content="🚗 Putni nalozi i Dnevnice" Style="{StaticResource NavButtonStyle}" Click="NavPutniNalozi_Click" ToolTip="Obračun dnevnica, goriva, smeštaja i knjiženje na konto 5330/5340"/>
+                        <RadioButton x:Name="BtnBlagajna" Content="💰 Dinarska i Devizna Blagajna" Style="{StaticResource NavButtonStyle}" Click="NavBlagajna_Click" ToolTip="Uplatnice, isplatnice, blagajnički dnevnik i knjiženje na konta 2430/2440"/>
+                        <RadioButton x:Name="BtnMestaTroska" Content="🎯 Mesta troška i Projekti" Style="{StaticResource NavButtonStyle}" Click="NavMestaTroska_Click" ToolTip="Analitika, troškovi, prihodi i profitabilnost po projektima i poslovnim jedinicama"/>
                         <RadioButton x:Name="BtnIzvestaji" Content="📄 Finansijski izveštaji" Style="{StaticResource NavButtonStyle}" Click="NavIzvestaji_Click" ToolTip="Bruto bilans, Zaključni list i zvanični finansijski izveštaji"/>
 
                         <!-- 📦 ROBNO KNJIGOVODSTVO -->

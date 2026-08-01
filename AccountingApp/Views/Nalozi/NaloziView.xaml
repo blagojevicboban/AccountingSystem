@@ -32,6 +32,8 @@
                     <Button x:Name="BtnProknjiziSve" Content="⚡ Proknjiži sve" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,2,6,2" Click="BtnProknjiziSve_Click"/>
                     <Button x:Name="BtnRasknjizi" Content="🔓 Rasknjiži" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Margin="0,2,6,2" Click="BtnRasknjizi_Click"/>
                     <Button x:Name="BtnPreknjizavanje" Content="🔄 Preknjižavanje" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,2,6,2" Click="BtnPreknjizavanje_Click"/>
+                    <Button x:Name="BtnNapredniFilter" Content="⚙️ Napredni filter" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,2,6,2" Click="BtnNapredniFilter_Click"/>
+                    <Button x:Name="BtnUvozIzvoda" Content="🏦 Uvoz izvoda" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Margin="0,2,6,2" Click="BtnUvozIzvoda_Click"/>
                     <Button x:Name="BtnStampa" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampa" Margin="0,2,6,2" Click="BtnStampa_Click"/>
                     <Button x:Name="BtnExportExcelNalozi" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,6,2" Click="BtnExportExcelNalozi_Click"/>
                     <Separator Width="1" Height="24" Background="{StaticResource BorderBrush}" Margin="2,4,8,4"/>

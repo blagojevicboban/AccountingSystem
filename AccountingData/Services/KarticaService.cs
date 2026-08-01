@@ -13,6 +13,13 @@ public class KarticaRed
     public decimal Duguje { get; set; }
     public decimal Potrazuje { get; set; }
     public decimal Saldo { get; set; }
+
+    // Popunjeno samo kad IOS izveštaj traži status zatvaranja (vidi
+    // OtvoreneStavkeService.GetIosIzvestajAsync(koristiZatvaranje: true)) — inače ostaje null.
+    public decimal? Preostalo { get; set; }
+    public string? StatusZatvaranja { get; set; }
+    public DateTime? ValutaDospela { get; set; }
+    public int? DanaKasnjenja { get; set; }
 }
 
 public class KarticaService

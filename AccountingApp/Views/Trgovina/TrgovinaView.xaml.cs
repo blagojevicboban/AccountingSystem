@@ -56,6 +56,8 @@ public partial class TrgovinaView : UserControl
 
     private void LoadAllData()
     {
+        LoadPonude();
+        LoadNarudzbenice();
         LoadKalkulacije();
         LoadRacune();
         LoadNivelacije();
@@ -2323,6 +2325,281 @@ public partial class TrgovinaView : UserControl
 
     private void BtnExportExcelRobniBruto_Click(object sender, RoutedEventArgs e)
         => Services.ExcelExportService.ExportDataGridToExcel(DgRobniBrutoBilans, "Robni Bruto bilans", "Robni_Bruto_Bilans");
+
+    private Shared.NapredniFilterCriteria _trgovinaFilter = new();
+
+    private void BtnNapredniFilterTrgovina_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var win = new Shared.NaprednaPretragaWindow(db, _trgovinaFilter) { Owner = Window.GetWindow(this) };
+            if (win.ShowDialog() == true)
+            {
+                _trgovinaFilter = win.FilterCriteria;
+                LoadKalkulacije();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri filtriranju: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #region Ponude i Predračuni Event Handleri
+
+    private List<PonudaPredracun> _svePonude = new();
+
+    private async void LoadPonude()
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+            var service = new KomercijalaService(db);
+            _svePonude = await service.GetPonudeAsync();
+            FiltrirajPonude();
+        }
+        catch { }
+    }
+
+    private void FiltrirajPonude()
+    {
+        if (DgPonude == null) return;
+        string search = TxtPretragaPonuda?.Text.Trim().ToLower() ?? "";
+        var filtered = _svePonude.Where(p =>
+            string.IsNullOrEmpty(search) ||
+            p.BrojDokumenta.ToLower().Contains(search) ||
+            p.NazivPartnera.ToLower().Contains(search) ||
+            p.VrstaDokumenta.ToLower().Contains(search)
+        ).ToList();
+
+        DgPonude.ItemsSource = filtered;
+        if (filtered.Any()) DgPonude.SelectedIndex = 0;
+    }
+
+    private void DgPonude_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (DgPonude?.SelectedItem is PonudaPredracun p)
+        {
+            DgPonudaStavke.ItemsSource = p.Stavke;
+        }
+        else
+        {
+            DgPonudaStavke.ItemsSource = null;
+        }
+    }
+
+    private void TxtPretragaPonuda_TextChanged(object sender, TextChangedEventArgs e) => FiltrirajPonude();
+
+    private async void BtnNovaPonuda_Click(object sender, RoutedEventArgs e)
+    {
+        var options = new DbContextOptionsBuilder<AccountingDbContext>()
+            .UseSqlite($"Data Source={AppConfig.DbPath}")
+            .Options;
+        using var db = new AccountingDbContext(options);
+        var edit = new PonudaEditWindow(new PonudaPredracun(), db) { Owner = Window.GetWindow(this) };
+        if (edit.ShowDialog() == true) LoadPonude();
+    }
+
+    private async void BtnIzmeniPonudu_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgPonude?.SelectedItem is PonudaPredracun p)
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+            var full = await new KomercijalaService(db).GetPonudaByIdAsync(p.PonudaPredracunId);
+            if (full != null)
+            {
+                var edit = new PonudaEditWindow(full, db) { Owner = Window.GetWindow(this) };
+                if (edit.ShowDialog() == true) LoadPonude();
+            }
+        }
+    }
+
+    private async void BtnObrisiPonudu_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgPonude?.SelectedItem is PonudaPredracun p)
+        {
+            if (MessageBox.Show($"Da li ste sigurni da želite obrisati {p.VrstaDokumenta} br. {p.BrojDokumenta}?", "Potvrda brisanja", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                    .UseSqlite($"Data Source={AppConfig.DbPath}")
+                    .Options;
+                using var db = new AccountingDbContext(options);
+                await new KomercijalaService(db).ObrisiPonuduAsync(p.PonudaPredracunId);
+                LoadPonude();
+            }
+        }
+    }
+
+    private async void BtnPretvoriURacun_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgPonude?.SelectedItem is PonudaPredracun p)
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+            var (success, msg, racunId) = await new KomercijalaService(db).PretvoriPonuduURacunAsync(p.PonudaPredracunId);
+            if (success)
+            {
+                MessageBox.Show(msg, "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+                LoadPonude();
+                LoadRacune();
+            }
+            else
+            {
+                MessageBox.Show(msg, "Obaveštenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+    }
+
+    private void BtnExportExcelPonude_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgPonude, "Ponude i predračuni", "Ponude_i_Predracuni");
+
+    private void BtnStampaPonuda_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgPonude?.SelectedItem is PonudaPredracun p)
+        {
+            MessageBox.Show($"Generisanje PDF ponude br. {p.BrojDokumenta} je pripremljeno za štampu.", "Štampa", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    #endregion
+
+    #region Narudžbenice Dobavljačima Event Handleri
+
+    private List<NarudzbenicaDobavljacu> _sveNarudzbenice = new();
+
+    private async void LoadNarudzbenice()
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+            var service = new KomercijalaService(db);
+            _sveNarudzbenice = await service.GetNarudzbeniceAsync();
+            FiltrirajNarudzbenice();
+        }
+        catch { }
+    }
+
+    private void FiltrirajNarudzbenice()
+    {
+        if (DgNarudzbenice == null) return;
+        string search = TxtPretragaNarudzbenice?.Text.Trim().ToLower() ?? "";
+        var filtered = _sveNarudzbenice.Where(n =>
+            string.IsNullOrEmpty(search) ||
+            n.BrojNarudzbenice.ToLower().Contains(search) ||
+            n.NazivDobavljaca.ToLower().Contains(search)
+        ).ToList();
+
+        DgNarudzbenice.ItemsSource = filtered;
+        if (filtered.Any()) DgNarudzbenice.SelectedIndex = 0;
+    }
+
+    private void DgNarudzbenice_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (DgNarudzbenice?.SelectedItem is NarudzbenicaDobavljacu n)
+        {
+            DgNarudzbenicaStavke.ItemsSource = n.Stavke;
+        }
+        else
+        {
+            DgNarudzbenicaStavke.ItemsSource = null;
+        }
+    }
+
+    private void TxtPretragaNarudzbenice_TextChanged(object sender, TextChangedEventArgs e) => FiltrirajNarudzbenice();
+
+    private async void BtnNovaNarudzbenica_Click(object sender, RoutedEventArgs e)
+    {
+        var options = new DbContextOptionsBuilder<AccountingDbContext>()
+            .UseSqlite($"Data Source={AppConfig.DbPath}")
+            .Options;
+        using var db = new AccountingDbContext(options);
+        var edit = new NarudzbenicaEditWindow(new NarudzbenicaDobavljacu(), db) { Owner = Window.GetWindow(this) };
+        if (edit.ShowDialog() == true) LoadNarudzbenice();
+    }
+
+    private async void BtnIzmeniNarudzbenicu_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgNarudzbenice?.SelectedItem is NarudzbenicaDobavljacu n)
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+            var full = await new KomercijalaService(db).GetNarudzbenicaByIdAsync(n.NarudzbenicaId);
+            if (full != null)
+            {
+                var edit = new NarudzbenicaEditWindow(full, db) { Owner = Window.GetWindow(this) };
+                if (edit.ShowDialog() == true) LoadNarudzbenice();
+            }
+        }
+    }
+
+    private async void BtnObrisiNarudzbenicu_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgNarudzbenice?.SelectedItem is NarudzbenicaDobavljacu n)
+        {
+            if (MessageBox.Show($"Da li ste sigurni da želite obrisati narudžbenicu br. {n.BrojNarudzbenice}?", "Potvrda brisanja", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                    .UseSqlite($"Data Source={AppConfig.DbPath}")
+                    .Options;
+                using var db = new AccountingDbContext(options);
+                await new KomercijalaService(db).ObrisiNarudzbenicuAsync(n.NarudzbenicaId);
+                LoadNarudzbenice();
+            }
+        }
+    }
+
+    private async void BtnPretvoriUKalkulaciju_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgNarudzbenice?.SelectedItem is NarudzbenicaDobavljacu n)
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+            var (success, msg, kalkId) = await new KomercijalaService(db).PretvoriNarudzbenicuUKalkulacijuAsync(n.NarudzbenicaId);
+            if (success)
+            {
+                MessageBox.Show(msg, "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+                LoadNarudzbenice();
+                LoadKalkulacije();
+            }
+            else
+            {
+                MessageBox.Show(msg, "Obaveštenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+    }
+
+    private void BtnExportExcelNarudzbenice_Click(object sender, RoutedEventArgs e)
+        => ExcelExportService.ExportDataGridToExcel(DgNarudzbenice, "Narudžbenice dobavljačima", "Narudzbenice_Dobavljacima");
+
+    private void BtnStampaNarudzbenica_Click(object sender, RoutedEventArgs e)
+    {
+        if (DgNarudzbenice?.SelectedItem is NarudzbenicaDobavljacu n)
+        {
+            MessageBox.Show($"Generisanje PDF narudžbenice br. {n.BrojNarudzbenice} je pripremljeno za štampu.", "Štampa", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    #endregion
 
     #region SEF e-Fakture Event Handleri
 

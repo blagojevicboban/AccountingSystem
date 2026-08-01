@@ -58,4 +58,29 @@ public class OtvoreneStavkeServiceTests
         var resultSvi = await service.GetIosIzvestajAsync(odKonta: null, doKonta: null, samoSaSaldom: true);
         Assert.Equal(2, resultSvi.Count);
     }
+
+    [Fact]
+    public async Task GetIosIzvestajAsync_KoristiZatvaranjeFalse_NePopunjavaStatusZatvaranja()
+    {
+        using var db = GetInMemoryDbContext();
+
+        var p1 = new Partner { PartnerId = 1, SifraPartnera = "P001", Naziv = "Kupac Alpha", KontoPartnera = "2020" };
+        db.Partneri.Add(p1);
+
+        var n1 = new Nalog { NalogId = 1, BrojNaloga = 101, DatumNaloga = new DateTime(2026, 1, 15), IsKnjizen = true, Opis = "Faktura Alpha" };
+        db.Nalozi.Add(n1);
+
+        db.StavkeNaloga.Add(new StavkaNaloga { StavkaNalogaId = 1, NalogId = 1, RedniBroj = 1, BrojKonta = "2020", PartnerId = 1, Duguje = 10000m, Potrazuje = 0m, Opis = "Račun 101" });
+        await db.SaveChangesAsync();
+
+        var service = new OtvoreneStavkeService(db);
+
+        // Podrazumevani poziv (koristiZatvaranje:false) mora ostati identičan starom ponašanju — bez statusa zatvaranja.
+        var rezultatBezZatvaranja = await service.GetIosIzvestajAsync(samoSaSaldom: true);
+        Assert.All(rezultatBezZatvaranja.SelectMany(g => g.Stavke), s => Assert.Null(s.StatusZatvaranja));
+
+        // Kad se eksplicitno traži, polja moraju biti popunjena.
+        var rezultatSaZatvaranjem = await service.GetIosIzvestajAsync(samoSaSaldom: true, koristiZatvaranje: true);
+        Assert.All(rezultatSaZatvaranjem.SelectMany(g => g.Stavke), s => Assert.Equal("Otvoreno", s.StatusZatvaranja));
+    }
 }
