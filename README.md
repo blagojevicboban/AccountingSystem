@@ -27,9 +27,10 @@
 - 📄 **UBL 2.1 XML Generator** — Zvaničan XML format po specifikaciji e-Faktura RS (`urn:cen.eu:en16931:2017#compliant#urn:mfin.gov.rs:srbdt:2021`).
 - 🔑 **Podešavanja po firmi** — Unos API ključa, izbor Demo vs Produkcionog okruženja, JBKJS broja i dugme za testiranje konekcije.
 
-### PDV Evidencija (KIR, KPR i POPDV)
+### PDV Evidencija (KIR, KPR, POPDV i ePorezi PP-PDV)
 - 🧾 **KIR (Knjiga Izdatih Računa)** i **KPR (Knjiga Primljenih Računa)** — Automatsko prikupljanje izlaznih računa i ulaznih kalkulacija sa raščlanjavanjem osnovice i PDV-a (20%, 10%, 0%).
 - ⚖️ **POPDV Rekapitulacija Obaveze** — Obračun PDV obaveze za uplatu ili prava na povraćaj.
+- 📄 **ePorezi PP-PDV XML Izvoz** — Generisanje zvanične XML prijave Obrasca PP-PDV koja se direktno učitava na portal Poreske uprave RS (`eporezi.purs.gov.rs`).
 
 ### Magacin i Trgovina (MAT & ROB)
 - 📊 **Radna tabla (Robno i Materijalno)** — po jedna namenska radna tabla za svaki modul (vrednost zaliha VP/MP odnosno materijala, upozorenje na negativna stanja, poslednji dokumenti i brze akcije za nov unos).

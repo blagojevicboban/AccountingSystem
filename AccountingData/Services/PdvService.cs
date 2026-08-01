@@ -164,4 +164,25 @@ public class PdvService
             KprOslobodjen = kpr.Sum(x => x.OslobodjenPromet)
         };
     }
+
+    /// <summary>
+    /// Generiše zvanični XML fajl Obrasca PP-PDV za ePorezi portal za dati period.
+    /// </summary>
+    public async Task<(bool Success, string Message, string XmlContent)> GenerisiPpPdvXmlAsync(DateTime? odDatuma, DateTime? doDatuma, bool zahtevZaPovracaj = false)
+    {
+        var firma = await _db.Firme.FirstOrDefaultAsync();
+        if (firma == null)
+            return (false, "Podaci o vašoj firmi nisu pronađeni u bazi.", "");
+
+        var obracun = await GetPdvObracunAsync(odDatuma, doDatuma);
+        try
+        {
+            string xml = PpPdvXmlGenerator.GenerisiPpPdvXml(obracun, firma, zahtevZaPovracaj);
+            return (true, "Uspešno generisana PP-PDV prijava za ePorezi portal.", xml);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Greška pri kreiranju PP-PDV XML-a: {ex.Message}", "");
+        }
+    }
 }

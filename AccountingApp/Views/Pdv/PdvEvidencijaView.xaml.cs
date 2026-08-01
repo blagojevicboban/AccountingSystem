@@ -151,4 +151,66 @@ public partial class PdvEvidencijaView : UserControl
 
     private void BtnExportExcelKpr_Click(object sender, RoutedEventArgs e)
         => ExcelExportService.ExportDataGridToExcel(DgKpr, "KPR - Knjiga primljenih računa", "KPR_Knjiga_Primljenih_Racuna");
+
+    private async void BtnIzveziPpPdvXml_Click(object sender, RoutedEventArgs e)
+    {
+        var odDat = DpOdDatuma.SelectedDate ?? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        var doDat = DpDoDatuma.SelectedDate ?? DateTime.Today;
+
+        bool zahtevZaPovracaj = false;
+        if (_pdvObracun.PdvRazlika < 0)
+        {
+            var res = MessageBox.Show(
+                $"Postoji pravo na povraćaj PDV-a u iznosu od {Math.Abs(_pdvObracun.PdvRazlika):N2} RSD.\n\n" +
+                "Da li želite da u prijavi označite ZAHTEV ZA POVRAĆAJ PDV-a (Polje 113)?\n\n" +
+                "• Kliknite YES ako tražite povraćaj novca na tekući račun.\n" +
+                "• Kliknite NO ako iznos ostavljate kao poreski kredit za naredni period.",
+                "Opredeljenje za povraćaj PDV-a",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            if (res == MessageBoxResult.Cancel) return;
+            zahtevZaPovracaj = (res == MessageBoxResult.Yes);
+        }
+
+        var saveDialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Sačuvaj PP-PDV XML prijavu za portal ePorezi",
+            Filter = "XML Prijava (*.xml)|*.xml",
+            FileName = $"PP-PDV_{odDat:yyyyMM}_{DateTime.Now:yyyyMMdd_HHmmss}.xml"
+        };
+
+        if (saveDialog.ShowDialog() == true)
+        {
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                    .UseSqlite($"Data Source={AppConfig.DbPath}")
+                    .Options;
+
+                using var db = new AccountingDbContext(options);
+                var service = new PdvService(db);
+
+                var res = await service.GenerisiPpPdvXmlAsync(odDat, doDat, zahtevZaPovracaj);
+
+                if (res.Success)
+                {
+                    await File.WriteAllTextAsync(saveDialog.FileName, res.XmlContent);
+                    MessageBox.Show(
+                        $"✅ {res.Message}\n\nFajl je sačuvan na putanji:\n{saveDialog.FileName}\n\nFajl možete direktno učitati na portalu ePorezi (eporezi.purs.gov.rs).",
+                        "PP-PDV XML Izvezen",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"❌ {res.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri čuvanju PP-PDV XML-a: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
 }

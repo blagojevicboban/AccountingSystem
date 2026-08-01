@@ -4,6 +4,20 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.39] - 2026-08-01
+
+### 🚀 Nove funkcionalnosti
+- **ePorezi / Obrazac PP-PDV (XML Izvoz)** — ugrađen automatski izvoz zvanične XML poreske prijave PP-PDV za portal ePorezi Poreske uprave RS (`eporezi.purs.gov.rs`).
+  - **PP-PDV XML Generator (`PpPdvXmlGenerator`)**: Generisanje XML strukture po zvaničnoj šemi Poreske uprave sa sekcijama `<PodaciOPrijavi>`, `<ObracunatiPdv>` (Polja 001-008, 101-108), `<PrethodniPdv>` (Polja 009-010, 109-110) i `<KonacniObracun>` (Polja 111-113).
+  - **Pametno opredeljenje za povraćaj (Polje 113)**: Ako u izabranom periodu postoji preplata PDV-a, korisnik pri izvozu bira da li iznos traži za povraćaj na tekući račun (Polje 113 = 1) ili ga vodi kao poreski kredit za naredni period (Polje 113 = 0).
+  - **Izvoz u PDV Evidenciji (`PdvEvidencijaView`)**: Dodato novo dugme "📄 Izvezi XML za ePorezi (PP-PDV)" za brzi izvoz sa izabranim opsegom datuma.
+
+### 📚 Dokumentacija & Pomoć
+- Dodata nova uputstva u ugrađenu Pomoć (`PomocView`) pod temom "🧾 PDV Evidencija (KPR, KIR i PP-PDV XML)".
+- Ažurirani `README.md` i `ANALIZA_I_PLAN.md`.
+
+---
+
 ## [1.0.38] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti

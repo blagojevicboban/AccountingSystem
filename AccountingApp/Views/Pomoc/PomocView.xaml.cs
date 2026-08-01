@@ -182,13 +182,18 @@ public partial class PomocView : UserControl
         },
         new PomocTema
         {
-            Naslov = "🧾 PDV Evidencija (KPR i KIR)",
+            Naslov = "🧾 PDV Evidencija (KPR, KIR i PP-PDV XML)",
             Sadrzaj =
                 "1. PDV EVIDENCIJA (KPR i KIR):\n" +
                 "• Knjiga primljenih računa (KPR) — uvoz nabavki i ulaznog PDV-a koji se odbija.\n" +
                 "• Knjiga izdatih računa (KIR) — uvoz izlaznih faktura i izlaznog PDV-a.\n" +
                 "• Automatska priprema podataka za POPDV prijavu Poreskoj upravi.\n\n" +
-                "2. ZVANIČNI APR BILANSI:\n" +
+                "2. IZVOZ XML PRIJAVE ZA ePOREZI (PP-PDV):\n" +
+                "• Dugme '📄 Izvezi XML za ePorezi (PP-PDV)' kreira zvanični XML fajl Obrasca PP-PDV po specifikaciji Poreske uprave RS.\n" +
+                "• XML obuhvata sve propisane pozicije Obrasca PP-PDV: Promet i obračunati PDV (Polja 001-008, 101-108), Prethodni PDV (Polja 009-010, 109-110) i Konačni obračun obaveze ili povraćaja (Polja 111-113).\n" +
+                "• Pri izvozu, ako postoji preplata PDV-a, sistem nudi opredeljenje za povraćaj novca (Polje 113) ili vođenje iznosa kao poreskog kredita.\n" +
+                "• Izvezeni XML fajl se direktno učitava na portalu ePorezi (eporezi.purs.gov.rs) bez potrebe za ručnim kucanjem brojeva.\n\n" +
+                "3. ZVANIČNI APR BILANSI:\n" +
                 "• Za Bilans stanja i Bilans uspeha pogledajte posebnu temu '🏛️ Bilansi (APR)'.",
             Kljuc = "Pdv"
         },
