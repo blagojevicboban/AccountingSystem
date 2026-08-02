@@ -106,6 +106,13 @@
                                     </StackPanel>
                                 </Grid>
 
+                                <Border Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,14">
+                                    <StackPanel>
+                                        <CheckBox x:Name="ChkPfrSimulatorMod" Content="Dozvoli simulirane račune kada PFR nije dostupan (test i obuka)" FontWeight="SemiBold" Foreground="#92400E"/>
+                                        <TextBlock Text="Simulirani računi se označavaju kao SIMULACIJA, nemaju QR kod i NISU fiskalizovani u Poreskoj upravi. Kada je opcija isključena, neuspela fiskalizacija se prijavljuje kao greška." FontSize="11" Foreground="#92400E" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
                                 <Button Content="⚡ Testiraj PFR Konekciju" Height="38" Padding="20,0" HorizontalAlignment="Left" Background="#0D9488" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="BtnTestirajPfr_Click"/>
                             </StackPanel>
                         </Border>
@@ -120,7 +127,16 @@
                         <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="🌐 Ugrađeni Cloud REST API &amp; Mobile Web Dashboard" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
-                                <TextBlock Text="Omogućava uvid u finansije, bilanse, radnu tablu i partnere sa mobilnih telefona i web pregledača (Port 5050)." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+                                <TextBlock Text="Omogućava uvid u finansije, bilanse, radnu tablu i partnere sa mobilnih telefona i web pregledača (Port 5050)." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,10"/>
+
+                                <Border Background="#FEF2F2" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,16">
+                                    <TextBlock Text="⚠️ Server izlaže podatke o prometu firme i žiro-račune partnera. Pristup je zaštićen pristupnim tokenom koji se generiše pri svakom pokretanju servera — otvarajte dashboard isključivo dugmetom ispod. Server držite uključenim samo dok vam je potreban." FontSize="11" Foreground="#991B1B" TextWrapping="Wrap"/>
+                                </Border>
+
+                                <StackPanel Margin="0,0,0,12">
+                                    <TextBlock Text="Pristupni token (važi do zaustavljanja servera)" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="TxtApiToken" Height="34" VerticalContentAlignment="Center" Padding="8,0" FontFamily="Consolas" FontSize="11" IsReadOnly="True" Text="— server nije pokrenut —"/>
+                                </StackPanel>
 
                                 <Grid Margin="0,0,0,14">
                                     <Grid.ColumnDefinitions>

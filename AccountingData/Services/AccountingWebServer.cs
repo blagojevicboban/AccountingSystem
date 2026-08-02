@@ -15,12 +15,22 @@ public class AccountingWebServer
     public static bool IsRunning => _isRunning;
     public static int Port { get; private set; } = 5050;
 
+    /// <summary>
+    /// Pristupni token, generisan nasumično pri svakom pokretanju servera.
+    /// Svi /api/ pozivi ga moraju poslati kao "Authorization: Bearer &lt;token&gt;"
+    /// ili kao ?token= parametar (za otvaranje dashboard-a u pretraživaču).
+    /// </summary>
+    public static string AccessToken { get; private set; } = "";
+
+    public static string DashboardUrl => $"http://localhost:{Port}/?token={AccessToken}";
+
     public static void Start(string dbPath, int port = 5050)
     {
         if (_isRunning) return;
 
         _dbPath = dbPath;
         Port = port;
+        AccessToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24));
         _cts = new CancellationTokenSource();
 
         try
@@ -36,7 +46,7 @@ public class AccountingWebServer
         catch (Exception ex)
         {
             _isRunning = false;
-            System.Diagnostics.Debug.WriteLine($"Greška pri pokretanju Web Servera: {ex.Message}");
+            Serilog.Log.Error(ex, "Greška pri pokretanju Web Servera");
         }
     }
 
@@ -78,12 +88,34 @@ public class AccountingWebServer
         var req = ctx.Request;
         var res = ctx.Response;
 
-        res.Headers.Add("Access-Control-Allow-Origin", "*");
-        res.Headers.Add("Access-Control-Allow-Headers", "*");
+        // Namerno BEZ "Access-Control-Allow-Origin: *" - server sluša na localhost-u,
+        // pa bi wildcard CORS dozvolio bilo kom sajtu u pretraživaču da pročita
+        // finansije firme i žiro-račune partnera dok aplikacija radi.
+        res.Headers.Add("Access-Control-Allow-Origin", $"http://localhost:{Port}");
+        res.Headers.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
+        res.Headers.Add("X-Content-Type-Options", "nosniff");
 
         try
         {
             string path = req.Url?.AbsolutePath.ToLowerInvariant() ?? "/";
+
+            if (req.HttpMethod == "OPTIONS")
+            {
+                res.StatusCode = 204;
+                res.Close();
+                return;
+            }
+
+            if (!ZahtevJeAutorizovan(req))
+            {
+                res.StatusCode = 401;
+                byte[] denied = Encoding.UTF8.GetBytes("{\"error\":\"Neautorizovan pristup.\"}");
+                res.ContentType = "application/json; charset=utf-8";
+                res.ContentLength64 = denied.Length;
+                await res.OutputStream.WriteAsync(denied, 0, denied.Length);
+                res.Close();
+                return;
+            }
 
             if (path == "/api/status")
             {
@@ -128,7 +160,7 @@ public class AccountingWebServer
             else
             {
                 // Vraćanje Responzivne HTML5 Web Dashboard aplikacije za mobilne telefone i web pregledače
-                string html = GenerisiHtmlDashboard();
+                string html = GenerisiHtmlDashboard(AccessToken);
                 byte[] buffer = Encoding.UTF8.GetBytes(html);
                 res.ContentType = "text/html; charset=utf-8";
                 res.ContentLength64 = buffer.Length;
@@ -138,15 +170,41 @@ public class AccountingWebServer
         }
         catch (Exception ex)
         {
+            // Detalji greške (putanja baze, šema) ostaju lokalno, ne idu klijentu.
+            Serilog.Log.Error(ex, "Greška pri obradi HTTP zahteva {Putanja}", req.Url?.AbsolutePath);
             try
             {
                 res.StatusCode = 500;
-                byte[] errBuffer = Encoding.UTF8.GetBytes($"Greška na serveru: {ex.Message}");
+                byte[] errBuffer = Encoding.UTF8.GetBytes("Greška na serveru.");
                 await res.OutputStream.WriteAsync(errBuffer, 0, errBuffer.Length);
                 res.Close();
             }
             catch { }
         }
+    }
+
+    /// <summary>
+    /// Prihvata token iz "Authorization: Bearer &lt;token&gt;" zaglavlja ili iz ?token= parametra.
+    /// Poređenje je vremenski konstantno da se token ne može pogoditi merenjem odziva.
+    /// </summary>
+    private static bool ZahtevJeAutorizovan(HttpListenerRequest req)
+    {
+        if (string.IsNullOrEmpty(AccessToken)) return false;
+
+        string? dostavljen = null;
+
+        string? auth = req.Headers["Authorization"];
+        if (!string.IsNullOrWhiteSpace(auth) && auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            dostavljen = auth.Substring(7).Trim();
+
+        if (string.IsNullOrEmpty(dostavljen))
+            dostavljen = req.QueryString["token"];
+
+        if (string.IsNullOrEmpty(dostavljen)) return false;
+
+        return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            Encoding.UTF8.GetBytes(dostavljen),
+            Encoding.UTF8.GetBytes(AccessToken));
     }
 
     private static async Task VratiJson(HttpListenerResponse res, object obj)
@@ -159,7 +217,7 @@ public class AccountingWebServer
         res.Close();
     }
 
-    private static string GenerisiHtmlDashboard()
+    private static string GenerisiHtmlDashboard(string token)
     {
         return @"<!DOCTYPE html>
 <html lang='sr'>
@@ -214,9 +272,11 @@ public class AccountingWebServer
     </div>
 
     <script>
+        const API_TOKEN = '" + token + @"';
         async function loadDashboard() {
             try {
-                const res = await fetch('/api/dashboard');
+                const res = await fetch('/api/dashboard', { headers: { 'Authorization': 'Bearer ' + API_TOKEN } });
+                if (!res.ok) { console.error('Neautorizovan pristup ili greška: ' + res.status); return; }
                 const data = await res.json();
 
                 document.getElementById('firmaNaziv').innerText = data.Firma + ' (PIB: ' + data.Pib + ') — Period: ' + data.Godina;

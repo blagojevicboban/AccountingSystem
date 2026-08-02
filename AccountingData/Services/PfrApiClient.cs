@@ -40,18 +40,22 @@ public class PfrApiClient
 
             return (false, $"PFR vraća status: {response.StatusCode} ({(int)response.StatusCode})");
         }
-        catch
+        catch (Exception ex)
         {
-            // Fallback simulator za lokalni rad bez priključene fizičke kase
-            return (true, "PFR simulator aktivan (Lokalni test mod okruženja).");
+            if (postavke.SimulatorMod)
+                return (true, $"PFR nije dostupan ({ex.Message}), ali je SIMULATOR MOD uključen.\n\nUPOZORENJE: računi se neće stvarno fiskalizovati.");
+
+            return (false, $"PFR servis nije dostupan na {postavke.PfrUrl}.\n\nDetalji: {ex.Message}");
         }
     }
 
     /// <summary>
     /// Šalje zahtev za fiskalizaciju računa PFR servisu.
     /// </summary>
-    public async Task<(bool Success, string Message, PfrOdgovor? Odgovor)> FiskalizujRacunAsync(PfrZahtev zahtev, PfrPostavke postavke)
+    public async Task<(bool Success, bool Simulacija, string Message, PfrOdgovor? Odgovor)> FiskalizujRacunAsync(PfrZahtev zahtev, PfrPostavke postavke)
     {
+        string greska;
+
         try
         {
             string url = postavke.PfrUrl.TrimEnd('/') + "/api/v1/invoices";
@@ -70,37 +74,57 @@ public class PfrApiClient
             if (response.IsSuccessStatusCode)
             {
                 var pfrRes = await response.Content.ReadFromJsonAsync<PfrOdgovor>();
-                return (true, "Fiskalni račun je uspešno izdat i verifikovan u PFR-u.", pfrRes);
+
+                if (pfrRes == null || string.IsNullOrWhiteSpace(pfrRes.InvoiceNumber))
+                    return (false, false, "PFR je vratio prazan ili neispravan odgovor - račun NIJE fiskalizovan.", null);
+
+                return (true, false, "Fiskalni račun je uspešno izdat i verifikovan u PFR-u.", pfrRes);
             }
+
+            string telo = await response.Content.ReadAsStringAsync();
+            greska = $"PFR je odbio zahtev - status {(int)response.StatusCode} ({response.StatusCode}). {telo}".Trim();
         }
-        catch
+        catch (Exception ex)
         {
-            // Mrežni prekid ili test okruženje bez fizčkog PFR-a -> Generisanje simuliranog zvaničnog PFR odgovora!
+            greska = $"Komunikacija sa PFR servisom na {postavke.PfrUrl} nije uspela: {ex.Message}";
         }
 
-        // Generisanje validnog PFR odgovora u slučaju simulatora / test okruženja
-        string randCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-        string mockInvoiceNum = $"88372-{randCode.Substring(0, 5)}-{DateTime.Now:fff}";
-        string mockVerificationUrl = $"https://suf.purs.gov.rs/v/?vl={mockInvoiceNum}&t={DateTime.Now:yyyyMMddTHHmmss}";
+        // Bez izričito uključenog simulator moda, neuspeh je GREŠKA - račun se ne sme
+        // prikazati kao fiskalizovan jer bi to bila neistinita poreska evidencija.
+        if (!postavke.SimulatorMod)
+            return (false, false, $"Račun NIJE fiskalizovan.\n\n{greska}", null);
 
-        var mockOdgovor = new PfrOdgovor
+        return (true, true, $"SIMULIRAN račun (PFR nije dostupan).\n\nOVAJ RAČUN NIJE FISKALIZOVAN i nema pravnu vrednost.\n\n{greska}", GenerisiSimuliraniOdgovor(zahtev));
+    }
+
+    /// <summary>
+    /// Generiše simulirani odgovor za testiranje i obuku. Broj računa je izričito
+    /// označen prefiksom SIMULACIJA, a verifikacioni URL se NE generiše jer takav
+    /// račun ne postoji u PURS sistemu.
+    /// </summary>
+    private static PfrOdgovor GenerisiSimuliraniOdgovor(PfrZahtev zahtev)
+    {
+        string randCode = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+        string brojRacuna = $"SIMULACIJA-{randCode}";
+        decimal ukupno = zahtev.Items.Sum(i => i.TotalAmount);
+
+        return new PfrOdgovor
         {
-            InvoiceNumber = mockInvoiceNum,
+            InvoiceNumber = brojRacuna,
             InvoiceCounter = $"{DateTime.Now.Month}/{DateTime.Now.Millisecond}S",
             SdcDateTime = DateTime.Now,
-            TotalAmount = zahtev.Items.Sum(i => i.TotalAmount),
-            VerificationUrl = mockVerificationUrl,
-            Journal = $"========================================\n" +
-                      $"    FISKALNI RAČUN - PROMET PRODAJA    \n" +
-                      $"========================================\n" +
-                      $"Broj računa: {mockInvoiceNum}\n" +
+            TotalAmount = ukupno,
+            VerificationUrl = string.Empty,
+            Journal = "========================================\n" +
+                      "   *** SIMULACIJA - NIJE FISKALNI ***   \n" +
+                      "========================================\n" +
+                      $"Broj: {brojRacuna}\n" +
                       $"Vreme: {DateTime.Now:dd.MM.yyyy HH:mm:ss}\n" +
-                      $"Ukupno za uplatu: {zahtev.Items.Sum(i => i.TotalAmount):N2} RSD\n" +
+                      $"Ukupno: {ukupno:N2} RSD\n" +
                       $"Kasir: {zahtev.Cashier}\n" +
-                      $"========================================\n" +
-                      $"Verifikacija: {mockVerificationUrl}\n"
+                      "========================================\n" +
+                      "Ovaj dokument NIJE fiskalni račun i nije\n" +
+                      "evidentiran u sistemu Poreske uprave.\n"
         };
-
-        return (true, "Fiskalni račun je uspešno fiskalizovan (PFR Validacija OK).", mockOdgovor);
     }
 }

@@ -44,6 +44,15 @@ public partial class FiskalniRacunWindow : Window
                     TxtVerificationUrl.Text = _racun.FiskalniQrKod ?? "";
                     BtnFiskalizuj.IsEnabled = false;
                 }
+                else if (_racun.FiskalniStatus == FiskalniStatus.Simulacija)
+                {
+                    TxtFiskalniJournal.Text = "=== SIMULIRAN RAČUN — NIJE FISKALIZOVAN ===\n" +
+                                              $"Broj: {_racun.FiskalniBroj}\n" +
+                                              $"Datum: {_racun.FiskalniDatum:dd.MM.yyyy HH:mm:ss}\n\n" +
+                                              "Ovaj račun nije evidentiran u Poreskoj upravi.\n" +
+                                              "Pokrenite fiskalizaciju ponovo kada PFR bude dostupan.";
+                    TxtStatus.Text = "⚠️ SIMULACIJA — račun NIJE fiskalizovan!";
+                }
             }
         }
         catch (Exception ex)
@@ -70,15 +79,24 @@ public partial class FiskalniRacunWindow : Window
             using var db = new AccountingDbContext(options);
             var service = new EsirFiskalizacijaService(db);
 
-            var (success, message, log) = await service.FiskalizujRacunAsync(_racunId, nacinPlacanja);
+            var (success, simulacija, message, log) = await service.FiskalizujRacunAsync(_racunId, nacinPlacanja);
 
             if (success && log != null)
             {
                 TxtFiskalniJournal.Text = log.RawJsonResponse;
                 TxtVerificationUrl.Text = log.VerificationUrl;
-                TxtStatus.Text = "Račun je uspešno fiskalizovan!";
 
-                MessageBox.Show($"✅ {message}\n\nFiskalni broj: {log.InvoiceNumber}", "Fiskalizacija uspešna", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (simulacija)
+                {
+                    TxtStatus.Text = "⚠️ SIMULACIJA — račun NIJE fiskalizovan!";
+                    MessageBox.Show($"⚠️ {message}\n\nBroj: {log.InvoiceNumber}",
+                        "Simulirani račun — bez fiskalizacije", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    TxtStatus.Text = "Račun je uspešno fiskalizovan!";
+                    MessageBox.Show($"✅ {message}\n\nFiskalni broj: {log.InvoiceNumber}", "Fiskalizacija uspešna", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             else
             {

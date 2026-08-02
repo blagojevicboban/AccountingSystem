@@ -58,7 +58,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Greška pri proveri ažuriranja: {ex.Message}");
+            Serilog.Log.Error(ex, "Greška pri proveri ažuriranja");
         }
     }
 

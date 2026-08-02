@@ -4,6 +4,46 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.0.54] - 2026-08-01
+
+### 🔒 Bezbednost i integritet podataka (kritično)
+- **Fiskalizacija više ne prijavljuje lažni uspeh (`PfrApiClient`, `EsirFiskalizacijaService`)**:
+  - Ranije je svaki neuspeh komunikacije sa PFR-om (nema mreže, odbijen zahtev, pogrešan PAC) tiho vraćao „uspešno fiskalizovan" sa izmišljenim brojem računa i lažnim `suf.purs.gov.rs` verifikacionim linkom, a račun je upisivan kao `Fiskalizovan`.
+  - Sada se neuspeh prijavljuje kao greška i račun ostaje nefiskalizovan.
+  - Simulator za testiranje i obuku zadržan, ali iza izričite opcije **Podešavanja → Fiskalizacija → „Dozvoli simulirane račune"** (podrazumevano isključeno). Simulirani računi dobijaju status `Simulacija`, broj sa prefiksom `SIMULACIJA-` i **nemaju** verifikacioni URL.
+- **Kursna lista se više ne izmišlja (`NbsApiClient`, `KursnaListaService`)**:
+  - Uklonjeni hardkodovani „rezervni" kursevi (EUR 117,1850, USD 108,2410…) koji su se pri nedostupnom NBS-u upisivali u bazu kao zvanični kurs za traženi datum i ulazili u devizno knjigovodstvo i uvozne kalkulacije.
+  - Osvežavanje sa NBS-a više ne briše postojeću kursnu listu ako preuzimanje ne uspe.
+  - `PretvoriDevizeURsdAsync` više ne vraća neponvertovan iznos kada kurs ne postoji (100 EUR se knjižilo kao 100 RSD) — prijavljuje jasnu grešku.
+- **Verifikacija partnera u NBS registru (`NbsApiClient`)**: uklonjen fallback koji je za bilo koji PIB vraćao izmišljen račun `205-0000000012345-67` i status „AKTIVAN (Nije u blokadi)".
+- **Ugrađeni REST API zaštićen (`AccountingWebServer`)**:
+  - Uklonjen `Access-Control-Allow-Origin: *` — bilo koji sajt otvoren u pretraživaču mogao je da pročita promet firme i žiro-račune partnera dok aplikacija radi.
+  - Uveden pristupni token koji se generiše pri svakom pokretanju servera; svi `/api/` pozivi zahtevaju `Authorization: Bearer`. Dashboard se otvara dugmetom koje token prosleđuje automatski.
+  - Poruke o greškama više ne vraćaju detalje izuzetka (putanju baze) klijentu.
+- **Uklonjeno automatsko resetovanje admin lozinke (`LoginWindow`)**: pri svakom otvaranju login prozora lozinka naloga `admin` se prepisivala hardkodovanim hešom iz izvornog koda. Sada se pri prijavi podrazumevanom lozinkom traži obavezna promena.
+
+### 📋 Logovanje (`AppLog`, Serilog)
+- **Uvedeno pravo logovanje u fajl.** Aplikacija do sada nije imala logger: dijagnostika je bila
+  `Debug.WriteLine` (nevidljiv u Release verziji) i poruke u dijalozima koje korisnik zatvori i zaboravi.
+  Kada bi se kod korisnika nešto pokvarilo, nije postojao nikakav trag.
+- Zapisi idu u `%LOCALAPPDATA%\AccountingApp\logs\log-GGGGMMDD.txt`, novi fajl svakog dana, čuva se
+  poslednjih 14 dana. Zamenjuje raniji `crash.log` koji je rastao bez ograničenja.
+- **Globalni hvatači proširen**: uz greške na korisničkom interfejsu i fatalne greške pozadinskih niti
+  sada se hvataju i neposmatrane greške u pozadinskim zadacima, koje su ranije mogle tiho da obore proces.
+- Sve `Debug.WriteLine` poruke u `catch` blokovima prevedene u `Serilog.Log.Error`, sa strukturiranim
+  parametrima gde ima smisla (naziv fajla, putanja, datum).
+
+### 🧪 Testovi
+- `EsirFiskalizacijaTests` prepisan — proverava da fiskalizacija bez PFR-a pada i da simulirani račun nikad ne dobija status `Fiskalizovan`.
+- Novi `AccountingWebServerTests` — 401 bez/sa pogrešnim tokenom, 200 sa ispravnim, zabrana wildcard CORS-a.
+
+### 🛠️ Interno (bez uticaja na rad aplikacije)
+- **CI kapija kvaliteta (`.github/workflows/release.yml`)**: workflow razdvojen na `test` i `build` job. Release se objavljuje tek kada build i testovi prođu; dodat `pull_request` triger tako da se PR testira ali ne objavljuje. Ranije se nijedan test nije pokretao pre objavljivanja.
+- **`Directory.Build.props`**: upozorenja se u Release konfiguraciji tretiraju kao greške (`TreatWarningsAsErrors`); u Debug-u ostaju upozorenja. `NU1701` izuzet jer dolazi iz LiveCharts/SkiaSharp paketa.
+- Očišćena sva preostala upozorenja prevodioca: `PdfReportService` (zastareli QuestPDF `Text(object)` preopterećeni poziv), `NalogEditWindow` (nullable anotacija).
+
+---
+
 ## [1.0.53] - 2026-08-01
 
 ### 🚀 Nove funkcionalnosti i Poboljšanja

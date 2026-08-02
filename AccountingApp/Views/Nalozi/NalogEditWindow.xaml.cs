@@ -52,7 +52,7 @@ public partial class NalogEditWindow : Window
 
             foreach (var s in existingNalog.Stavke.OrderBy(s => s.RedniBroj))
             {
-                string opisStavke = s.Opis;
+                string? opisStavke = s.Opis;
                 if (s.PromenaKod.HasValue && promeneDict.TryGetValue(s.PromenaKod.Value, out var textIzPromena) && !string.IsNullOrWhiteSpace(textIzPromena))
                 {
                     if (string.IsNullOrWhiteSpace(opisStavke) || opisStavke == s.BrojDokumenta)

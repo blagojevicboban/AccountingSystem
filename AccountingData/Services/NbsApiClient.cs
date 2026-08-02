@@ -16,12 +16,12 @@ public class NbsApiClient
 
     /// <summary>
     /// Preuzima zvaničnu kursnu listu Narodne banke Srbije za izabrani datum.
-    /// Ako NBS portal nije dostupan ili je mrežna veza u prekidu, generiše zvanični procenjeni kurs kao rezervu (fallback).
+    /// Ako NBS nije dostupan, vraća PRAZNU listu - kursevi se nikada ne izmišljaju,
+    /// jer bi se procenjeni kurs upisao u bazu kao zvaničan i ušao u knjiženja.
     /// </summary>
     public async Task<List<KursnaListaStavka>> PreuzmiKursnuListuAsync(DateTime datum)
     {
         var rezultati = new List<KursnaListaStavka>();
-        string dateStr = datum.ToString("dd.MM.yyyy");
 
         try
         {
@@ -62,15 +62,9 @@ public class NbsApiClient
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Mrežni prekid ili nedostupnost NBS API-ja
-        }
-
-        // Ako rezultati nisu preuzeti sa NBS-a (npr. vanmrežni rad ili nedostupnost), popunjavamo zvaničnim rezervnim podacima
-        if (rezultati.Count == 0)
-        {
-            rezultati = GenerisiRezervneKurseve(datum.Date);
+            Serilog.Log.Warning(ex, "NBS kursna lista nije preuzeta za {Datum:dd.MM.yyyy}", datum);
         }
 
         return rezultati;
@@ -102,25 +96,14 @@ public class NbsApiClient
 
                 return (true, "Uspešna verifikacija iz Registra računa NBS.", string.IsNullOrWhiteSpace(tekuci) ? null : tekuci, blokada);
             }
-        }
-        catch
-        {
-            // Fallback za offline
-        }
 
-        return (true, "Verifikovan partner u bazi registra.", "205-0000000012345-67", "AKTIVAN (Nije u blokadi)");
-    }
-
-    private static List<KursnaListaStavka> GenerisiRezervneKurseve(DateTime datum)
-    {
-        return new List<KursnaListaStavka>
+            return (false, $"NBS registar je vratio status {(int)response.StatusCode} ({response.StatusCode}). Partner nije verifikovan.", null, "Nepoznato");
+        }
+        catch (Exception ex)
         {
-            new KursnaListaStavka { Datum = datum, ValutaOznaka = "EUR", NazivValute = "Evro", Jedinica = 1, SrednjiKurs = 117.1850m, KupovniKurs = 116.8900m, ProdavniKurs = 117.4800m },
-            new KursnaListaStavka { Datum = datum, ValutaOznaka = "USD", NazivValute = "Američki dolar", Jedinica = 1, SrednjiKurs = 108.2410m, KupovniKurs = 107.9690m, ProdavniKurs = 108.5130m },
-            new KursnaListaStavka { Datum = datum, ValutaOznaka = "CHF", NazivValute = "Švajcarski franak", Jedinica = 1, SrednjiKurs = 122.4500m, KupovniKurs = 122.1400m, ProdavniKurs = 122.7600m },
-            new KursnaListaStavka { Datum = datum, ValutaOznaka = "GBP", NazivValute = "Britanska funta", Jedinica = 1, SrednjiKurs = 138.6200m, KupovniKurs = 138.2700m, ProdavniKurs = 138.9700m },
-            new KursnaListaStavka { Datum = datum, ValutaOznaka = "BAM", NazivValute = "Konvertibilna marka", Jedinica = 1, SrednjiKurs = 59.9140m, KupovniKurs = 59.7630m, ProdavniKurs = 60.0650m },
-            new KursnaListaStavka { Datum = datum, ValutaOznaka = "RUB", NazivValute = "Ruska rublja", Jedinica = 100, SrednjiKurs = 124.5000m, KupovniKurs = 124.1800m, ProdavniKurs = 124.8200m }
-        };
+            // Nikada ne prijavljujemo uspešnu verifikaciju bez odgovora NBS-a -
+            // lažno "AKTIVAN" bi značilo da korisnik posluje sa firmom u blokadi.
+            return (false, $"Registar računa NBS nije dostupan: {ex.Message}", null, "Nepoznato");
+        }
     }
 }

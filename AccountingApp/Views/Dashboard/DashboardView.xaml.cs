@@ -156,7 +156,7 @@ public partial class DashboardView : UserControl
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Greška pri učitavanju radne table: {ex.Message}");
+            Serilog.Log.Error(ex, "Greška pri učitavanju radne table");
         }
     }
 

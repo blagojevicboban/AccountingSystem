@@ -76,7 +76,7 @@ public partial class FirmeView : UserControl
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Preskačem bazu '{fajl}': {ex.Message}");
+                    Serilog.Log.Warning(ex, "Preskačem bazu {Fajl}", fajl);
                 }
             }
         }

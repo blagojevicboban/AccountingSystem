@@ -54,6 +54,12 @@ public class Firma
     [MaxLength(100)]
     public string PfrKasirName { get; set; } = "Glavni Kasir";
 
+    /// <summary>
+    /// Dozvoljava rad sa simuliranom fiskalizacijom kada PFR nije dostupan.
+    /// Podrazumevano ISKLJUČENO - simulirani računi nemaju pravnu vrednost.
+    /// </summary>
+    public bool PfrSimulatorMod { get; set; }
+
     public bool IsActive { get; set; } = true;
     public DateTime DatumKreiranja { get; set; } = DateTime.Now;
 }

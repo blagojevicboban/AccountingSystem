@@ -55,11 +55,12 @@ public partial class PodesavanjaView : UserControl
                 TxtPfrUrl.Text = firma.PfrUrl ?? "http://localhost:8443";
                 TxtPfrPacKod.Text = firma.PfrPacKod ?? "123456";
                 TxtPfrKasirName.Text = firma.PfrKasirName ?? "Glavni Kasir";
+                ChkPfrSimulatorMod.IsChecked = firma.PfrSimulatorMod;
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Greška pri učitavanju SEF/PFR podešavanja: {ex.Message}");
+            Serilog.Log.Error(ex, "Greška pri učitavanju SEF/PFR podešavanja");
         }
 
         OsveziStatusWebServera();
@@ -71,19 +72,21 @@ public partial class PodesavanjaView : UserControl
 
         if (AccountingWebServer.IsRunning)
         {
-            string url = $"http://localhost:{AccountingWebServer.Port}";
+            string url = AccountingWebServer.DashboardUrl;
             TxtWebServerStatus.Inlines.Add(new Run("🟢 Server je aktivan na "));
 
-            var link = new Hyperlink(new Run(url)) { NavigateUri = new Uri(url) };
+            var link = new Hyperlink(new Run($"http://localhost:{AccountingWebServer.Port}")) { NavigateUri = new Uri(url) };
             link.RequestNavigate += WebServerLink_RequestNavigate;
             TxtWebServerStatus.Inlines.Add(link);
 
             TxtWebServerStatus.Foreground = System.Windows.Media.Brushes.Green;
+            TxtApiToken.Text = AccountingWebServer.AccessToken;
         }
         else
         {
             TxtWebServerStatus.Inlines.Add(new Run("🔴 Server je zaustavljen"));
             TxtWebServerStatus.Foreground = System.Windows.Media.Brushes.Red;
+            TxtApiToken.Text = "— server nije pokrenut —";
         }
     }
 
@@ -108,7 +111,12 @@ public partial class PodesavanjaView : UserControl
 
         AccountingWebServer.Start(AppConfig.DbPath, port);
         OsveziStatusWebServera();
-        MessageBox.Show($"🌐 Web Server & Cloud REST API je uspešno pokrenut na portu {port}!\n\nWeb Dashboard je dostupan na:\nhttp://localhost:{port}", "Web Server Pokrenut", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show(
+            $"🌐 Web Server & Cloud REST API je pokrenut na portu {port}.\n\n" +
+            "Pristup je zaštićen tokenom koji važi do zaustavljanja servera. Dashboard otvorite " +
+            "dugmetom „Otvori Web Dashboard\" — token se tada automatski prosleđuje.\n\n" +
+            "Zaustavite server kada vam više nije potreban.",
+            "Web Server Pokrenut", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void BtnZaustaviWebServer_Click(object sender, RoutedEventArgs e)
@@ -127,7 +135,7 @@ public partial class PodesavanjaView : UserControl
 
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo($"http://localhost:{AccountingWebServer.Port}") { UseShellExecute = true });
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AccountingWebServer.DashboardUrl) { UseShellExecute = true });
         }
         catch (Exception ex)
         {
@@ -188,6 +196,7 @@ public partial class PodesavanjaView : UserControl
                 firma.PfrUrl = string.IsNullOrWhiteSpace(TxtPfrUrl.Text) ? "http://localhost:8443" : TxtPfrUrl.Text.Trim();
                 firma.PfrPacKod = string.IsNullOrWhiteSpace(TxtPfrPacKod.Text) ? "123456" : TxtPfrPacKod.Text.Trim();
                 firma.PfrKasirName = string.IsNullOrWhiteSpace(TxtPfrKasirName.Text) ? "Glavni Kasir" : TxtPfrKasirName.Text.Trim();
+                firma.PfrSimulatorMod = ChkPfrSimulatorMod.IsChecked ?? false;
 
                 await db.SaveChangesAsync();
             }
@@ -230,7 +239,8 @@ public partial class PodesavanjaView : UserControl
         {
             PfrUrl = TxtPfrUrl.Text.Trim(),
             PacKod = TxtPfrPacKod.Text.Trim(),
-            Kasir = TxtPfrKasirName.Text.Trim()
+            Kasir = TxtPfrKasirName.Text.Trim(),
+            SimulatorMod = ChkPfrSimulatorMod.IsChecked ?? false
         };
 
         var res = await pfrClient.TestirajPfrKonekcijuAsync(postavke);

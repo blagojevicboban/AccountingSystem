@@ -110,7 +110,7 @@ public partial class RobnoDashboardView : UserControl
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Greška pri učitavanju radne table Robno: {ex.Message}");
+            Serilog.Log.Error(ex, "Greška pri učitavanju radne table Robno");
         }
     }
 

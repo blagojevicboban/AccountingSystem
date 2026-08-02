@@ -17,7 +17,7 @@ public class EsirFiskalizacijaService
     /// <summary>
     /// Fiskalizuje selektovani račun/fakturu preko PFR servisa.
     /// </summary>
-    public async Task<(bool Success, string Message, FiskalniRacunLog? Log)> FiskalizujRacunAsync(int racunId, string nacinPlacanja = "Cash")
+    public async Task<(bool Success, bool Simulacija, string Message, FiskalniRacunLog? Log)> FiskalizujRacunAsync(int racunId, string nacinPlacanja = "Cash")
     {
         var racun = await _db.RacuniOtpremnice
             .Include(r => r.Stavke)
@@ -25,10 +25,10 @@ public class EsirFiskalizacijaService
             .FirstOrDefaultAsync(r => r.RacunOtpremnicaId == racunId);
 
         if (racun == null)
-            return (false, "Račun nije pronađen u bazi.", null);
+            return (false, false, "Račun nije pronađen u bazi.", null);
 
         if (racun.FiskalniStatus == FiskalniStatus.Fiskalizovan)
-            return (false, $"Račun #{racun.BrojRacuna} je već fiskalizovan (Broj: {racun.FiskalniBroj}).", null);
+            return (false, false, $"Račun #{racun.BrojRacuna} je već fiskalizovan (Broj: {racun.FiskalniBroj}).", null);
 
         var firma = await _db.Firme.FirstOrDefaultAsync() ?? new Firma();
 
@@ -36,7 +36,8 @@ public class EsirFiskalizacijaService
         {
             PfrUrl = string.IsNullOrWhiteSpace(firma.PfrUrl) ? "http://localhost:8443" : firma.PfrUrl,
             PacKod = string.IsNullOrWhiteSpace(firma.PfrPacKod) ? "123456" : firma.PfrPacKod,
-            Kasir = string.IsNullOrWhiteSpace(firma.PfrKasirName) ? "Glavni Kasir" : firma.PfrKasirName
+            Kasir = string.IsNullOrWhiteSpace(firma.PfrKasirName) ? "Glavni Kasir" : firma.PfrKasirName,
+            SimulatorMod = firma.PfrSimulatorMod
         };
 
         // Priprema PFR zahteva
@@ -69,7 +70,7 @@ public class EsirFiskalizacijaService
             });
         }
 
-        var (success, message, odgovor) = await _pfrClient.FiskalizujRacunAsync(zahtev, pfrPostavke);
+        var (success, simulacija, message, odgovor) = await _pfrClient.FiskalizujRacunAsync(zahtev, pfrPostavke);
 
         if (success && odgovor != null)
         {
@@ -94,16 +95,17 @@ public class EsirFiskalizacijaService
             racun.FiskalniBroj = odgovor.InvoiceNumber;
             racun.FiskalniQrKod = odgovor.VerificationUrl;
             racun.FiskalniDatum = odgovor.SdcDateTime;
-            racun.FiskalniStatus = FiskalniStatus.Fiskalizovan;
+            // Simulirani račun se NIKADA ne označava kao fiskalizovan - to bi bila neistinita evidencija.
+            racun.FiskalniStatus = simulacija ? FiskalniStatus.Simulacija : FiskalniStatus.Fiskalizovan;
 
             await _db.SaveChangesAsync();
 
-            return (true, message, log);
+            return (true, simulacija, message, log);
         }
 
         racun.FiskalniStatus = FiskalniStatus.Greska;
         await _db.SaveChangesAsync();
 
-        return (false, message, null);
+        return (false, false, message, null);
     }
 }

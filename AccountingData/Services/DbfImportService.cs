@@ -44,7 +44,7 @@ public static class DbfImportService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Greška pri čitanju DBF fajla '{filepath}': {ex.Message}");
+            Serilog.Log.Error(ex, "Greška pri čitanju DBF fajla {Putanja}", filepath);
         }
 
         return list;

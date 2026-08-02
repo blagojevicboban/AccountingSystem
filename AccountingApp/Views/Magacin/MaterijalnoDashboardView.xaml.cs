@@ -111,7 +111,7 @@ public partial class MaterijalnoDashboardView : UserControl
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Greška pri učitavanju radne table Materijalno: {ex.Message}");
+            Serilog.Log.Error(ex, "Greška pri učitavanju radne table Materijalno");
         }
     }
 

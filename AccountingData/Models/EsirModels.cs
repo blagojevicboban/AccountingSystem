@@ -13,7 +13,12 @@ public enum FiskalniStatus
     NijeFiskalizovan = 0,
     Fiskalizovan = 1,
     Greska = 2,
-    Storniran = 3
+    Storniran = 3,
+    /// <summary>
+    /// Račun je "izdat" kroz lokalni simulator, BEZ stvarne fiskalizacije u PFR-u.
+    /// Nema pravnu vrednost - koristi se isključivo za testiranje i obuku.
+    /// </summary>
+    Simulacija = 4
 }
 
 /// <summary>
@@ -64,6 +69,13 @@ public class PfrPostavke
     public string PfrUrl { get; set; } = "http://localhost:8443";
     public string PacKod { get; set; } = "123456";
     public string Kasir { get; set; } = "Glavni Kasir";
+
+    /// <summary>
+    /// Kada je true, rad bez priključenog PFR-a generiše SIMULIRANI račun (za testiranje i obuku).
+    /// Kada je false (podrazumevano), svaki neuspeh komunikacije sa PFR-om se prijavljuje kao greška
+    /// i račun se NE označava kao fiskalizovan.
+    /// </summary>
+    public bool SimulatorMod { get; set; }
 }
 
 // PFR REST API Zahtev

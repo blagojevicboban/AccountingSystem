@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using AccountingData;
+using AccountingData.Models;
 
 namespace AccountingApp.Views.Korisnici;
 
@@ -16,7 +17,6 @@ public partial class LoginWindow : Window
         _db = db;
 
         LoadCompanyInfo();
-        EnsureAdminPasswordUpdated();
 
 #if DEBUG
         TxtUsername.Text = "admin";
@@ -26,20 +26,6 @@ public partial class LoginWindow : Window
 
         var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         TxtVersion.Text = $"ERPi © 2026 Blagojević Boban - v{version?.ToString(3)}";
-    }
-
-    private void EnsureAdminPasswordUpdated()
-    {
-        try
-        {
-            var admin = _db.Korisnici.FirstOrDefault(k => k.KorisnickoIme == "admin");
-            if (admin != null && (string.IsNullOrEmpty(admin.LozinkaHash) || AccountingDbContext.VerifyPassword("admin123", admin.LozinkaHash)))
-            {
-                admin.LozinkaHash = "PBKDF2$100000$IxpGjzsTHvV0x7fZq6RdJQ==$6ERduoiJeJ9Iwc5bF56gYD0r3MqcFCWBYyw8XTHQ3u4=";
-                _db.SaveChanges();
-            }
-        }
-        catch { }
     }
 
     private void LoadCompanyInfo()
@@ -95,6 +81,15 @@ public partial class LoginWindow : Window
             return;
         }
 
+        // Podrazumevana lozinka iz inicijalnog seed-a je javno poznata (nalazi se u
+        // izvornom kodu i migracijama), pa se mora promeniti pre prvog ulaska u sistem.
+        if (AccountingDbContext.VerifyPassword("admin123", korisnik.LozinkaHash) && !ZahtevajPromenuLozinke(korisnik))
+        {
+            ShowError("Morate postaviti novu lozinku da biste nastavili.");
+            TxtPassword.Clear();
+            return;
+        }
+
         AppSession.TrenutniKorisnik = korisnik;
         korisnik.PoslednjaPrijava = DateTime.Now;
         _db.SaveChanges();
@@ -103,6 +98,34 @@ public partial class LoginWindow : Window
         mainWindow.Show();
 
         Close();
+    }
+
+    /// <summary>
+    /// Otvara izmenu naloga i ne pušta dalje dok lozinka stvarno nije promenjena
+    /// u nešto različito od podrazumevane. Vraća true ako je promena uspela.
+    /// </summary>
+    private bool ZahtevajPromenuLozinke(Korisnik korisnik)
+    {
+        MessageBox.Show(
+            $"Nalog '{korisnik.KorisnickoIme}' još uvek koristi podrazumevanu lozinku.\n\n" +
+            "Ta lozinka je javno poznata i mora se promeniti pre nastavka rada.",
+            "Obavezna promena lozinke", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+        var dlg = new KorisnikEditWindow(_db, korisnik) { Owner = this };
+        if (dlg.ShowDialog() != true)
+        {
+            _db.Entry(korisnik).Reload();
+            return false;
+        }
+
+        if (AccountingDbContext.VerifyPassword("admin123", korisnik.LozinkaHash))
+        {
+            MessageBox.Show("Nova lozinka ne sme biti ista kao podrazumevana.",
+                "Lozinka nije promenjena", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
+        }
+
+        return true;
     }
 
     private void ShowError(string message)
