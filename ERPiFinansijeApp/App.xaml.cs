@@ -18,6 +18,10 @@ public partial class App : Application
     {
         VelopackApp.Build().Run();
 
+        // Mora pre prvog pristupa UserSettings-u: preuzima baze i podešavanja
+        // zatečena pod starim imenom foldera (pre preimenovanja u ERPi liniju).
+        AppConfig.PreuzmiStariFolderPodataka();
+
         QuestPDF.Settings.License = LicenseType.Community;
 
         for (int i = 0; i < e.Args.Length; i++)
