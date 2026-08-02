@@ -4,6 +4,12 @@ Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane s
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.1.2] - 2026-08-02
+
+### 🚀 Usklađivanje verzije i automatsko ažuriranje (ErpHub)
+- **Konačna verzija 1.1.2**: Čista verzija `v1.1.2` koja garantovano prevazilazi sve ranije 1.1.0/1.1.1 tagove i osigurava da `ErpHub` i `Velopack` odmah ponude automatsko ažuriranje na svim klijentskim računarima.
+- Sadrži sve najnovije bezbednosne i funkcionalne nadogradnje: bezbedna fiskalizacija, provereni NBS kursevi, zaštita ugrađenog REST API-ja sa Bearer tokenom, Serilog logovanje u fajl i PDF generisanje ponuda i predračuna.
+
 ## [1.1.1] - 2026-08-02
 
 ### 🚀 Usklađivanje verzije i automatsko ažuriranje (ErpHub)
