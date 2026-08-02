@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ERPiFinansijeApp/ERPiFinansijeApp.csproj" />
+  <Project Path="ERPiFinansijeData.Tests/ERPiFinansijeData.Tests.csproj" />
+  <Project Path="ERPiFinansijeData/ERPiFinansijeData.csproj" />
+  <Project Path="ERPiFinansijeMigration/ERPiFinansijeMigration.csproj" />
+</Solution>

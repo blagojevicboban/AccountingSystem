@@ -1,0 +1,268 @@
+<UserControl x:Class="ERPiFinansijeApp.Views.Podesavanja.PodesavanjaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:backup="clr-namespace:ERPiFinansijeApp.Views.Backup"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="⚙️ Podešavanja" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+                <TextBlock Text="Upravljanje osnovnim podacima, rezervnim kopijama i uvozom iz starog sistema." FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <Button Grid.Column="1" Content="💾 Sačuvaj podešavanja" Style="{StaticResource ActionButtonStyle}" Height="38" Padding="20,0" Click="BtnSacuvaj_Click"/>
+        </Grid>
+
+        <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
+
+            <!-- TAB: Rezervna kopija -->
+            <TabItem Header="💾 Rezervna kopija">
+                <backup:BackupView Margin="0,12,0,0"/>
+            </TabItem>
+
+            <!-- TAB: SEF e-Fakture -->
+            <TabItem Header="⚡ SEF e-Fakture">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <StackPanel Margin="0,0,10,0">
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="⚡ Podešavanja za Sistem Elektronskih Faktura (SEF RS)" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Povezivanje sa državnim SEF portalom Ministarstva finansija za slanje i preuzimanje e-faktura." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                                <!-- API Ključ -->
+                                <TextBlock Text="SEF API Ključ (ApiKey)" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtSefApiKey" Height="36" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,14" FontFamily="Consolas"/>
+
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="SEF Okruženje" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <ComboBox x:Name="CmbSefEnvironment" Height="36" VerticalContentAlignment="Center">
+                                            <ComboBoxItem Content="Demo (demoefaktura.mfin.gov.rs)" IsSelected="True"/>
+                                            <ComboBoxItem Content="Production (efaktura.mfin.gov.rs)"/>
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="JBKJS Broj (Za budžetske korisnike)" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtJbkjsBroj" Height="36" VerticalContentAlignment="Center" Padding="8,0" MaxLength="20"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="E-Mail Adresa Firme za e-Fakture" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtFirmaEmail" Height="36" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,16"/>
+
+                                <Button Content="⚡ Testiraj SEF Konekciju" Height="38" Padding="20,0" HorizontalAlignment="Left" Background="#0284C7" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="BtnTestirajSef_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- TAB: e-Fiskalizacija (PFR / ESIR) -->
+            <TabItem Header="🧾 e-Fiskalizacija (PFR / ESIR)">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <StackPanel Margin="0,0,10,0">
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🧾 Podešavanja e-Fiskalizacije (LPFR / VPFR RS)" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Povezivanje sa Procesorom Fiskalnih Računa (PFR) i Bezbednosnim Elementom (BE) za izdavanje fiskalnih računa." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                                <!-- PFR URL -->
+                                <TextBlock Text="PFR URL Servisa (LPFR / VPFR Endpoint)" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtPfrUrl" Height="36" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,14" FontFamily="Consolas" Text="http://localhost:8443"/>
+
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="PAC Kod Bezbednosnog Elementa" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtPfrPacKod" Height="36" VerticalContentAlignment="Center" Padding="8,0" FontFamily="Consolas" Text="123456"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Ime i prezime kasira" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtPfrKasirName" Height="36" VerticalContentAlignment="Center" Padding="8,0" Text="Glavni Kasir"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Border Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,14">
+                                    <StackPanel>
+                                        <CheckBox x:Name="ChkPfrSimulatorMod" Content="Dozvoli simulirane račune kada PFR nije dostupan (test i obuka)" FontWeight="SemiBold" Foreground="#92400E"/>
+                                        <TextBlock Text="Simulirani računi se označavaju kao SIMULACIJA, nemaju QR kod i NISU fiskalizovani u Poreskoj upravi. Kada je opcija isključena, neuspela fiskalizacija se prijavljuje kao greška." FontSize="11" Foreground="#92400E" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Button Content="⚡ Testiraj PFR Konekciju" Height="38" Padding="20,0" HorizontalAlignment="Left" Background="#0D9488" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="BtnTestirajPfr_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- TAB: REST API & Web Dashboard -->
+            <TabItem Header="🌐 REST API &amp; Web Dashboard">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <StackPanel Margin="0,0,10,0">
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🌐 Ugrađeni Cloud REST API &amp; Mobile Web Dashboard" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Omogućava uvid u finansije, bilanse, radnu tablu i partnere sa mobilnih telefona i web pregledača (Port 5050)." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,10"/>
+
+                                <Border Background="#FEF2F2" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,16">
+                                    <TextBlock Text="⚠️ Server izlaže podatke o prometu firme i žiro-račune partnera. Pristup je zaštićen pristupnim tokenom koji se generiše pri svakom pokretanju servera — otvarajte dashboard isključivo dugmetom ispod. Server držite uključenim samo dok vam je potreban." FontSize="11" Foreground="#991B1B" TextWrapping="Wrap"/>
+                                </Border>
+
+                                <StackPanel Margin="0,0,0,12">
+                                    <TextBlock Text="Pristupni token (važi do zaustavljanja servera)" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="TxtApiToken" Height="34" VerticalContentAlignment="Center" Padding="8,0" FontFamily="Consolas" FontSize="11" IsReadOnly="True" Text="— server nije pokrenut —"/>
+                                </StackPanel>
+
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Web Server Port" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtApiPort" Height="36" VerticalContentAlignment="Center" Padding="8,0" FontFamily="Consolas" Text="5050"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Status Web Servera" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBlock x:Name="TxtWebServerStatus" Text="🔴 Server je zaustavljen" FontSize="14" FontWeight="Bold" Foreground="#DC2626" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button x:Name="BtnPokreniWebServer" Content="▶️ Pokreni Web Server" Height="38" Padding="18,0" Margin="0,0,10,0" Background="#059669" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="BtnPokreniWebServer_Click"/>
+                                    <Button x:Name="BtnZaustaviWebServer" Content="⏹️ Zaustavi Server" Height="38" Padding="18,0" Margin="0,0,10,0" Background="#DC2626" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="BtnZaustaviWebServer_Click"/>
+                                    <Button x:Name="BtnOtvoriWebDashboard" Content="🌐 Otvori Web Dashboard u pregledaču" Height="38" Padding="18,0" Background="#0284C7" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="BtnOtvoriWebDashboard_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- TAB: Postavke programa -->
+            <TabItem Header="💻 Postavke programa">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                    <StackPanel Margin="0,0,10,0">
+
+                        <!-- CARD 1: Generalna podešavanja i baza -->
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🖥️ Generalna podešavanja i Baza podataka" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Lokacija aktivne baze i ponašanje pri pokretanju aplikacije." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                                <!-- Putanja baze -->
+                                <TextBlock Text="Aktivna putanja SQLite baze podataka" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="TxtDbPath" Height="36" VerticalContentAlignment="Center" Padding="8,0" IsReadOnly="True" Background="#F8FAFC"/>
+                                    <Button Grid.Column="1" Content="📁 Promeni..." Height="36" Padding="14,0" Margin="8,0,0,0" Background="#F1F5F9" Foreground="#334155" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Click="BtnPromeniBazu_Click"/>
+                                </Grid>
+
+                                <CheckBox x:Name="ChkStartMaximized" Content="Pokreni aplikaciju preko celog ekrana (Maximized)" Margin="0,0,0,10" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- CARD 2: Štampa i izveštaji -->
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="📄 Podaci za štampu i PDF izveštaje" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Podaci koji se prikazuju u zaglavlju i podnožju odštampanih dokumenata." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Naziv računovodstvenog servisa" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtNazivServisa" Height="36" VerticalContentAlignment="Center" Padding="8,0" MaxLength="100"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Ovlašćeno lice / Potpisnik" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtOvlascenoLice" Height="36" VerticalContentAlignment="Center" Padding="8,0" MaxLength="100"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- CARD 3: Bezbednost i Dijalozi -->
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🛡️ Bezbednosne provere i potvrdni dijalozi" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Uključivanje ili isključivanje bezbednosnih dijaloga pre osetljivih operacija." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                                <CheckBox x:Name="ChkPotvrdaZaRasknjizavanje" Content="Traži potvrdu pre rasknjižavanja proknjiženih naloga" Margin="0,0,0,10" FontWeight="SemiBold"/>
+                                <CheckBox x:Name="ChkPotvrdaZaBrisanje" Content="Traži potvrdu pre brisanja stavki i dokumenata" Margin="0,0,0,10" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- CARD 4: Informacije o sistemu -->
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="ℹ️ Informacije o aplikaciji i sistemu" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="TxtAppVersion" Text="Aplikacija: ERPiFinansije v1.0.2 (.NET 8.0 WPF)" FontSize="13" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="ORM: Entity Framework Core 9.0 (SQLite)" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Pakovanje &amp; Update: Velopack 1.2.0" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- TAB: Uvoz iz starog programa -->
+            <TabItem Header="📥 Uvoz iz starog programa">
+                <Grid Margin="0,12,0,0">
+                    <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" VerticalAlignment="Top">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="🔄 Uvoz podataka iz legacy DOS sistema (DBF)" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Uvoz kontnog plana, naloga knjiženja, partnera, artikala i magacina iz dBase III / Clipper datoteka." FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="🔄 Pokreni uvoz iz DOS-a..." Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Height="36" Padding="16,0" VerticalAlignment="Center" Click="BtnUvozDOS_Click"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</UserControl>

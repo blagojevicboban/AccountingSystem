@@ -1,18 +1,18 @@
 ---
 name: questpdf-report-documents
-description: Conventions for QuestPDF report/print documents in AccountingApp (General Ledger, Trial Balance, Open Items / IOS, Warehouse Stock Reports) — IDocument structure, header/footer/table styling, and the generate-and-open flow. Use whenever adding or editing a *Document.cs file under AccountingApp/Services or generating a new PDF report.
+description: Conventions for QuestPDF report/print documents in ERPiFinansijeApp (General Ledger, Trial Balance, Open Items / IOS, Warehouse Stock Reports) — IDocument structure, header/footer/table styling, and the generate-and-open flow. Use whenever adding or editing a *Document.cs file under ERPiFinansijeApp/Services or generating a new PDF report.
 ---
 
-# QuestPDF Document Conventions (AccountingApp)
+# QuestPDF Document Conventions (ERPiFinansijeApp)
 
-Every printable report in `AccountingApp` is a small `IDocument` class colocated with its feature (e.g. `Services/PdfReportService.cs`, `Views/Izvestaji/DnevnikDocument.cs`). Follow the existing shape rather than inventing a new document scaffold.
+Every printable report in `ERPiFinansijeApp` is a small `IDocument` class colocated with its feature (e.g. `Services/PdfReportService.cs`, `Views/Izvestaji/DnevnikDocument.cs`). Follow the existing shape rather than inventing a new document scaffold.
 
 ---
 
 ## 1. Class Shape
 
 - Name: `<Feature>Document.cs`, implements `QuestPDF.Infrastructure.IDocument`.
-- Constructor takes plain data (a `List<...>` DTO built by the calling page, plus optional `AccountingData.Models.Firma? firma`) — never an `AccountingDbContext`. Query the DB in the page/window, hand the document only the data it needs to render.
+- Constructor takes plain data (a `List<...>` DTO built by the calling page, plus optional `ERPiFinansijeData.Models.Firma? firma`) — never an `AccountingDbContext`. Query the DB in the page/window, hand the document only the data it needs to render.
 
 ## 2. `Compose(IDocumentContainer container)`
 

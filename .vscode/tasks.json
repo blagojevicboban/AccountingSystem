@@ -2,24 +2,24 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build AccountingApp",
+            "label": "build ERPiFinansijeApp",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/AccountingApp/AccountingApp.csproj",
+                "${workspaceFolder}/ERPiFinansijeApp/ERPiFinansijeApp.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "publish AccountingApp (Self-Contained Single File)",
+            "label": "publish ERPiFinansijeApp (Self-Contained Single File)",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/AccountingApp/AccountingApp.csproj",
+                "${workspaceFolder}/ERPiFinansijeApp/ERPiFinansijeApp.csproj",
                 "-c", "Release",
                 "-r", "win-x64",
                 "--self-contained", "true",

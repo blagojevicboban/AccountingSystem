@@ -1,0 +1,47 @@
+<Window x:Class="ERPiFinansijeApp.Views.Izvestaji.VrednovanjeZalihaPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Vrednovanje zaliha — pregled" Height="700" Width="1050"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundBrush}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel>
+                <Button x:Name="BtnExportExcelZalihe" DockPanel.Dock="Right" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" VerticalAlignment="Center" Click="BtnExportExcelZalihe_Click"/>
+                <StackPanel>
+                    <TextBlock x:Name="TxtNaslov" Text="VREDNOVANJE ZALIHA" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+                    <TextBlock x:Name="TxtPodnaslov" Text="" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel>
+                <Border DockPanel.Dock="Bottom" Margin="0,12,0,0" Padding="16,10" CornerRadius="8" Background="#F1F5F9">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Ukupna vrednost zaliha: " FontWeight="SemiBold"/>
+                        <TextBlock x:Name="TxtUkupnaVrednost" Text="0,00" FontWeight="Bold" Foreground="#D97706"/>
+                    </StackPanel>
+                </Border>
+
+                <DataGrid x:Name="DgZalihe" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" FontSize="12">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Magacin" Binding="{Binding NazivMagacina}" Width="160"/>
+                        <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="90"/>
+                        <DataGridTextColumn Header="Naziv artikla" Binding="{Binding NazivArtikla}" Width="*"/>
+                        <DataGridTextColumn Header="J.M." Binding="{Binding JedinicaMere}" Width="55"/>
+                        <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Jed. cena" Binding="{Binding JedinicnaCena, StringFormat=\{0:N2\}}" Width="105" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                        <DataGridTextColumn Header="Vrednost" Binding="{Binding Vrednost, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

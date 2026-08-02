@@ -2,13 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "AccountingApp (Debug)",
+            "name": "ERPiFinansijeApp (Debug)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build AccountingApp",
-            "program": "${workspaceFolder}/AccountingApp/bin/Debug/net8.0-windows/AccountingApp.exe",
+            "preLaunchTask": "build ERPiFinansijeApp",
+            "program": "${workspaceFolder}/ERPiFinansijeApp/bin/Debug/net8.0-windows/ERPiFinansijeApp.exe",
             "args": [],
-            "cwd": "${workspaceFolder}/AccountingApp",
+            "cwd": "${workspaceFolder}/ERPiFinansijeApp",
             "stopAtEntry": false
         }
     ]

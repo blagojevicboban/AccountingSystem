@@ -1,19 +1,27 @@
-# 📋 Istorija izmena (Changelog) — AccountingSystem
+# 📋 Istorija izmena (Changelog) — ERPiFinansije
 
-Sve značajne promene i novine u aplikaciji **AccountingSystem** dokumentovane su u ovom fajlu.
+Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u ovom fajlu.
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.1.3] - 2026-08-02
+
+### 🏷️ Preimenovanje projekta u ERPi liniju
+- **Rešenje i svi projekti preimenovani**: `AccountingSystem.slnx` → `ERPiFinansije.slnx`, a projekti `AccountingApp`/`AccountingData`/`AccountingData.Tests`/`AccountingMigration` → `ERPiFinansijeApp`/`ERPiFinansijeData`/`ERPiFinansijeData.Tests`/`ERPiFinansijeMigration` (folderi, `.csproj` fajlovi, `namespace`-ovi i reference).
+- **Repozitorijum i radni folder**: kod je premešten u `C:\ERPi\ERPiFinansije`, a `origin` pokazuje na `https://github.com/blagojevicboban/ERPiFinansije.git`.
+- **Velopack `packId` je sada `ERPiFinansije`** (ranije `AccountingSystem`), izvršni fajl je `ERPiFinansijeApp.exe`. `ERPiHub` prepoznaje i staru i novu instalaciju, pa se na računarima sa ranijom verzijom modul i dalje vidi kao instaliran.
+- Ažurirani `.github/workflows/release.yml`, `.vscode` zadaci, skills dokumentacija i README/ANALIZA_I_PLAN.
+
 ## [1.1.2] - 2026-08-02
 
-### 🚀 Usklađivanje verzije i automatsko ažuriranje (ErpHub)
-- **Konačna verzija 1.1.2**: Čista verzija `v1.1.2` koja garantovano prevazilazi sve ranije 1.1.0/1.1.1 tagove i osigurava da `ErpHub` i `Velopack` odmah ponude automatsko ažuriranje na svim klijentskim računarima.
+### 🚀 Usklađivanje verzije i automatsko ažuriranje (ERPiHub)
+- **Konačna verzija 1.1.2**: Čista verzija `v1.1.2` koja garantovano prevazilazi sve ranije 1.1.0/1.1.1 tagove i osigurava da `ERPiHub` i `Velopack` odmah ponude automatsko ažuriranje na svim klijentskim računarima.
 - Sadrži sve najnovije bezbednosne i funkcionalne nadogradnje: bezbedna fiskalizacija, provereni NBS kursevi, zaštita ugrađenog REST API-ja sa Bearer tokenom, Serilog logovanje u fajl i PDF generisanje ponuda i predračuna.
 
 ## [1.1.1] - 2026-08-02
 
-### 🚀 Usklađivanje verzije i automatsko ažuriranje (ErpHub)
-- **Konačna verzija 1.1.1**: Usklađena verzija modula sa `ErpHub` detekcijom kako bi sve instalacije automatski prepoznale dostupno ažuriranje.
+### 🚀 Usklađivanje verzije i automatsko ažuriranje (ERPiHub)
+- **Konačna verzija 1.1.1**: Usklađena verzija modula sa `ERPiHub` detekcijom kako bi sve instalacije automatski prepoznale dostupno ažuriranje.
 - Uključuje sve najnovije bezbednosne i funkcionalne nadogradnje: bezbedna fiskalizacija, provereni NBS kursevi, zaštita ugrađenog REST API-ja sa Bearer tokenom, Serilog logovanje u fajl i PDF generisanje ponuda i predračuna.
 
 ## [1.0.54] - 2026-08-01
@@ -38,7 +46,7 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 - **Uvedeno pravo logovanje u fajl.** Aplikacija do sada nije imala logger: dijagnostika je bila
   `Debug.WriteLine` (nevidljiv u Release verziji) i poruke u dijalozima koje korisnik zatvori i zaboravi.
   Kada bi se kod korisnika nešto pokvarilo, nije postojao nikakav trag.
-- Zapisi idu u `%LOCALAPPDATA%\AccountingApp\logs\log-GGGGMMDD.txt`, novi fajl svakog dana, čuva se
+- Zapisi idu u `%LOCALAPPDATA%\ERPiFinansijeApp\logs\log-GGGGMMDD.txt`, novi fajl svakog dana, čuva se
   poslednjih 14 dana. Zamenjuje raniji `crash.log` koji je rastao bez ograničenja.
 - **Globalni hvatači proširen**: uz greške na korisničkom interfejsu i fatalne greške pozadinskih niti
   sada se hvataju i neposmatrane greške u pozadinskim zadacima, koje su ranije mogle tiho da obore proces.
@@ -434,8 +442,8 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 
 ## [1.0.24] - 2026-07-29
 
-### 🚀 ErpHub Integracija & Pokretanje sa Konkretnom Bazom (CLI Integration)
-- **Ugrađena podrška za `--db-path` CLI argument**: Omogućeno direktno pokretanje `AccountingApp.exe` iz ErpHub centralnog kontrolnog panela sa automatskim prosleđivanjem putanje do izabrane SQLite baze/firme (`--db-path "<path>"`).
+### 🚀 ERPiHub Integracija & Pokretanje sa Konkretnom Bazom (CLI Integration)
+- **Ugrađena podrška za `--db-path` CLI argument**: Omogućeno direktno pokretanje `ERPiFinansijeApp.exe` iz ERPiHub centralnog kontrolnog panela sa automatskim prosleđivanjem putanje do izabrane SQLite baze/firme (`--db-path "<path>"`).
 
 ---
 
@@ -545,7 +553,7 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 ## [1.0.17] - 2026-07-28
 
 ### 🧾 Poreske tarife (novi šifarnik)
-- **Šifarnik poreskih tarifa (`PoreskaTarifaEditWindow`)**: Novi CRUD ekran (tarifni broj, porez %, poseban porez %, porez u ceni) sa PDF štampom, analogan legacy `TARIFE.DBF`. Uvoz podržan i kroz `⚙️ Podešavanja` i kroz samostalni `AccountingMigration` alat.
+- **Šifarnik poreskih tarifa (`PoreskaTarifaEditWindow`)**: Novi CRUD ekran (tarifni broj, porez %, poseban porez %, porez u ceni) sa PDF štampom, analogan legacy `TARIFE.DBF`. Uvoz podržan i kroz `⚙️ Podešavanja` i kroz samostalni `ERPiFinansijeMigration` alat.
 
 ### 📊 Robni bruto bilans (novi izveštaj)
 - **Robni bruto bilans (`RobniBrutoBilansService`)**: Agregacija materijalnih kartica po magacinu i artiklu — početno stanje, ulaz, izlaz i stanje, količinski i vrednosno, sa filterima i PDF štampom. Napaja nove KPI pločice na Radnoj tabli (vrednost zaliha, negativna stanja).
@@ -667,7 +675,7 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 
 ## [1.0.11] - 2026-07-25
 
-### 🏢 Firme prerađene po uzoru na SredstvaApp (1 baza = 1 firma)
+### 🏢 Firme prerađene po uzoru na ERPiSredstvaApp (1 baza = 1 firma)
 - **Ekran "Firme" sada skenira Baze folder** umesto da čita/piše `Firma` red u trenutno otvorenoj bazi — svaki `.db` fajl je jedna firma, sa ugrađenim desnim panelom "Detalji firme" za unos/izmenu (posebni dijalog `FirmaEditWindow` uklonjen). "⭐ Aktiviraj" sada stvarno prebacuje aktivnu bazu i restartuje aplikaciju (kao Sredstva `BtnAktivna_Click`); "🗑️ Briši" fizički briše bazu te firme.
 - **Uklonjen suvišan status "Firma je aktivna"** — u novom modelu svaka firma je puna, samostalna baza; postojala je zabuna sa "U upotrebi" pločicom koja već pokazuje koja je trenutno otvorena.
 - **Lista firmi pojednostavljena** na Šifra / Naziv / U upotrebi / Akcije — detaljna polja (PIB, adresa, žiro račun...) žive samo u desnom panelu, ne duplirano u tabeli.
@@ -690,19 +698,19 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 - **Ispravljen "Izaberi sve" u dijalogu uvoza**: checkbox-ovi za izbor firmi se sada vizuelno ažuriraju odmah (`DbfFirmaDto` sada šalje `PropertyChanged` obaveštenje); ranije je osnovni podatak bio tačno postavljen ali se prikaz na ekranu nije osvežavao za već iscrtane redove.
 - **Ispravljena šifra firme u dijalogu uvoza**: prikazivala se npr. `KOR1` umesto `KOR01` (nepodudaranje sa stvarnim nazivom foldera).
 
-### 🗂️ Baze podataka premeštene u zaseban Baze folder (po uzoru na SredstvaApp)
-- **Uvoz firmi više ne piše bazu u DOS folder firme** (`C:\KNJIGE\Radni\KORxx\`) — taj folder je izvor za reimport koji samostalni `AccountingMigration` alat po potrebi briše i pravi iznova, pa je živa baza tamo bila izložena riziku od tihog gubitka podataka. Baze sada žive u `%LocalAppData%\AccountingApp\Baze\`, imenovane `firma_{Šifra}_{Naziv}.db`.
-- **Jednokratna migracija postojeće baze**: pri prvom pokretanju posle nadogradnje, ako živa baza i dalje sedi na staroj DOS lokaciji, automatski se premešta u Baze folder (analogno `SredstvaApp.AppConfig.PrilagodiNazivZajednickeBaze`) — bez gubitka podataka, testirano na KOR01 (3.207 konta, 338 naloga pre i posle migracije identično).
+### 🗂️ Baze podataka premeštene u zaseban Baze folder (po uzoru na ERPiSredstvaApp)
+- **Uvoz firmi više ne piše bazu u DOS folder firme** (`C:\KNJIGE\Radni\KORxx\`) — taj folder je izvor za reimport koji samostalni `ERPiFinansijeMigration` alat po potrebi briše i pravi iznova, pa je živa baza tamo bila izložena riziku od tihog gubitka podataka. Baze sada žive u `%LocalAppData%\ERPiFinansijeApp\Baze\`, imenovane `firma_{Šifra}_{Naziv}.db`.
+- **Jednokratna migracija postojeće baze**: pri prvom pokretanju posle nadogradnje, ako živa baza i dalje sedi na staroj DOS lokaciji, automatski se premešta u Baze folder (analogno `ERPiSredstvaApp.AppConfig.PrilagodiNazivZajednickeBaze`) — bez gubitka podataka, testirano na KOR01 (3.207 konta, 338 naloga pre i posle migracije identično).
 
 ---
 
 ## [1.0.9] - 2026-07-25
 
 ### 🐛 Ispravka mapiranja DBF kolona pri uvozu (KONTPLAN, ANKONT, MAGACIN, ARTIKLI, NALOG)
-- **Objedinjen uvoz u `DbfImportService`**: I uvoz iz aplikacije (`⚙️ Podešavanja`) i samostalni `AccountingMigration` alat sada koriste isti deljeni mapping kod, tako da se imena DBF kolona ne mogu razminuti između dva mesta.
+- **Objedinjen uvoz u `DbfImportService`**: I uvoz iz aplikacije (`⚙️ Podešavanja`) i samostalni `ERPiFinansijeMigration` alat sada koriste isti deljeni mapping kod, tako da se imena DBF kolona ne mogu razminuti između dva mesta.
 - **Ispravljeno pogrešno mapiranje imena kolona**: Uvoz naloga (`NALOG.DBF`) i partnera (`ANKONT.DBF`) je tražio kolone koje ne postoje u ovim DBF fajlovima i tiho uvozio 0 redova; uvoz kontnog plana je čitao pogrešnu kolonu za broj konta (uvezeno je bilo samo ~42 sintetička konta umesto svih ~3200).
 - **Dodate kolone koje su ranije bile odbačene**: Kontni plan sada čuva staru šifru konta, ulicu, mesto, žiro račun i telefon (iz KONTPLAN.DBF); artikli čuvaju klasifikacionu šifru i selektovan flag; stavke naloga čuvaju staru šifru konta i šifru promene.
-- **Ispravljena UNIQUE constraint greška** u `AccountingMigration` alatu pri uvozu kontnog plana (KONTPLAN.DBF sadrži par dupliranih šifara konta) — dodata ista in-memory `HashSet` provera koja se već koristila u uvozu iz aplikacije.
+- **Ispravljena UNIQUE constraint greška** u `ERPiFinansijeMigration` alatu pri uvozu kontnog plana (KONTPLAN.DBF sadrži par dupliranih šifara konta) — dodata ista in-memory `HashSet` provera koja se već koristila u uvozu iz aplikacije.
 
 ---
 
@@ -729,7 +737,7 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 ## [1.0.7] - 2026-07-25
 
 ### 🚀 Zasebne SQLite baze po firmama (Per-firm Isolated Databases)
-- **Izolacija baza po firmama (kao u SredstvaApp)**: Pri uvozu DOS podataka za svaku izabranu firmu kreira se ili osvežava **njena zasebna SQLite baza** u njenom folderu (npr. `C:\KNJIGE\Radni\KOR01\accounting_kor01.db`, `C:\KNJIGE\Radni\KOR06\accounting_kor06.db`).
+- **Izolacija baza po firmama (kao u ERPiSredstvaApp)**: Pri uvozu DOS podataka za svaku izabranu firmu kreira se ili osvežava **njena zasebna SQLite baza** u njenom folderu (npr. `C:\KNJIGE\Radni\KOR01\accounting_kor01.db`, `C:\KNJIGE\Radni\KOR06\accounting_kor06.db`).
 - **Nezavisnost naloga i šifarnika**: Svi nalozi za knjiženje, konta, partneri, magacini i artikli se uvoze i skladište isključivo u posebnu bazu konkretne firme, bez mogućnosti ukrštanja ili preslikavanja podataka među firmama.
 
 ---
@@ -745,7 +753,7 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 ## [1.0.5] - 2026-07-25
 
 ### 🐛 Ispravke i vraćanje ikone
-- **Vraćanje plave aktovke (`app.ico`)**: Vraćena originalna plava ikona sa slikom aktovke specifična za **AccountingSystem**.
+- **Vraćanje plave aktovke (`app.ico`)**: Vraćena originalna plava ikona sa slikom aktovke specifična za **ERPiFinansije**.
 - **Ispravka XAML greške pri pokretanju (`XamlParseException`)**: Uklonjen `<Content Include="app.ico">` iz `.csproj` koji je izazivao pad WPF loader-a pri čitanju resursa u `LoginWindow` i `MainWindow`.
 
 ---
@@ -770,7 +778,7 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 ## [1.0.2] - 2026-07-25
 
 ### ✨ Nove funkcionalnosti i poboljšanja
-- **Automatsko ažuriranje (Velopack)**: Integrisana pozadinska provera i dijaloški prozor `UpdateDialog` za preuzimanje i instalaciju novih verzija pri pokretanju `AccountingApp` aplikacije.
+- **Automatsko ažuriranje (Velopack)**: Integrisana pozadinska provera i dijaloški prozor `UpdateDialog` za preuzimanje i instalaciju novih verzija pri pokretanju `ERPiFinansijeApp` aplikacije.
 - **Upravljanje firmama (`FirmeView`)**: Implementiran kompletan modul za pregled, filtriranje, unos i izmenu matičnih podataka firmi, te trenutni izbor aktivne firme.
 
 ---
@@ -780,7 +788,7 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 ### 🔧 Poboljšanja i ispravke
 - **Konfiguracija ikone aplikacije**: Povezana ikona `app.ico` u svim slojevima aplikacije (`.csproj`, WPF prozori, Velopack instalacioni paket).
 - **Podešavanje okruženja za prevođenje i publikovanje**: Usaglašeni VS Code zadaci i `launch.json` za brzo pokretanje i debagovanje preko `F5`.
-- **Integracija AI veština**: Iskopirane i prilagođene sve AI veštine iz `SredstvaSystem` radnog okruženja.
+- **Integracija AI veština**: Iskopirane i prilagođene sve AI veštine iz `ERPiSredstva` radnog okruženja.
 
 ---
 
@@ -814,7 +822,7 @@ Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) s
 
 - **Izveštaji i PDF** — dnevnik glavne knjige, bruto bilans (finansijski i analitike), kartica konta, IOS, kamata, izveštaj o zalihama.
 
-- **Uvoz iz DOS sistema** (`AccountingMigration`) — automatski uvoz kontnog plana, naloga, partnera, materijala, magacina, ulaza, trebovanja, kartica i kamatnih stopa iz legacy dBase III / Clipper fajlova.
+- **Uvoz iz DOS sistema** (`ERPiFinansijeMigration`) — automatski uvoz kontnog plana, naloga, partnera, materijala, magacina, ulaza, trebovanja, kartica i kamatnih stopa iz legacy dBase III / Clipper fajlova.
 
 - **Lokalizacija** — kompletan korisnički interfejs preveden na srpski jezik.
 

@@ -1,0 +1,68 @@
+<Window x:Class="ERPiFinansijeApp.Views.Magacin.MagacinEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Računopolagač / Magacin" Height="440" Width="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{StaticResource BackgroundBrush}" KeyDown="Window_KeyDown">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="TxtNaslov" Text="🏢 Izmena računopolagača" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextBrush}" Grid.Row="0" Margin="0,0,0,16"/>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <StackPanel VerticalAlignment="Top">
+                <Grid Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Šifra magacina *" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
+                    <TextBox x:Name="TxtSifra" Grid.Column="1" Height="34" VerticalContentAlignment="Center" Padding="8,0" MaxLength="20"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Naziv / Računopol. *" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
+                    <TextBox x:Name="TxtNaziv" Grid.Column="1" Height="34" VerticalContentAlignment="Center" Padding="8,0" MaxLength="100"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Odgovorno lice" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}"/>
+                    <TextBox x:Name="TxtOdgovornoLice" Grid.Column="1" Height="34" VerticalContentAlignment="Center" Padding="8,0" MaxLength="100"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Vrsta magacina" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}"/>
+                    <ComboBox x:Name="CmbVrsta" Grid.Column="1" Height="34" VerticalContentAlignment="Center">
+                        <ComboBoxItem Content="Veleprodaja" IsSelected="True"/>
+                        <ComboBoxItem Content="Maloprodaja"/>
+                        <ComboBoxItem Content="Proizvodnja"/>
+                        <ComboBoxItem Content="Tranzit"/>
+                    </ComboBox>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="BtnOtkazi" Content="Odustani" Width="100" Height="36" Margin="0,0,10,0" Click="BtnOtkazi_Click"/>
+            <Button x:Name="BtnSacuvaj" Content="💾 Sačuvaj" Width="110" Height="36" Style="{StaticResource ActionButtonStyle}" Click="BtnSacuvaj_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

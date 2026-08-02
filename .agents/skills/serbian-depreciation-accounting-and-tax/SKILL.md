@@ -1,11 +1,11 @@
 ---
 name: serbian-depreciation-accounting-and-tax
-description: Instructions and business logic rules for calculating Serbian accounting depreciation (MRS 16), tax depreciation (Obrazac OA & Zakon o porezu na dobit), temporary tax differences (PB-1), periodic/monthly calculations, and pre-disposal proportional depreciation in SredstvaSystem.
+description: Instructions and business logic rules for calculating Serbian accounting depreciation (MRS 16), tax depreciation (Obrazac OA & Zakon o porezu na dobit), temporary tax differences (PB-1), periodic/monthly calculations, and pre-disposal proportional depreciation in ERPiSredstva.
 ---
 
-# Serbian Depreciation Accounting & Tax Workflow (SredstvaSystem)
+# Serbian Depreciation Accounting & Tax Workflow (ERPiSredstva)
 
-This skill provides mandatory business logic rules, formulas, and code structure guidelines for asset depreciation in the `SredstvaSystem` codebase.
+This skill provides mandatory business logic rules, formulas, and code structure guidelines for asset depreciation in the `ERPiSredstva` codebase.
 
 ---
 
@@ -14,7 +14,7 @@ This skill provides mandatory business logic rules, formulas, and code structure
 ### Depreciable Base & Residual Value
 - **Formula**: $Osnovica = \max(0, NabavnaVrednost - RezidualnaVrednost)$
 - **Depreciation limit**: Total accumulated depreciation (`IspravkaVrednosti`) cannot exceed $(NabavnaVrednost - RezidualnaVrednost)$.
-- **Calculation Engine**: `SredstvaData.Services.AmortizacijaCalculator.Izracunaj(...)`
+- **Calculation Engine**: `ERPiSredstvaData.Services.AmortizacijaCalculator.Izracunaj(...)`
 
 ### Start Rules (`PocetakAmortizacijeRule`)
 1. **`SrazmernoDanima`** (default): Proportional daily calculation from `DatumAktiviranja`.
@@ -35,17 +35,17 @@ When an active asset is written off, sold, disposed of, or deleted (`Rashodovanj
 1. **Calculate Proportional Depreciation**: Calculate depreciation from the beginning of the disposal year (or latest card date) up to `datumDisposal`.
 2. **Post Depreciation Card First**: Insert a card with `OpisPromene = $"Amortizacija do rashodovanja ({datumDisposal:dd.MM.yyyy})"`.
 3. **Execute Disposal Storniranje**: Close out the total asset cost and total accumulated depreciation (which now includes the pre-disposal depreciation) to 0.00 RSD.
-4. **Location**: `SredstvaApp.Views.Rashod.RashodWindow.xaml.cs`.
+4. **Location**: `ERPiSredstvaApp.Views.Rashod.RashodWindow.xaml.cs`.
 
 ---
 
 ## 3. Tax Depreciation (Obrazac OA & Zakon o Porezu na Dobit)
 
 - **Scope**: Post-2019 acquisitions / activations are depreciated individually using linear method by tax group rates (Grupa I-V).
-- **Calculation Engine**: `SredstvaData.Services.PoreskaAmortizacijaCalculator.IzracunajZaSredstvo(...)`
+- **Calculation Engine**: `ERPiSredstvaData.Services.PoreskaAmortizacijaCalculator.IzracunajZaSredstvo(...)`
 - **Temporary Tax Difference**: $PrivremenaRazlika = RacunovodstvenaAmortizacija - PoreskaAmortizacija$.
   - Used directly for Form PB-1 (Poreski bilans).
-- **PDF Report**: `SredstvaApp.Views.Amortizacija.ObrazacOADocument.cs` (QuestPDF landscape layout — see [[questpdf-report-documents]] for the document conventions).
+- **PDF Report**: `ERPiSredstvaApp.Views.Amortizacija.ObrazacOADocument.cs` (QuestPDF landscape layout — see [[questpdf-report-documents]] for the document conventions).
 
 ---
 

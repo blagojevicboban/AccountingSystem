@@ -1,0 +1,92 @@
+<Window x:Class="ERPiFinansijeApp.Views.MestaTroska.MestoTroskaEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="🎯 Mesto troška / Projekat — Unos i izmena" 
+        Height="420" Width="600"
+        WindowStartupLocation="CenterOwner"
+        Background="#F8FAFC">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header -->
+            <RowDefinition Height="*"/>    <!-- Form Fields -->
+            <RowDefinition Height="Auto"/> <!-- Footer Actions -->
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Border Grid.Row="0" CornerRadius="8" Padding="16,10" Margin="0,0,0,14">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#4338CA" Offset="0"/>
+                    <GradientStop Color="#6366F1" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="🎯" FontSize="28" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtNaslov" Text="Mesto troška / Projekat / Objekat" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Analitička šifra za praćenje troškova, prihoda i profitabilnosti poslovanja." FontSize="11" Foreground="#E0E7FF"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- FORM FIELDS -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Šifra & Tip -->
+                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,12">
+                    <TextBlock Text="Šifra (Oznaka):" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtSifra" FontSize="13" Padding="8,4" Height="32"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,12">
+                    <TextBlock Text="Tip jedinice:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="CmbTip" Height="32">
+                        <ComboBoxItem Content="Mesto troška" IsSelected="True"/>
+                        <ComboBoxItem Content="Projekat"/>
+                        <ComboBoxItem Content="Objekat / Lokacija"/>
+                        <ComboBoxItem Content="Poslovna jedinica"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Naziv -->
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,0,12">
+                    <TextBlock Text="Naziv mesta troška / projekta:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtNaziv" FontSize="13" Padding="8,4" Height="32"/>
+                </StackPanel>
+
+                <!-- Napomena -->
+                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,12">
+                    <TextBlock Text="Napomena / Opis:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtNapomena" FontSize="13" Padding="8,4" Height="32"/>
+                </StackPanel>
+
+                <!-- Status -->
+                <CheckBox Grid.Row="3" Grid.ColumnSpan="2" x:Name="ChkAktivno" Content="Aktivno mesto troška / projekat za knjiženje" IsChecked="True" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- FOOTER ACTIONS -->
+        <DockPanel Grid.Row="2" Margin="0,12,0,0">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="Odustani" Style="{StaticResource SecondaryButton}" Height="38" Padding="14,0" Margin="0,0,8,0" Click="BtnOdustani_Click"/>
+                <Button Content="💾 Sačuvaj" Style="{StaticResource PrimaryButton}" Height="38" Padding="18,0" Click="BtnSacuvaj_Click"/>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

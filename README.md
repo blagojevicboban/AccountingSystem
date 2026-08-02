@@ -1,6 +1,6 @@
-# 💼 AccountingSystem — Finansijsko knjigovodstvo i glavna knjiga
+# 💼 ERPiFinansije — Finansijsko knjigovodstvo i glavna knjiga
 
-> Desktop ERP aplikacija za finansijsko knjigovodstvo (glavna knjiga, nalozi za knjiženje, kontni plan, kartice konta), analitiku partnera (otvorene stavke, IOS, kamate), magacinsko poslovanje po prosečnoj ceni i trgovinu — razvijena u **C# / .NET 8 / WPF**, po uzoru na [SredstvaSystem](https://github.com/blagojevicboban/AssetManager) i modelovana kao zamena za legacy DOS/Clipper sistem.
+> Desktop ERP aplikacija za finansijsko knjigovodstvo (glavna knjiga, nalozi za knjiženje, kontni plan, kartice konta), analitiku partnera (otvorene stavke, IOS, kamate), magacinsko poslovanje po prosečnoj ceni i trgovinu — razvijena u **C# / .NET 8 / WPF**, po uzoru na [ERPiSredstva](https://github.com/blagojevicboban/ERPiSredstva) i modelovana kao zamena za legacy DOS/Clipper sistem.
 
 ---
 
@@ -59,7 +59,7 @@
 ### Zajedničko
 - 🔐 **Prijava i uloge** — lozinke osoljene (PBKDF2), uloga Administrator za osetljive operacije (rasknjižavanje, nova godina).
 - 🏢 **Rad sa više firmi** — svaka firma ima sopstvenu SQLite bazu podataka.
-- 🔄 **Uvoz iz DOS sistema (`AccountingMigration`)** — uvozi kontni plan, naloge, partnere, materijale, magacine, ulaze, trebovanja, kartice i kamatne stope iz legacy dBase III / Clipper fajlova (`C:\KNJIGE\Radni\KORxx`).
+- 🔄 **Uvoz iz DOS sistema (`ERPiFinansijeMigration`)** — uvozi kontni plan, naloge, partnere, materijale, magacine, ulaze, trebovanja, kartice i kamatne stope iz legacy dBase III / Clipper fajlova (`C:\KNJIGE\Radni\KORxx`).
 - 📄 **PDF izveštaji (`QuestPDF`)** — dnevnik glavne knjige, bruto bilans (finansijski i analitike), kartica konta, IOS, kamata, izveštaj o zalihama (u Portrait A4 formatu).
 - ❓ **Pomoć** — uputstvo za korišćenje ugrađeno u samu aplikaciju (tab „Pomoć" u sidebar-u).
 
@@ -84,8 +84,8 @@
 ## 📁 Struktura projekta
 
 ```text
-AccountingSystem/
-├── AccountingApp/                  # Glavni WPF desktop projekat
+ERPiFinansije/
+├── ERPiFinansijeApp/                  # Glavni WPF desktop projekat
 │   ├── Views/
 │   │   ├── Korisnici/              # Prijava (Login)
 │   │   ├── Dashboard/              # Radna tabla
@@ -99,12 +99,12 @@ AccountingSystem/
 │   ├── Services/                    # PdfReportService
 │   ├── AppSession.cs                # Trenutno ulogovan korisnik i aktivna firma
 │   └── AppConfig.cs                 # Putanja do baze i podešavanje okruženja
-├── AccountingData/                  # Sloj za pristup podacima (EF Core modeli i DbContext)
+├── ERPiFinansijeData/                  # Sloj za pristup podacima (EF Core modeli i DbContext)
 │   ├── Models/                      # Firma, Korisnik, Konto, Nalog, StavkaNaloga, Partner, Artikal, Magacin, KamatnaStopa, Kalkulacija...
 │   ├── Migrations/                  # EF Core migracije šeme baze
 │   └── Services/                    # NaloziService, KarticaService, OtvoreneStavkeService, KamataService, NovaGodinaService, BrutoBilansService, MaterijalnaKarticaService, UlazService, TrebovanjeService, KalkulacijaService
-├── AccountingData.Tests/            # xUnit testovi (formule/kalkulatori + servisi sa in-memory EF)
-├── AccountingMigration/             # Konzolni alat za uvoz legacy DOS/Clipper DBF podataka
+├── ERPiFinansijeData.Tests/            # xUnit testovi (formule/kalkulatori + servisi sa in-memory EF)
+├── ERPiFinansijeMigration/             # Konzolni alat za uvoz legacy DOS/Clipper DBF podataka
 ├── ANALIZA_I_PLAN.md                # Analiza legacy Clipper sistema i fazni plan razvoja (istorijat odluka)
 └── .vscode/                         # VS Code launch.json i tasks.json za F5 debagovanje
 ```
@@ -115,21 +115,21 @@ AccountingSystem/
 
 ```bash
 # 1. Prevesti projekat
-dotnet build AccountingSystem.slnx
+dotnet build ERPiFinansije.slnx
 
 # 2. Pokrenuti aplikaciju
-dotnet run --project AccountingApp/AccountingApp.csproj
+dotnet run --project ERPiFinansijeApp/ERPiFinansijeApp.csproj
 
 # 3. Pokrenuti unit testove
-dotnet test AccountingData.Tests/AccountingData.Tests.csproj
+dotnet test ERPiFinansijeData.Tests/ERPiFinansijeData.Tests.csproj
 ```
 
-> **Napomena:** Podrazumevana prijava je **admin / admin123** (zasejano preko EF Core migracije). Baza se automatski kreira i migrira pri prvom pokretanju (`AccountingDbContext.Create`). Za uvoz podataka iz legacy DOS sistema pokrenite `AccountingMigration` projekat — **napomena:** taj alat briše i ponovo kreira bazu podataka firme pri svakom pokretanju (namenjen je uvozu/reimportu test podataka, ne za rad sa produkcionim podacima).
+> **Napomena:** Podrazumevana prijava je **admin / admin123** (zasejano preko EF Core migracije). Baza se automatski kreira i migrira pri prvom pokretanju (`AccountingDbContext.Create`). Za uvoz podataka iz legacy DOS sistema pokrenite `ERPiFinansijeMigration` projekat — **napomena:** taj alat briše i ponovo kreira bazu podataka firme pri svakom pokretanju (namenjen je uvozu/reimportu test podataka, ne za rad sa produkcionim podacima).
 
 ### Vožnja i testiranje UI-ja (za agente)
 
 Za automatizovano pokretanje, prijavljivanje i snimanje ekrana aplikacije pogledajte
-[`AccountingApp/.claude/skills/run-accounting-app/SKILL.md`](AccountingApp/.claude/skills/run-accounting-app/SKILL.md).
+[`ERPiFinansijeApp/.claude/skills/run-accounting-app/SKILL.md`](ERPiFinansijeApp/.claude/skills/run-accounting-app/SKILL.md).
 
 ---
 
@@ -145,4 +145,4 @@ Za automatizovano pokretanje, prijavljivanje i snimanje ekrana aplikacije pogled
 - **Partneri (Analitika)** rade preko `StavkaNaloga.PartnerId`, koji se dodeljuje ručno pri unosu naloga — istorijski uvezeni nalozi iz DOS sistema nemaju dodeljene partnere (legacy ANAL modul za test firmu nije korišćen).
 
 ---
-*Aplikacija služi za zamenu nasleđenog Clipper MS-DOS sistema (moduli FIN, ANAL, ROB, MAT) i razvija se po uzoru na [SredstvaSystem](https://github.com/blagojevicboban/AssetManager). Detaljan istorijat analize i faznog razvoja je u [ANALIZA_I_PLAN.md](ANALIZA_I_PLAN.md).*
+*Aplikacija služi za zamenu nasleđenog Clipper MS-DOS sistema (moduli FIN, ANAL, ROB, MAT) i razvija se po uzoru na [ERPiSredstva](https://github.com/blagojevicboban/ERPiSredstva). Detaljan istorijat analize i faznog razvoja je u [ANALIZA_I_PLAN.md](ANALIZA_I_PLAN.md).*

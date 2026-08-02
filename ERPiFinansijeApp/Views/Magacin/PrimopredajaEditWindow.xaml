@@ -1,0 +1,78 @@
+<Window x:Class="ERPiFinansijeApp.Views.Magacin.PrimopredajaEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="🔄 Primopredaja (Interni prenos materijala)" Height="580" Width="850"
+        WindowStartupLocation="CenterOwner" Background="{StaticResource BackgroundBrush}" KeyDown="Window_KeyDown">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Naslov -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="🔄 Primopredaja (Interni prenos materijala)" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+            <TextBlock Text="Interni prenos materijala iz magacina u magacin po prosečnoj nabavnoj ceni (M4)." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Zaglavlje -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="130"/>
+                    <ColumnDefinition Width="130"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                    <TextBlock Text="Br. naloga:" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtBrojNaloga" Height="32" VerticalContentAlignment="Center" Padding="6,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                    <TextBlock Text="Datum:" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <DatePicker x:Name="DpDatum" Height="32" VerticalContentAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                    <TextBlock Text="Daje (Izlazni magacin):" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="CmbMagacinDaje" Height="32" DisplayMemberPath="NazivMagacina"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3">
+                    <TextBlock Text="Prima (Ulazni magacin):" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="CmbMagacinPrima" Height="32" DisplayMemberPath="NazivMagacina"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Tabela stavki -->
+        <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+                    <TextBlock Text="📋 Stavke primopredaje" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <Button x:Name="BtnDodajStavku" Content="➕ Dodaj stavku" Style="{StaticResource ActionButtonStyle}" Click="BtnDodajStavku_Click" Margin="0,0,8,0"/>
+                    <Button x:Name="BtnObrisiStavku" Content="🗑 Obriši stavku" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Click="BtnObrisiStavku_Click"/>
+                </StackPanel>
+
+                <DataGrid x:Name="DgStavke" AutoGenerateColumns="False" CanUserAddRows="False" GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="R.br" Binding="{Binding RedniBroj}" IsReadOnly="True" Width="50"/>
+                        <DataGridComboBoxColumn x:Name="ColArtikli" Header="Artikal / Materijal" SelectedValueBinding="{Binding SifraArtikla}" Width="*"/>
+                        <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+
+        <!-- Dugmad -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="BtnOtkazi" Content="Otkaži (Esc)" IsCancel="True" Style="{StaticResource ActionButtonStyle}" Background="#64748B" Click="BtnOtkazi_Click" Margin="0,0,10,0"/>
+            <Button x:Name="BtnSačuvaj" Content="💾 Sačuvaj primopredaju" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Click="BtnSačuvaj_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

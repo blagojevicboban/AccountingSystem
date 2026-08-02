@@ -1,11 +1,11 @@
 ---
 name: serbian-depreciation-accounting-and-tax
-description: Instructions and business logic rules for calculating Serbian accounting depreciation (MRS 16), tax depreciation (Obrazac OA & Zakon o porezu na dobit), temporary tax differences (PB-1), and fixed asset rules in AccountingSystem.
+description: Instructions and business logic rules for calculating Serbian accounting depreciation (MRS 16), tax depreciation (Obrazac OA & Zakon o porezu na dobit), temporary tax differences (PB-1), and fixed asset rules in ERPiFinansije.
 ---
 
-# Serbian Depreciation Accounting & Tax Workflow (AccountingSystem)
+# Serbian Depreciation Accounting & Tax Workflow (ERPiFinansije)
 
-This skill provides mandatory business logic rules, formulas, and code structure guidelines for fixed assets and depreciation in the `AccountingSystem` codebase.
+This skill provides mandatory business logic rules, formulas, and code structure guidelines for fixed assets and depreciation in the `ERPiFinansije` codebase.
 
 ---
 

@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="AccountingApp/AccountingApp.csproj" />
-  <Project Path="AccountingData.Tests/AccountingData.Tests.csproj" />
-  <Project Path="AccountingData/AccountingData.csproj" />
-  <Project Path="AccountingMigration/AccountingMigration.csproj" />
-</Solution>

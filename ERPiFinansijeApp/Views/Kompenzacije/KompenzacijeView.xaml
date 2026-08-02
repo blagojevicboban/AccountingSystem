@@ -1,0 +1,118 @@
+<UserControl x:Class="ERPiFinansijeApp.Views.Kompenzacije.KompenzacijeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1100">
+    
+    <Grid Margin="16">
+        <TabControl x:Name="TabKompenzacije" Background="Transparent" BorderThickness="0">
+
+            <!-- ===================== TAB 1: EVIDENCIJA DOKUMENATA ===================== -->
+            <TabItem Header="🤝 Dvojne &amp; Trojne Kompenzacije">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- TOOLBAR -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaKompenzacija" Content="➕ Novi predlog kompenzacije" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaKompenzacija_Click"/>
+                                <Button x:Name="BtnIzmeni" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeni_Click"/>
+                                <Button x:Name="BtnObrisi" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" Click="BtnObrisi_Click"/>
+                                <Button x:Name="BtnKnjizi" Content="✅ Proknjiži &amp; Zatvori IOS" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjizi_Click"/>
+                                <Button x:Name="BtnExportExcel" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcel_Click"/>
+                                <Button x:Name="BtnStampa" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj PDF Izjavu" Margin="0,2,0,2" Click="BtnStampa_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                                <TextBox x:Name="TxtPretraga" Height="34" Width="220" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged"/>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- MASTER DATAGRID -->
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgKompenzacije" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                                  GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                                  SelectionChanged="DgKompenzacije_SelectionChanged">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Broj dok." Binding="{Binding BrojDokumenta}" Width="120" FontWeight="Bold"/>
+                                <DataGridTextColumn Header="Vrsta" Binding="{Binding Vrsta}" Width="140"/>
+                                <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Partner / Ugovorna strana" Binding="{Binding NazivPartnera}" Width="*"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" FontWeight="SemiBold"/>
+                                <DataGridTextColumn Header="Iznos Kompenzacije" Binding="{Binding UkupanIznosKompenzacije, StringFormat=\{0:N2\}}" Width="150" ElementStyle="{StaticResource NumericColumnElementStyle}" FontWeight="Bold"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+                    <!-- DETAILS DATAGRID -->
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📋 Stavke obostranih faktura obuhvaćenih poravnanjem" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                            <DataGrid x:Name="DgKompenzacijaStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50"/>
+                                    <DataGridTextColumn Header="Strana" Binding="{Binding Strana}" Width="90"/>
+                                    <DataGridTextColumn Header="Konto" Binding="{Binding BrojKonta}" Width="80"/>
+                                    <DataGridTextColumn Header="Broj dokumenta / fakture" Binding="{Binding BrojDokumenta}" Width="*"/>
+                                    <DataGridTextColumn Header="Datum dok." Binding="{Binding DatumDokumenta, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                    <DataGridTextColumn Header="Iznos za prebijanje" Binding="{Binding IznosZaKompenzaciju, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}" FontWeight="Bold"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== TAB 2: SMART SCANNER ===================== -->
+            <TabItem Header="🔍 Pametno Skeniranje Obostranih Dugovanja">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <Button Content="🔄 Osveži pametno skeniranje" Style="{StaticResource PrimaryButton}" DockPanel.Dock="Right" Height="36" Padding="16,0" Click="BtnOsveziSkeniranje_Click"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Automatski detektovani partneri sa obostranim dugovanjima" FontSize="14" FontWeight="Bold" Foreground="#1E293B"/>
+                                <TextBlock Text="Prikaz partneri koji su istovremeno kupci (duguju nam) i dobavljači (dugujemo im)." FontSize="11" Foreground="#64748B"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgKandidati" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                                  GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Partner / Firma" Binding="{Binding NazivPartnera}" Width="*"/>
+                                <DataGridTextColumn Header="PIB" Binding="{Binding Pib}" Width="100"/>
+                                <DataGridTextColumn Header="Nama duguju (Kupac 2040)" Binding="{Binding PotrazivanjeKupac, StringFormat=\{0:N2\}}" Width="180" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Mi dugujemo (Dobavljač 4350)" Binding="{Binding ObavezaDobavljac, StringFormat=\{0:N2\}}" Width="180" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Maks. Kompenzacija" Binding="{Binding MaksimalnaKompenzacija, StringFormat=\{0:N2\}}" Width="160" ElementStyle="{StaticResource NumericColumnElementStyle}" FontWeight="Bold"/>
+                                <DataGridTemplateColumn Header="Akcija" Width="160">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="⚡ Prebij u 1-Klik" Click="BtnPrebijKandidata_Click" Padding="8,3" Background="#7C3AED" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

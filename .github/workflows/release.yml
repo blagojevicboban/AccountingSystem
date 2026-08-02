@@ -1,4 +1,4 @@
-name: Release AccountingSystem
+name: Release ERPiFinansije
 
 on:
   push:
@@ -32,10 +32,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Prevođenje celog rešenja
-        run: dotnet build AccountingSystem.slnx -c Release
+        run: dotnet build ERPiFinansije.slnx -c Release
 
       - name: Pokretanje testova
-        run: dotnet test AccountingData.Tests\AccountingData.Tests.csproj -c Release --no-build --verbosity normal
+        run: dotnet test ERPiFinansijeData.Tests\ERPiFinansijeData.Tests.csproj -c Release --no-build --verbosity normal
 
   build:
     needs: test
@@ -64,7 +64,7 @@ jobs:
 
       - name: Prevođenje koda (dotnet publish)
         run: |
-          dotnet publish AccountingApp\AccountingApp.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=$env:VERSION -o publish_output
+          dotnet publish ERPiFinansijeApp\ERPiFinansijeApp.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=$env:VERSION -o publish_output
 
       - name: Instalacija Velopack CLI
         run: dotnet tool install -g vpk
@@ -73,14 +73,14 @@ jobs:
         run: |
           $vpkArgs = @(
               "pack",
-              "--packId", "AccountingSystem",
+              "--packId", "ERPiFinansije",
               "--packVersion", $env:VERSION,
               "--packDir", "publish_output",
-              "--mainExe", "AccountingApp.exe",
+              "--mainExe", "ERPiFinansijeApp.exe",
               "--outputDir", "ReleasePackage",
               "--packTitle", "ERPi Finansije",
               "--packAuthors", "Blagojevic Boban",
-              "--icon", "AccountingApp\app.ico"
+              "--icon", "ERPiFinansijeApp\app.ico"
           )
 
           & vpk $vpkArgs

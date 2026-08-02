@@ -1,0 +1,864 @@
+<UserControl x:Class="ERPiFinansijeApp.Views.Trgovina.TrgovinaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1200">
+    <Grid>
+        <TabControl x:Name="TabTrgovina" Background="Transparent" BorderThickness="0">
+
+            <!-- ===================== PONUDE I PREDRAČUNI (PROFORME) ===================== -->
+            <TabItem x:Name="TabPonude" Header="📜 Ponude &amp; Predračuni">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaPonuda" Content="➕ Nova ponuda / predračun" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaPonuda_Click"/>
+                                <Button x:Name="BtnIzmeniPonudu" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeniPonudu_Click"/>
+                                <Button x:Name="BtnObrisiPonudu" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" Click="BtnObrisiPonudu_Click"/>
+                                <Button x:Name="BtnPretvoriURacun" Content="🚀 Pretvori u Fakturu &amp; SEF" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Margin="0,2,8,2" Click="BtnPretvoriURacun_Click"/>
+                                <Button x:Name="BtnExportExcelPonude" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelPonude_Click"/>
+                                <Button x:Name="BtnStampaPonuda" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,0,2" Click="BtnStampaPonuda_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                                <TextBox x:Name="TxtPretragaPonuda" Height="34" Width="220" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPonuda_TextChanged"/>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgPonude" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                                  GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                                  SelectionChanged="DgPonude_SelectionChanged">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Broj dok." Binding="{Binding BrojDokumenta}" Width="120" FontWeight="Bold"/>
+                                <DataGridTextColumn Header="Vrsta" Binding="{Binding VrstaDokumenta}" Width="100"/>
+                                <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Rok važenja" Binding="{Binding RokVazenja, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Kupac / Partner" Binding="{Binding NazivPartnera}" Width="*"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" FontWeight="SemiBold"/>
+                                <DataGridTextColumn Header="Ukupno Bruto" Binding="{Binding UkupnoBruto, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}" FontWeight="Bold"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📋 Stavke ponude / predračuna" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                            <DataGrid x:Name="DgPonudaStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50"/>
+                                    <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="90"/>
+                                    <DataGridTextColumn Header="Naziv artikla" Binding="{Binding NazivArtikla}" Width="*"/>
+                                    <DataGridTextColumn Header="J.M." Binding="{Binding JedinicaMere}" Width="50"/>
+                                    <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Neto" Binding="{Binding IznosNeto, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="PDV (20%)" Binding="{Binding IznosPdv, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Bruto" Binding="{Binding IznosBruto, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}" FontWeight="Bold"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== NARUDŽBENICE DOBAVLJAČIMA ===================== -->
+            <TabItem x:Name="TabNarudzbenice" Header="🛒 Narudžbenice Dobavljačima">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaNarudzbenica" Content="➕ Nova narudžbenica" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaNarudzbenica_Click"/>
+                                <Button x:Name="BtnIzmeniNarudzbenicu" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeniNarudzbenicu_Click"/>
+                                <Button x:Name="BtnObrisiNarudzbenicu" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" Click="BtnObrisiNarudzbenicu_Click"/>
+                                <Button x:Name="BtnPretvoriUKalkulaciju" Content="📥 Pretvori u Kalkulaciju" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnPretvoriUKalkulaciju_Click"/>
+                                <Button x:Name="BtnExportExcelNarudzbenice" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelNarudzbenice_Click"/>
+                                <Button x:Name="BtnStampaNarudzbenica" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,0,2" Click="BtnStampaNarudzbenica_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                                <TextBox x:Name="TxtPretragaNarudzbenice" Height="34" Width="220" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaNarudzbenice_TextChanged"/>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgNarudzbenice" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                                  GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                                  SelectionChanged="DgNarudzbenice_SelectionChanged">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Broj narudžb." Binding="{Binding BrojNarudzbenice}" Width="130" FontWeight="Bold"/>
+                                <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Rok isporuke" Binding="{Binding RokIsporuke, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Dobavljač" Binding="{Binding NazivDobavljaca}" Width="*"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" FontWeight="SemiBold"/>
+                                <DataGridTextColumn Header="Ukupno Naručeno" Binding="{Binding UkupnoBruto, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}" FontWeight="Bold"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📋 Naručeni artikli" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                            <DataGrid x:Name="DgNarudzbenicaStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50"/>
+                                    <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="90"/>
+                                    <DataGridTextColumn Header="Naziv artikla" Binding="{Binding NazivArtikla}" Width="*"/>
+                                    <DataGridTextColumn Header="J.M." Binding="{Binding JedinicaMere}" Width="50"/>
+                                    <DataGridTextColumn Header="Naručeno" Binding="{Binding KolicinaNarucena, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Nabavna cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Neto" Binding="{Binding IznosNeto, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="PDV (20%)" Binding="{Binding IznosPdv, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Bruto" Binding="{Binding IznosBruto, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}" FontWeight="Bold"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== ŠIFRARNIK RAČUNOPOLAGAČA (MAT1) ===================== -->
+            <TabItem x:Name="TabRacunopolagaci" Header="🏢 Računopolagači">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNoviRacunopol" Content="➕ Novi računopolagač" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNoviRacunopol_Click"/>
+                                <Button x:Name="BtnIzmeniRacunopol" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniRacunopol_Click"/>
+                                <Button x:Name="BtnBrisiRacunopol" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" Click="BtnBrisiRacunopol_Click"/>
+                                <Button x:Name="BtnStampaRacunopol" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj šifarnik" Margin="0,2,8,2" Click="BtnStampaRacunopol_Click"/>
+                                <Button x:Name="BtnExportExcelRacunopol" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelRacunopol_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPretragaRacunopol" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRacunopol_TextChanged"/>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgRacunopolagaci" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" MouseDoubleClick="DgRacunopolagaci_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Šifra" Binding="{Binding SifraMagacina}" Width="100"/>
+                                <DataGridTextColumn Header="Naziv / Računopolagač" Binding="{Binding NazivMagacina}" Width="2*"/>
+                                <DataGridTextColumn Header="Odgovorno lice" Binding="{Binding OdgovornoLice}" Width="1.5*"/>
+                                <DataGridTextColumn Header="Vrsta magacina" Binding="{Binding VrstaMagacina}" Width="130"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== ŠIFRARNIK ARTIKALA (MAT2) ===================== -->
+            <TabItem x:Name="TabSifrarnikArtikala" Header="📦 Šifrarnik artikala">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNoviArtikal" Content="➕ Novi artikal" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNoviArtikal_Click"/>
+                                <Button x:Name="BtnIzmeniArtikal" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniArtikal_Click"/>
+                                <Button x:Name="BtnBrisiArtikal" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" Click="BtnBrisiArtikal_Click"/>
+                                <Button x:Name="BtnStampaSifrarnikaArtikala" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj šifarnik" Margin="0,2,8,2" Click="BtnStampaSifrarnikaArtikala_Click"/>
+                                <Button x:Name="BtnExportExcelArtikli" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelArtikli_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga artikala:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPretragaSifrarnikArtikala" Width="280" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaSifrarnikArtikala_TextChanged"/>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgSifrarnikArtikala" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" MouseDoubleClick="DgSifrarnikArtikala_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="90"/>
+                                <DataGridTextColumn Header="Naziv artikla" Binding="{Binding Naziv}" Width="2*"/>
+                                <DataGridTextColumn Header="J.M." Binding="{Binding JedinicaMere}" Width="60"/>
+                                <DataGridTextColumn Header="Pakovanje" Binding="{Binding Pakovanje}" Width="100"/>
+                                <DataGridTextColumn Header="Tar.broj" Binding="{Binding TarifniBroj}" Width="90"/>
+                                <DataGridTextColumn Header="Nabavna cena" Binding="{Binding NabavnaCena, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Prodajna cena" Binding="{Binding ProdajnaCena, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== PORESKE TARIFE (MAT6 - tarifni brojevi) ===================== -->
+            <TabItem x:Name="TabPoreskeTarife" Header="🏛️ Poreske tarife">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaPoreskaTarifa" Content="➕ Nova tarifa" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaPoreskaTarifa_Click"/>
+                                <Button x:Name="BtnIzmeniPoreskaTarifa" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniPoreskaTarifa_Click"/>
+                                <Button x:Name="BtnBrisiPoreskaTarifa" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" Click="BtnBrisiPoreskaTarifa_Click"/>
+                                <Button x:Name="BtnExportExcelTarife" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelTarife_Click"/>
+                                <Button x:Name="BtnStampajPoreskeTarife" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj šifarnik" Margin="0,2,0,2" Click="BtnStampajPoreskeTarife_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPretragaPoreskeTarife" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPoreskeTarife_TextChanged"/>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgPoreskeTarife" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionMode="Extended" MouseDoubleClick="DgPoreskeTarife_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Tar. broj" Binding="{Binding TarifniBroj}" Width="100"/>
+                                <DataGridTextColumn Header="Porez %" Binding="{Binding PorezProcenat, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Poseban porez %" Binding="{Binding PosebanPorezProcenat, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Porez u ceni" Binding="{Binding PorezUCeni}" Width="120"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== ZADUŽENJA (MAT4 - ZADUZ.DBF) ===================== -->
+            <TabItem x:Name="TabZaduzenja" Header="📥 Zaduženja">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovoZaduzenje" Content="➕ Novo zaduženje" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovoZaduzenje_Click"/>
+                                <Button x:Name="BtnIzmeniZaduzenje" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniZaduzenje_Click"/>
+                                <Button x:Name="BtnKnjiziZaduzenje" Content="✅ Proknjiži nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjiziZaduzenje_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjeZaduzenja" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,8,2" Click="BtnMasovnoKnjizenjeZaduzenja_Click"/>
+                                <Button x:Name="BtnStampajZaduzenje" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,8,2" Click="BtnStampajZaduzenje_Click"/>
+                                <Button x:Name="BtnExportExcelZaduzenja" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelZaduzenja_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga zaduženja:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPretragaZaduzenja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaZaduzenja_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviZaduzenja" Content="Svi" GroupName="ZaduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Zaduzenja_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniZaduzenja" Content="Proknjiženi" GroupName="ZaduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Zaduzenja_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniZaduzenja" Content="Neproknjiženi" GroupName="ZaduzenjaStatusFilter" VerticalAlignment="Center" Checked="Filter_Zaduzenja_Changed"/>
+                                </WrapPanel>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgZaduzenja" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgZaduzenja_SelectionChanged" MouseDoubleClick="DgZaduzenja_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="110"/>
+                                <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Iz magacina (daje)" Binding="{Binding SifraMagacinaDaje}" Width="1.5*"/>
+                                <DataGridTextColumn Header="U magacin (prima)" Binding="{Binding SifraMagacinaPrima}" Width="1.5*"/>
+                                <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📋 Stavke izabranog zaduženja" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                            <DataGrid x:Name="DgZaduzenjaStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="60"/>
+                                    <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="100"/>
+                                    <DataGridTextColumn Header="Naziv artikla" Binding="{Binding NazivArtikla}" Width="*"/>
+                                    <DataGridTextColumn Header="J.M." Binding="{Binding JedinicaMere}" Width="60"/>
+                                    <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Vrednost" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== RAZDUŽENJA (MAT4 - RAZDUZ.DBF) ===================== -->
+            <TabItem x:Name="TabRazduzenja" Header="📤 Razduženja">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovoRazduzenje" Content="➕ Novo razduženje" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovoRazduzenje_Click"/>
+                                <Button x:Name="BtnIzmeniRazduzenje" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniRazduzenje_Click"/>
+                                <Button x:Name="BtnKnjiziRazduzenje" Content="✅ Proknjiži nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjiziRazduzenje_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjeRazduzenja" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,8,2" Click="BtnMasovnoKnjizenjeRazduzenja_Click"/>
+                                <Button x:Name="BtnStampajRazduzenje" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,8,2" Click="BtnStampajRazduzenje_Click"/>
+                                <Button x:Name="BtnExportExcelRazduzenja" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelRazduzenja_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga razduženja:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPretragaRazduzenja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRazduzenja_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviRazduzenja" Content="Svi" GroupName="RazduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Razduzenja_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniRazduzenja" Content="Proknjiženi" GroupName="RazduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Razduzenja_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniRazduzenja" Content="Neproknjiženi" GroupName="RazduzenjaStatusFilter" VerticalAlignment="Center" Checked="Filter_Razduzenja_Changed"/>
+                                </WrapPanel>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgRazduzenja" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgRazduzenja_SelectionChanged" MouseDoubleClick="DgRazduzenja_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="110"/>
+                                <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Iz magacina (daje)" Binding="{Binding SifraMagacinaDaje}" Width="1.5*"/>
+                                <DataGridTextColumn Header="U magacin (prima)" Binding="{Binding SifraMagacinaPrima}" Width="1.5*"/>
+                                <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📋 Stavke izabranog razduženja" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                            <DataGrid x:Name="DgRazduzenjaStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="60"/>
+                                    <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="100"/>
+                                    <DataGridTextColumn Header="Naziv artikla" Binding="{Binding NazivArtikla}" Width="*"/>
+                                    <DataGridTextColumn Header="J.M." Binding="{Binding JedinicaMere}" Width="60"/>
+                                    <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Vrednost" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== PRIMOPREDAJE (MAT4 - MAT_NAL.DBF) ===================== -->
+            <TabItem x:Name="TabPrimopredaje" Header="🔄 Primopredaje">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaPrimopredaja" Content="➕ Nova primopredaja" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaPrimopredaja_Click"/>
+                                <Button x:Name="BtnIzmeniPrimopredaju" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniPrimopredaju_Click"/>
+                                <Button x:Name="BtnKnjiziPrimopredaju" Content="✅ Proknjiži nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjiziPrimopredaju_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjePrimopredaja" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,8,2" Click="BtnMasovnoKnjizenjePrimopredaja_Click"/>
+                                <Button x:Name="BtnStampajPrimopredaju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,8,2" Click="BtnStampajPrimopredaju_Click"/>
+                                <Button x:Name="BtnExportExcelPrimopredajeTrg" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelPrimopredajeTrg_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga primopredaja:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPretragaPrimopredaja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPrimopredaja_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviPrimopredajeTrg" Content="Svi" GroupName="PrimopredajeTrgStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_PrimopredajeTrg_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniPrimopredajeTrg" Content="Proknjiženi" GroupName="PrimopredajeTrgStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_PrimopredajeTrg_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniPrimopredajeTrg" Content="Neproknjiženi" GroupName="PrimopredajeTrgStatusFilter" VerticalAlignment="Center" Checked="Filter_PrimopredajeTrg_Changed"/>
+                                </WrapPanel>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid x:Name="DgPrimopredaje" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" SelectionChanged="DgPrimopredaje_SelectionChanged" MouseDoubleClick="DgPrimopredaje_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="110"/>
+                                <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                <DataGridTextColumn Header="Iz magacina (daje)" Binding="{Binding SifraMagacinaDaje}" Width="1.5*"/>
+                                <DataGridTextColumn Header="U magacin (prima)" Binding="{Binding SifraMagacinaPrima}" Width="1.5*"/>
+                                <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📋 Stavke izabranog naloga primopredaje" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                            <DataGrid x:Name="DgPrimopredajaStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="60"/>
+                                    <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="100"/>
+                                    <DataGridTextColumn Header="Naziv artikla" Binding="{Binding NazivArtikla}" Width="*"/>
+                                    <DataGridTextColumn Header="J.M." Binding="{Binding JedinicaMere}" Width="60"/>
+                                    <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Vrednost" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== KALKULACIJE ===================== -->
+            <TabItem x:Name="TabKalkulacije" Header="🛒 Kalkulacije">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaKalkulacija" Content="➕ Nova kalkulacija" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaKalkulacija_Click"/>
+                                <Button x:Name="BtnIzmeniKalkulaciju" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeniKalkulaciju_Click"/>
+                                <Button x:Name="BtnKnjiziKalkulaciju" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjiziKalkulaciju_Click"/>
+                                <Button x:Name="BtnNapredniFilterKalkulacije" Content="⚙️ Napredni filter" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,2,8,2" Click="BtnNapredniFilterTrgovina_Click"/>
+                                <Button x:Name="BtnExportExcelKalkulacije" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelKalkulacije_Click"/>
+                                <Button x:Name="BtnStampajKalkulaciju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,0,2" Click="BtnStampajKalkulaciju_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="Tip:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                                <ComboBox x:Name="CmbTipKalkulacije" Height="34" Width="170" VerticalContentAlignment="Center" Margin="0,2,16,2" SelectionChanged="CmbTipKalkulacije_SelectionChanged">
+                                    <ComboBoxItem Content="🏬 Veleprodaja" IsSelected="True"/>
+                                    <ComboBoxItem Content="🏪 Maloprodaja"/>
+                                </ComboBox>
+                                <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                                <TextBox x:Name="TxtPretraga" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviKalkulacije" Content="Svi" GroupName="KalkulacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Kalkulacije_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniKalkulacije" Content="Proknjiženi" GroupName="KalkulacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Kalkulacije_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniKalkulacije" Content="Neproknjiženi" GroupName="KalkulacijeStatusFilter" VerticalAlignment="Center" Checked="Filter_Kalkulacije_Changed"/>
+                                </WrapPanel>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="🛒 Kalkulacije veleprodaje i maloprodaje" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
+                            <DataGrid x:Name="DgKalkulacije" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                                      SelectionChanged="DgKalkulacije_SelectionChanged" MouseDoubleClick="DgKalkulacije_MouseDoubleClick">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Br. kalkulacije" Binding="{Binding BrojKalkulacije}" Width="120"/>
+                                    <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                    <DataGridTextColumn Header="Dobavljač" Binding="{Binding SifraDobavljaca}" Width="110"/>
+                                    <DataGridTextColumn Header="Svega nabavno" Binding="{Binding SvegaNabavno, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Razlika" Binding="{Binding Razlika, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Porez" Binding="{Binding Porez, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Prodajna vrednost" Binding="{Binding ProdajnaVrednost, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📋 Stavke izabrane kalkulacije" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                            <DataGrid x:Name="DgKalkulacijaStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="60"/>
+                                <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="90"/>
+                                <DataGridTextColumn Header="Naziv artikla" Binding="{Binding NazivArtikla}" Width="1.5*"/>
+                                <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Nabavna cena" Binding="{Binding NabavnaCena, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Nabavna vred." Binding="{Binding NabavnaVrednost, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Prodajna cena" Binding="{Binding ProdajnaCena, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                <DataGridTextColumn Header="Prodajna vred." Binding="{Binding ProdajnaVrednost, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                            </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== RAČUNI - OTPREMNICE (MAT5) ===================== -->
+            <TabItem x:Name="TabRacuni" Header="📜 Računi - Otpremnice">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNoviRacun" Content="➕ Novi račun" Style="{StaticResource ActionButtonStyle}" Margin="0,2,6,2" Click="BtnNoviRacun_Click"/>
+                                <Button x:Name="BtnIzmeniRacun" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,6,2" Click="BtnIzmeniRacun_Click"/>
+                                <Button x:Name="BtnKnjiziRacun" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" Click="BtnKnjiziRacun_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjeRacuna" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,6,2" Click="BtnMasovnoKnjizenjeRacuna_Click"/>
+                                <Button x:Name="BtnPretvoriPredracun" Content="🔁" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Width="36" Padding="0" ToolTip="Pretvori predračun u račun" Margin="0,2,6,2" Click="BtnPretvoriPredracun_Click"/>
+                                <Button x:Name="BtnPosaljiNaSef" Content="📤 Pošalji na SEF" Style="{StaticResource ActionButtonStyle}" Background="#0284C7" Margin="0,2,6,2" ToolTip="Pošalji e-fakturu na SEF portal" Click="BtnPosaljiNaSef_Click"/>
+                                <Button x:Name="BtnSacuvajUblXml" Content="📄 UBL XML" Style="{StaticResource ActionButtonStyle}" Background="#334155" Margin="0,2,6,2" ToolTip="Sačuvaj UBL 2.1 XML fajl" Click="BtnSacuvajUblXml_Click"/>
+                                <Button x:Name="BtnFiskalizujPfr" Content="🧾 Fiskalizuj (PFR)" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,6,2" ToolTip="Izdavanje fiskalnog računa preko PFR-a" Click="BtnFiskalizujPfr_Click"/>
+                                <Button x:Name="BtnPreuzmiUlazneSef" Content="📥 Ulazne SEF" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,6,2" ToolTip="Preuzmi ulazne e-fakture sa SEF-a" Click="BtnPreuzmiUlazneSef_Click"/>
+                                <Button x:Name="BtnExportExcelRacuni" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,6,2" Click="BtnExportExcelRacuni_Click"/>
+                                <Button x:Name="BtnStampajRacun" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj Račun (PDF)" Margin="0,2,0,2" Click="BtnStampajRacun_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga faktura:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPretragaRacuna" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRacuna_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviRacuni" Content="Svi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniRacuni" Content="Proknjiženi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniRacuni" Content="Neproknjiženi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
+                                    <RadioButton x:Name="RbPredracuniRacuni" Content="Predračuni" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Checked="Filter_Racuni_Changed"/>
+                                </WrapPanel>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📜 Izlazi robe - Računi / Otpremnice" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
+                            <DataGrid x:Name="DgRacuni" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                                      SelectionChanged="DgRacuni_SelectionChanged" MouseDoubleClick="DgRacuni_MouseDoubleClick">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Tip" Binding="{Binding TipDokumenta}" Width="85"/>
+                                    <DataGridTextColumn Header="Br. računa" Binding="{Binding BrojRacuna}" SortMemberPath="BrojRacuna" Width="110"/>
+                                    <DataGridTextColumn Header="Br. otpremnice" Binding="{Binding BrojOtpremnice}" Width="110"/>
+                                    <DataGridTextColumn Header="Datum" Binding="{Binding DatumRacuna, StringFormat=\{0:dd.MM.yyyy\}}" Width="95"/>
+                                    <DataGridTextColumn Header="Kupac / Konto" Binding="{Binding KontoKupca}" Width="*"/>
+                                    <DataGridTextColumn Header="SEF Status" Binding="{Binding SefStatus}" Width="110"/>
+                                    <DataGridTextColumn Header="Fiskalni Broj" Binding="{Binding FiskalniBroj}" Width="140"/>
+                                    <DataGridTextColumn Header="Rok (dana)" Binding="{Binding RokPlacanjaDana}" Width="80"/>
+                                    <DataGridTextColumn Header="Bez PDV" Binding="{Binding IznosBezPdv, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="PDV" Binding="{Binding PdvIznos, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Za uplatu" Binding="{Binding UkupanIznos, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="90"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📋 Stavke izabranog računa - otpremnice" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                            <DataGrid x:Name="DgRacunStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50"/>
+                                    <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="100"/>
+                                    <DataGridTextColumn Header="Naziv artikla" Binding="{Binding NazivArtikla}" Width="*"/>
+                                    <DataGridTextColumn Header="Količina" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Prod. cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Rabat %" Binding="{Binding RabatProcenat, StringFormat=\{0:N0\}}" Width="70" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="PDV %" Binding="{Binding PdvProcenat, StringFormat=\{0:N0\}}" Width="65" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Bez PDV" Binding="{Binding IznosBezPdv, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Ukupno" Binding="{Binding UkupanIznos, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== NIVELACIJE CENA (MAT6) ===================== -->
+            <TabItem x:Name="TabNivelacije" Header="🏷️ Nivelacije cena">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnGenerisiNivelaciju" Content="⚙️ Svođenje cena" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,6,2" Click="BtnGenerisiNivelaciju_Click"/>
+                                <Button x:Name="BtnNovaNivelacija" Content="➕ Nova nivelacija" Style="{StaticResource ActionButtonStyle}" Margin="0,2,6,2" Click="BtnNovaNivelacija_Click"/>
+                                <Button x:Name="BtnIzmeniNivelaciju" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,6,2" Click="BtnIzmeniNivelaciju_Click"/>
+                                <Button x:Name="BtnKnjiziNivelaciju" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" Click="BtnKnjiziNivelaciju_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjeNivelacija" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,6,2" Click="BtnMasovnoKnjizenjeNivelacija_Click"/>
+                                <Button x:Name="BtnExportExcelNivelacije" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,6,2" Click="BtnExportExcelNivelacije_Click"/>
+                                <Button x:Name="BtnStampajNivelaciju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj Zapisnik (PDF)" Margin="0,2,0,2" Click="BtnStampajNivelaciju_Click"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍 Pretraga nivelacija:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPretragaNivelacija" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaNivelacija_TextChanged" Margin="0,2,16,2"/>
+                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                    <RadioButton x:Name="RbSviNivelacije" Content="Svi" GroupName="NivelacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Nivelacije_Changed"/>
+                                    <RadioButton x:Name="RbProknjizeniNivelacije" Content="Proknjiženi" GroupName="NivelacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Nivelacije_Changed"/>
+                                    <RadioButton x:Name="RbNeproknjizeniNivelacije" Content="Neproknjiženi" GroupName="NivelacijeStatusFilter" VerticalAlignment="Center" Checked="Filter_Nivelacije_Changed"/>
+                                </WrapPanel>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="🏷️ Nivelacije prodajnih cena i promene" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
+                            <DataGrid x:Name="DgNivelacije" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                                      SelectionChanged="DgNivelacije_SelectionChanged" MouseDoubleClick="DgNivelacije_MouseDoubleClick">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Br. nivelacije" Binding="{Binding BrojNivelacije}" Width="130"/>
+                                    <DataGridTextColumn Header="Datum" Binding="{Binding DatumNivelacije, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                    <DataGridTextColumn Header="Magacin" Binding="{Binding SifraMagacina}" Width="100"/>
+                                    <DataGridTextColumn Header="Opis / Napomena" Binding="{Binding Opis}" Width="*"/>
+                                    <DataGridTextColumn Header="Ukupna razlika" Binding="{Binding UkupnoRazlika, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Proknjiženo" Binding="{Binding IsKnjizen}" Width="95"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+
+                    <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📋 Stavke izabranog zapisnika o nivelaciji cena" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                            <DataGrid x:Name="DgNivelacijaStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50"/>
+                                    <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="100"/>
+                                    <DataGridTextColumn Header="Naziv artikla" Binding="{Binding NazivArtikla}" Width="*"/>
+                                    <DataGridTextColumn Header="J.M." Binding="{Binding JedinicaMere}" Width="50"/>
+                                    <DataGridTextColumn Header="Zaliha" Binding="{Binding KolicinaZaliha, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Stara cena" Binding="{Binding StaraCena, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Nova cena" Binding="{Binding NovaCena, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Razl. / jed." Binding="{Binding RazlikaPoJedinici, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Uk. Razlika" Binding="{Binding UkupnaRazlika, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== ROBNE KARTICE ===================== -->
+            <TabItem x:Name="TabRobneKartice" Header="📇 Robne kartice">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="320"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="16" Margin="0,0,16,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="Magacin / Računopolagač" FontSize="12" Foreground="{StaticResource TextMutedBrush}" DockPanel.Dock="Top" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="CmbMagacinRobno" DockPanel.Dock="Top" Height="34" Margin="0,0,0,12"
+                                      DisplayMemberPath="NazivMagacina" SelectionChanged="CmbMagacinRobno_SelectionChanged"/>
+
+                            <TextBlock Text="📦 Artikli" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
+                            <TextBox x:Name="TxtPretragaArtiklaRobno" DockPanel.Dock="Top" Height="34" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,8" ToolTip="Pretraga po šifri ili nazivu artikla" TextChanged="TxtPretragaArtiklaRobno_TextChanged"/>
+                            <CheckBox x:Name="ChkSamoSaKarticom" Content="Samo artikli sa karticom" DockPanel.Dock="Top" Margin="0,0,0,12" Checked="ChkSamoSaKarticom_Changed" Unchecked="ChkSamoSaKarticom_Changed"/>
+                            <DataGrid x:Name="LstArtikliRobno" AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="FullRow" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" ToolTip="Desni klik za dodatne opcije" SelectionChanged="LstArtikliRobno_SelectionChanged" PreviewMouseRightButtonDown="LstArtikliRobno_PreviewMouseRightButtonDown">
+                                <DataGrid.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="🖨️ Štampaj karticu" Click="CtxStampajRobnuKarticu_Click"/>
+                                        <MenuItem Header="📊 Izvoz u Excel" Click="CtxExportExcelRobnaKartica_Click"/>
+                                    </ContextMenu>
+                                </DataGrid.ContextMenu>
+                                <DataGrid.Columns>
+                                    <DataGridCheckBoxColumn Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="30">
+                                        <DataGridCheckBoxColumn.Header>
+                                            <CheckBox x:Name="ChkSviArtikliRobno" IsThreeState="True" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                      Checked="ChkSviArtikliRobno_Checked" Unchecked="ChkSviArtikliRobno_Unchecked"/>
+                                        </DataGridCheckBoxColumn.Header>
+                                        <DataGridCheckBoxColumn.ElementStyle>
+                                            <Style TargetType="CheckBox">
+                                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                            </Style>
+                                        </DataGridCheckBoxColumn.ElementStyle>
+                                    </DataGridCheckBoxColumn>
+                                    <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="90" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Naziv" Binding="{Binding Naziv}" Width="*" IsReadOnly="True"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <DockPanel LastChildFill="True">
+                                <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button x:Name="BtnStampajRobnaKartica" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj karticu/e (PDF)" Margin="0,2,8,2" Click="BtnStampajRobnaKartica_Click"/>
+                                    <Button x:Name="BtnExportExcelRobnaKartica" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelRobnaKartica_Click"/>
+                                </WrapPanel>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock x:Name="TxtNaslovArtiklaRobno" Text="Izaberite magacin i artikal sa leve strane" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock x:Name="TxtStanjeArtiklaRobno" Text=" " FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <DataGrid x:Name="DgRobnaKartica" Grid.Row="0" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" ToolTip="Dupli klik na stavku prikazuje izvorni dokument" MouseDoubleClick="DgRobnaKartica_MouseDoubleClick">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Datum" Binding="{Binding DatumPromene, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                                        <DataGridTextColumn Header="Opis promene" Binding="{Binding OpisPromene}" Width="160"/>
+                                        <DataGridTextColumn Header="Ulaz" Binding="{Binding Ulaz, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                        <DataGridTextColumn Header="Izlaz" Binding="{Binding Izlaz, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                        <DataGridTextColumn Header="Stanje" Binding="{Binding Stanje, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                        <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                        <DataGridTextColumn Header="Duguje" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                        <DataGridTextColumn Header="Potražuje" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                        <DataGridTextColumn Header="Saldo" Binding="{Binding Saldo, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                        <DataGridTextColumn Header="Pros. cena" Binding="{Binding CenaIzlaz, StringFormat=\{0:N2\}}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <Border Grid.Row="1" Background="#EFF6FF" CornerRadius="6" Padding="12,10" Margin="0,8,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="160"/>
+                                            <ColumnDefinition Width="90"/>
+                                            <ColumnDefinition Width="90"/>
+                                            <ColumnDefinition Width="90"/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="110"/>
+                                            <ColumnDefinition Width="110"/>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="1" Text="UKUPNO:" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock x:Name="TxtSumaUlazRobno" Grid.Column="2" Text="0,00" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock x:Name="TxtSumaIzlazRobno" Grid.Column="3" Text="0,00" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock x:Name="TxtSumaDugujeRobno" Grid.Column="6" Text="0,00" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock x:Name="TxtSumaPotrazujeRobno" Grid.Column="7" Text="0,00" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock x:Name="TxtSumaSaldoRobno" Grid.Column="8" Text="0,00" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#2563EB"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- ===================== ROBNI BRUTO BILANS (MAT6) ===================== -->
+            <TabItem x:Name="TabRobniBrutoBilans" Header="📊 Robni Bruto bilans">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnOsveziBruto" Content="🔄 Osveži bilans" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnOsveziBruto_Click"/>
+                                <Button x:Name="BtnStampajRasporedArtikala" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Width="36" Padding="0" ToolTip="Raspored artikala (PDF)" Margin="0,2,8,2" Click="BtnStampajRasporedArtikala_Click"/>
+                                <Button x:Name="BtnStampajStanjePoArtiklima" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Width="36" Padding="0" ToolTip="Stanje po artiklima (PDF)" Margin="0,2,8,2" Click="BtnStampajStanjePoArtiklima_Click"/>
+                                <Button x:Name="BtnExportExcelRobniBruto" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelRobniBruto_Click"/>
+                                <Button x:Name="BtnStampajRobniBruto" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,0,2" Click="BtnStampajRobniBruto_Click"/>
+                            </WrapPanel>
+
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBlock Text="Magacin:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                <ComboBox x:Name="CmbMagacinBruto" Width="180" Height="34" DisplayMemberPath="NazivMagacina" SelectedValuePath="MagacinId" SelectionChanged="CmbMagacinBruto_SelectionChanged" Margin="0,2,16,2"/>
+
+                                <TextBlock Text="Do datuma:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                <DatePicker x:Name="DpDoDatumaBruto" Width="130" Height="34" SelectedDateChanged="DpDoDatumaBruto_SelectedDateChanged" Margin="0,2,16,2"/>
+
+                                <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                <TextBox x:Name="TxtPretragaBruto" Width="180" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaBruto_TextChanged" Margin="0,2,0,2"/>
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📊 Robni / Materijalni Bruto Bilans po artiklima i magacinima" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
+                            <DataGrid x:Name="DgRobniBrutoBilans" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Magacin" Binding="{Binding SifraMagacina}" Width="80"/>
+                                    <DataGridTextColumn Header="Šifra" Binding="{Binding SifraArtikla}" Width="100"/>
+                                    <DataGridTextColumn Header="Naziv artikla / robe" Binding="{Binding NazivArtikla}" Width="*"/>
+                                    <DataGridTextColumn Header="J.M." Binding="{Binding JedinicaMere}" Width="50"/>
+                                    <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Ulaz kol." Binding="{Binding UlazKolicina, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Duguje (Ulaz RSD)" Binding="{Binding UlazVrednost, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Izlaz kol." Binding="{Binding IzlazKolicina, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Potražuje (Izlaz RSD)" Binding="{Binding IzlazVrednost, StringFormat=\{0:N2\}}" Width="120" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Stanje kol." Binding="{Binding SaldoKolicinski, StringFormat=\{0:N2\}}" Width="90" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Saldo zaliha (RSD)" Binding="{Binding SaldoVrednosni, StringFormat=\{0:N2\}}" Width="130" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="16,10" Margin="0,12,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock x:Name="TxtUkupnoDugujeBruto" Text="Ukupno Duguje: 0,00 RSD" FontSize="13" FontWeight="Bold" Foreground="#059669" Margin="0,0,24,0"/>
+                            <TextBlock x:Name="TxtUkupnoPotrazujeBruto" Text="Ukupno Potražuje: 0,00 RSD" FontSize="13" FontWeight="Bold" Foreground="#DC2626" Margin="0,0,24,0"/>
+                            <TextBlock x:Name="TxtUkupnoSaldoBruto" Text="Saldo Zaliha: 0,00 RSD" FontSize="14" FontWeight="Bold" Foreground="#2563EB"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</UserControl>

@@ -1,17 +1,17 @@
 ---
 name: wpf-page-codebehind-navigation
-description: Conventions for adding a new WPF View/Control/Window in AccountingApp — MainWindow navigation host, Loaded-based data binding, search/filter, and dialog patterns. Use whenever adding or modifying Views/*View.xaml(.cs).
+description: Conventions for adding a new WPF View/Control/Window in ERPiFinansijeApp — MainWindow navigation host, Loaded-based data binding, search/filter, and dialog patterns. Use whenever adding or modifying Views/*View.xaml(.cs).
 ---
 
-# WPF Navigation & Control Pattern (AccountingApp)
+# WPF Navigation & Control Pattern (ERPiFinansijeApp)
 
-`AccountingApp` uses clean WPF views with code-behind and EF Core DbContext services. Follow this pattern for consistency across views.
+`ERPiFinansijeApp` uses clean WPF views with code-behind and EF Core DbContext services. Follow this pattern for consistency across views.
 
 ---
 
 ## 1. View Structure
 
-- Each feature lives in `AccountingApp/Views/<Feature>/<Feature>View.xaml(.cs)` (e.g., `DashboardView`, `NaloziView`, `IzvestajiView`).
+- Each feature lives in `ERPiFinansijeApp/Views/<Feature>/<Feature>View.xaml(.cs)` (e.g., `DashboardView`, `NaloziView`, `IzvestajiView`).
 - Constructor calls `InitializeComponent()` first and then initiates async data loading.
 - Queries are executed using `AccountingDbContext` and `AppConfig.DbPath`.
 

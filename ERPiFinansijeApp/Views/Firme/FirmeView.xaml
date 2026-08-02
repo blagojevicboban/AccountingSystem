@@ -1,0 +1,204 @@
+<UserControl x:Class="ERPiFinansijeApp.Views.Firme.FirmeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Header & Actions -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Upravljanje firmama i preduzećima" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+                <TextBlock Text="Pregled, izmena, unos novih i odabir aktivne firme za rad (svaka firma = zasebna baza u Baze folderu)." FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="BtnNovaFirma" Content="➕ Nova firma" Style="{StaticResource ActionButtonStyle}" Height="38" Padding="18,0" Click="BtnNovaFirma_Click" Margin="0,0,8,0"/>
+                <Button x:Name="BtnOsvezi" Content="🔄 Osveži" Height="38" Padding="14,0" Background="#F1F5F9" Foreground="#475569" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Click="BtnOsvezi_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Body: lista (levo) + detalji (desno) -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="380"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Filter / Search Bar -->
+                <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="12,10" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="TxtPretraga" Height="34" VerticalContentAlignment="Center" Padding="8,0"
+                                 Text="" TextChanged="TxtPretraga_TextChanged"/>
+                        <!-- Placeholder tekst kad je prazan -->
+                        <TextBlock Text="🔍 Pretraži po nazivu, PIB-u ili šifri firme..." Foreground="{StaticResource TextMutedBrush}"
+                                   IsHitTestVisible="False" VerticalAlignment="Center" Margin="10,0,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=TxtPretraga}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtUkupno" Text="Ukupno: 0 firmi" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- DataGrid list of Firme -->
+                <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" CornerRadius="8" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <DataGrid x:Name="DgFirme" AutoGenerateColumns="False" IsReadOnly="True"
+                              SelectionMode="Single" GridLinesVisibility="Horizontal"
+                              HorizontalGridLinesBrush="#E2E8F0" HeadersVisibility="Column"
+                              BorderThickness="0" Background="Transparent"
+                              RowHeight="42" ColumnHeaderHeight="38"
+                              SelectionChanged="DgFirme_SelectionChanged">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Šifra" Binding="{Binding Sifra}" Width="100"/>
+                            <DataGridTextColumn Header="Naziv preduzeća / firme" Binding="{Binding Naziv}" Width="*"/>
+                            <DataGridTemplateColumn Header="U upotrebi" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#D1FAE5">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding JeTrenutnoOtvorena}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="AKTIVNA" FontSize="10" FontWeight="Bold" Foreground="#047857"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Action buttons column -->
+                            <DataGridTemplateColumn Header="Akcije" Width="230">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Button Content="⭐ Aktiviraj" Height="28" Padding="10,0" Margin="0,0,4,0"
+                                                    Background="#2563EB" Foreground="White" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Cursor="Hand"
+                                                    Click="BtnAktiviraj_Click">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="IsEnabled" Value="True"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding JeTrenutnoOtvorena}" Value="True">
+                                                                <Setter Property="IsEnabled" Value="False"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                            <Button Content="✏️ Izmeni" Height="28" Padding="10,0" Margin="0,0,4,0"
+                                                    Background="#F1F5F9" Foreground="#334155" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Cursor="Hand"
+                                                    Click="BtnIzmeni_Click"/>
+                                            <Button Content="🗑️ Briši" Height="28" Padding="10,0"
+                                                    Background="#FEF2F2" Foreground="#991B1B" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Cursor="Hand"
+                                                    Click="BtnBrisi_Click"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
+
+            <!-- Desni panel: Detalji firme -->
+            <Border Grid.Column="2" Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock x:Name="TxtPanelTitle" Text="Detalji firme" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+                        <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,10,0,16"/>
+
+                        <StackPanel x:Name="FormFieldsPanel" IsEnabled="False">
+                            <TextBlock Text="Šifra firme *" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBox x:Name="TxtSifra" Height="32" VerticalContentAlignment="Center" Padding="6,0" MaxLength="20"/>
+
+                            <TextBlock Text="Naziv firme *" FontWeight="SemiBold" Margin="0,12,0,4"/>
+                            <TextBox x:Name="TxtNaziv" Height="32" VerticalContentAlignment="Center" Padding="6,0" MaxLength="200"/>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                    <TextBlock Text="PIB" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="TxtPib" Height="32" VerticalContentAlignment="Center" Padding="6,0" MaxLength="30"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock Text="Matični broj" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="TxtMaticniBroj" Height="32" VerticalContentAlignment="Center" Padding="6,0" MaxLength="30"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Adresa" FontWeight="SemiBold" Margin="0,12,0,4"/>
+                            <TextBox x:Name="TxtAdresa" Height="32" VerticalContentAlignment="Center" Padding="6,0" MaxLength="200"/>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                    <TextBlock Text="PTT i Mesto" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="TxtPttIMesto" Height="32" VerticalContentAlignment="Center" Padding="6,0" MaxLength="100"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock Text="Telefon" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="TxtTelefon" Height="32" VerticalContentAlignment="Center" Padding="6,0" MaxLength="50"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Žiro/Tekući račun" FontWeight="SemiBold" Margin="0,12,0,4"/>
+                            <TextBox x:Name="TxtZiroRacun" Height="32" VerticalContentAlignment="Center" Padding="6,0" MaxLength="50"/>
+
+                            <TextBlock Text="Fajl baze (samo za pregled)" FontWeight="SemiBold" Margin="0,12,0,4"/>
+                            <TextBox x:Name="TxtDbPath" Height="32" VerticalContentAlignment="Center" Padding="6,0" IsReadOnly="True" Background="#F3F4F6" Foreground="{StaticResource TextMutedBrush}"/>
+                        </StackPanel>
+
+                        <TextBlock x:Name="TxtHint" Text="Izaberite firmu iz liste ili kliknite 'Nova firma'." Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+
+                        <StackPanel x:Name="ActionButtonsPanel" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0" Visibility="Collapsed">
+                            <Button x:Name="BtnOtkazi" Content="✖ Otkaži" Height="34" Padding="14,0" Margin="0,0,8,0" Background="#F1F5F9" Foreground="#475569" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Click="BtnOtkazi_Click"/>
+                            <Button x:Name="BtnSacuvaj" Content="💾 Sačuvaj" Height="34" Padding="16,0" Style="{StaticResource ActionButtonStyle}" Click="BtnSacuvaj_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

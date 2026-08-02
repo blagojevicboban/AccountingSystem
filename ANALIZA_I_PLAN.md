@@ -1,4 +1,4 @@
-# AccountingSystem — Analiza legacy Clipper sistema i plan razvoja
+# ERPiFinansije — Analiza legacy Clipper sistema i plan razvoja
 
 > Nastalo iz analize `.PRG` modula u `C:\KNJIGE\Radni` (FIN.CLP, ANAL.CLP, ROB.CLP, MAT.CLP)
 > i struktura `.DBF` baza u `C:\KNJIGE\Radni\KOR01`.
@@ -72,7 +72,7 @@ Paralelna struktura FIN-u, ali analitička (prefiks `A`):
 
 ## 3. Mapiranje DBF → .NET modeli
 
-Trenutni skeleton (`AccountingData/Models`) već pokriva jezgro FIN modula. Puno mapiranje:
+Trenutni skeleton (`ERPiFinansijeData/Models`) već pokriva jezgro FIN modula. Puno mapiranje:
 
 | DBF | .NET model | Status |
 | --- | --- | --- |
@@ -96,7 +96,7 @@ Trenutni skeleton (`AccountingData/Models`) već pokriva jezgro FIN modula. Puno
 | M_KART | `MaterijalnaKartica` | ❌ |
 
 **Napomena o poljima** — legacy koristi `N19.2` (decimal 18,2 je ok), datumi `D8` (yyyymmdd),
-`KNJIZEN N1` (bool 0/1). Migracioni alat (`AccountingMigration/Program.cs`) već čita DBF binarno;
+`KNJIZEN N1` (bool 0/1). Migracioni alat (`ERPiFinansijeMigration/Program.cs`) već čita DBF binarno;
 proširiće se novim tabelama.
 
 ---
@@ -123,7 +123,7 @@ DBF migracija (KONTPLAN, ANKONT, M_SIFR, MAGACIN, NALOG), Velopack pakovanje.
 - [ ] `Firma` + `FirmaSettings` (config flegovi iz KOR.DBF: `MALO`, `DECIM`, `PROS_PR`, `NABAVNA`...) — odloženo, nije blokiralo login
 - [x] **Login + `AppSession` + prikaz firme** (`LoginWindow`, `AppSession.TrenutniKorisnik/TrenutnaFirma`) — testirano UI automatizacijom, radi
 - [x] **Hash lozinke** (PBKDF2, 100k iteracija, osoljeno) — `HashPassword`/`VerifyPassword`, seed admin/admin123 preko `HasData`
-- [x] `AccountingDbContextFactory` za design-time migracije (kao u SredstvaData)
+- [x] `AccountingDbContextFactory` za design-time migracije (kao u ERPiSredstvaData)
 
 ### Faza 1 — FIN jezgro (najveća vrednost)
 - [x] **Unos/izmena naloga**: `NalogEditWindow` — dodavanje/brisanje stavki, live provera Duguje==Potražuje (zeleno/žuto/crveno), snimanje preko `NaloziService.SaveNalogAsync`; izmena dozvoljena samo za neproknjižene naloge. „Proknjiži" dugme već je postojalo i i dalje radi.
@@ -132,7 +132,7 @@ DBF migracija (KONTPLAN, ANKONT, M_SIFR, MAGACIN, NALOG), Velopack pakovanje.
 - [x] **Bruto bilans** — `BrutoBilansService.GetBrutoBilansAsync` (agregacija po kontu iz proknjiženih naloga), pravi PDF izvoz u Izveštajima
 - [x] `PdfReportService`: `GenerisiKarticuPdf`, `GenerisiBrutoBilansPdf` (uz postojeći `GenerisiDnevnikPdf`)
 
-**Napomena iz testiranja (ažurirano 2026-07-25):** Ranije zabeleženo da bruto bilans obuhvata 418 različitih konta iz proknjiženih stavki dok je `Konta` tabela imala samo 42 sintetička konta, protumačeno kao nedostatak legacy master podataka. **Ispravka:** to je zapravo bio bag u uvozu (`AccountingMigration/Program.cs` je čitao pogrešnu kolonu — `ST_KON` umesto `KONTO` — za broj konta; `ST_KON` je prazno za skoro sve redove). Nakon ispravke (objedinjen `DbfImportService`, vidi CHANGELOG 1.0.9) uvozi se svih ~3200 konta iz KONTPLAN.DBF.
+**Napomena iz testiranja (ažurirano 2026-07-25):** Ranije zabeleženo da bruto bilans obuhvata 418 različitih konta iz proknjiženih stavki dok je `Konta` tabela imala samo 42 sintetička konta, protumačeno kao nedostatak legacy master podataka. **Ispravka:** to je zapravo bio bag u uvozu (`ERPiFinansijeMigration/Program.cs` je čitao pogrešnu kolonu — `ST_KON` umesto `KONTO` — za broj konta; `ST_KON` je prazno za skoro sve redove). Nakon ispravke (objedinjen `DbfImportService`, vidi CHANGELOG 1.0.9) uvozi se svih ~3200 konta iz KONTPLAN.DBF.
 
 ### Faza 2 — FIN dopune
 - [x] **Otvorene stavke / IOS** (`gk91`, `otv_st_zag`) + PDF obrazac IOS — `OtvoreneStavkeService`, `PartneriView`, `PdfReportService.GenerisiIOSPdf`. Vezano preko `StavkaNaloga.PartnerId` (ne preko konta — legacy ANAL modul za KOR01 nije korišćen, pa nema podataka za uparivanje po kontu partnera). Dodat i izbor partnera (ComboBox) po stavci u `NalogEditWindow` da nove stavke mogu da se vezuju za partnera.
@@ -183,11 +183,11 @@ netestirani na realnim brojevima.
 
 ---
 
-## 6. SredstvaSystem & Budući plan razvoja (Roadmap)
+## 6. ERPiSredstva & Budući plan razvoja (Roadmap)
 
-### 🏢 6.1 Integracija sa SredstvaSystem (`C:\SREDSTVA\SredstvaSystem`)
+### 🏢 6.1 Integracija sa ERPiSredstva (`C:\SREDSTVA\ERPiSredstva`)
 - **Automatsko knjiženje amortizacije u Glavnu knjigu**:
-  - Generisanje naloga knjiženja u `AccountingSystem` (Konto `5400` Troškovi amortizacije / Konto `0290` Ispravka vrednosti) direktno iz obračuna u `SredstvaSystem`.
+  - Generisanje naloga knjiženja u `ERPiFinansije` (Konto `5400` Troškovi amortizacije / Konto `0290` Ispravka vrednosti) direktno iz obračuna u `ERPiSredstva`.
 - **Poreska amortizacija i bilansi**:
   - Povezivanje obračuna poreske amortizacije (Obrazac OA) i privremenih razlika sa Poreskim bilansom (**Obrazac PB-1**).
 
@@ -214,7 +214,7 @@ netestirani na realnim brojevima.
 6. **Nova godina** (`ngod_prenos`, FIN2) — nulira promet, prenosi saldo konta kao početno stanje.
 
 **Pravilo:** za svaki od ovih izvući tačnu formulu iz `.PRG` i pokriti **xUnit testovima**
-(kao što SredstvaData.Tests pokriva amortizaciju) pre nego što se zameni računanje.
+(kao što ERPiSredstvaData.Tests pokriva amortizaciju) pre nego što se zameni računanje.
 
 ---
 
