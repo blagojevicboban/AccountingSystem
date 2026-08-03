@@ -4,6 +4,14 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.1.6] - 2026-08-03
+
+### 🐛 Izbor konta u nalogu za knjiženje (`NalogEditWindow`)
+- **Filter konta više ne usporava unos.** Padajuća lista je na svaki pritisak tastera dobijala ceo kontni plan (u većim firmama i preko 3.000 konta), uz pretvaranje svakog naziva u mala slova. Sada se mala slova računaju jednom pri učitavanju, poređenje je `Ordinal`, a u listu ide najviše 100 pogodaka — konta koja **počinju** unetim brojem prikazuju se prva.
+- **Konto se sada prihvata klikom i tasterom Enter**, ne samo tasterom Tab. Kolona konta je prevedena iz `DataGridComboBoxColumn` u šablonsku kolonu, jer je `SelectedValueBinding` brisao izabrani konto svaki put kad se lista filtrira (izabrana stavka tada ispadne iz liste). Enter potvrđuje konto i prelazi na kolonu Dokument, isto kao Tab.
+- **Unos se potvrđuje i pri izlasku iz ćelije** — klikom na drugu ćeliju ili klikom na dugme „Snimi nalog". Time nestaje poruka „Svaka stavka mora imati unet konto" za stavku u kojoj je konto bio uredno unet.
+- **Esc vraća prethodni konto**, a pretraga na `F2` preuzima ono što je do tada otkucano u ćeliji kao početni upit.
+
 ## [1.1.5] - 2026-08-02
 
 ### 🐛 Preuzimanje podataka i kada je nova verzija već pokrenuta (`AppConfig`)

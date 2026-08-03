@@ -13,16 +13,29 @@ namespace ERPiFinansijeApp.Views.Nalozi;
 
 public partial class NalogEditWindow : Window
 {
+    // Kontni plan ume da ima i preko 3.000 konta, pa se u padajuću listu nikad
+    // ne ubacuje cela lista — samo prvih toliko pogodaka filtera.
+    private const int MaxPrikazanihKonta = 100;
+
     private readonly ObservableCollection<StavkaNaloga> _stavke = new();
     private readonly int _existingNalogId;
     private List<KontoOption> _svaKonta = new();
     private ComboBox? _aktivniKontoCombo;
+    private StavkaNaloga? _aktivnaKontoStavka;
+    private string _kontoPreIzmene = string.Empty;
+    private bool _bezReakcijeNaKonto;
+    private bool _internoZatvaranjeListe;
 
     public class KontoOption
     {
         public string BrojKonta { get; set; } = string.Empty;
         public string NazivKonta { get; set; } = string.Empty;
         public string Prikaz => $"{BrojKonta} - {NazivKonta}";
+
+        // Filter se izvršava na svaki pritisak tastera preko celog kontnog plana,
+        // pa se mala slova računaju jednom pri učitavanju umesto svaki put.
+        public string BrojMala { get; set; } = string.Empty;
+        public string NazivMala { get; set; } = string.Empty;
     }
 
     public NalogEditWindow(Nalog? existingNalog = null)
@@ -148,11 +161,19 @@ public partial class NalogEditWindow : Window
             var opcije = konta.Select(k => new KontoOption
             {
                 BrojKonta = k.BrojKonta,
-                NazivKonta = k.NazivKonta
+                NazivKonta = k.NazivKonta ?? string.Empty,
+                BrojMala = k.BrojKonta.ToLowerInvariant(),
+                NazivMala = (k.NazivKonta ?? string.Empty).ToLowerInvariant()
             }).ToList();
 
             _svaKonta = opcije;
-            ColKonto.ItemsSource = opcije;
+
+            KontoPrikazConverter.Nazivi.Clear();
+            foreach (var o in opcije) KontoPrikazConverter.Nazivi[o.BrojKonta] = o.NazivKonta;
+
+            // Konta stižu asinhrono, nakon što je grid već iscrtan — osvežavamo prikaz
+            // da bi se uz broj konta video i naziv.
+            if (!DgStavke.IsKeyboardFocusWithin) DgStavke.Items.Refresh();
         }
         catch
         {
@@ -282,13 +303,35 @@ public partial class NalogEditWindow : Window
             BtnObrisiStavku_Click(sender, e);
             e.Handled = true;
         }
+        else if (e.Key == Key.Escape && UKontoCeliji)
+        {
+            // Bez veze podataka na ćeliji konta DataGrid nema šta da vrati, pa staru
+            // vrednost vraćamo sami.
+            if (_aktivnaKontoStavka != null) _aktivnaKontoStavka.BrojKonta = _kontoPreIzmene;
+            OtkaziUnosKonta();
+            e.Handled = true;
+        }
         else if (e.Key == Key.Enter || e.Key == Key.Tab)
         {
             // Must run here (DataGrid-level PreviewKeyDown), not on the ComboBox
             // itself: DataGridCell swallows Enter/Tab internally (BeginEdit/CommitEdit
             // bookkeeping) before the tunnel ever reaches a cell's editing element, so
             // a handler attached directly to the ComboBox never sees these keys.
-            RazresiUnetiKontoPriPotvrdi();
+            if (UKontoCeliji)
+            {
+                PrihvatiUnetiKonto();
+
+                if (e.Key == Key.Enter)
+                {
+                    // Enter u ćeliji konta radi isto što i Tab: potvrđuje izabrani
+                    // konto i prelazi na sledeću kolonu.
+                    var stavka = _aktivnaKontoStavka;
+                    ZavrsiUnosKonta();
+                    PredjiNaKolonuPosleKonta(stavka);
+                    e.Handled = true;
+                    return;
+                }
+            }
 
             if (DgStavke.CurrentCell.Column != null && DgStavke.SelectedItem is StavkaNaloga currentStavka)
             {
@@ -355,8 +398,14 @@ public partial class NalogEditWindow : Window
 
     private void OtvoriPretraguKonta()
     {
-        string initialSearch = "";
-        if (DgStavke.SelectedItem is StavkaNaloga selektovana && !string.IsNullOrWhiteSpace(selektovana.BrojKonta))
+        // Pretraga se najčešće poziva iz ćelije konta koja je u režimu izmene: ono što
+        // je do tada otkucano prenosi se u pretragu, a grid mora izaći iz transakcije
+        // izmene da bi kasniji Items.Refresh() prošao.
+        string initialSearch = SamoBrojKonta(TekstUnetogKonta());
+        if (_aktivniKontoCombo != null) OtkaziUnosKonta();
+        DgStavke.CommitEdit(DataGridEditingUnit.Row, true);
+
+        if (initialSearch.Length == 0 && DgStavke.SelectedItem is StavkaNaloga selektovana && !string.IsNullOrWhiteSpace(selektovana.BrojKonta))
         {
             initialSearch = selektovana.BrojKonta;
         }
@@ -398,72 +447,249 @@ public partial class NalogEditWindow : Window
 
     private void DgStavke_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
     {
+        // Izlazak iz ćelije konta mišem (klik na drugu ćeliju) takođe je potvrda unosa.
+        if (e.Column == ColKonto && e.EditAction == DataGridEditAction.Commit)
+        {
+            PrihvatiUnetiKonto();
+        }
+
         Dispatcher.BeginInvoke(new Action(PrikaziSaldo));
     }
 
-    private void DgStavke_PreparingCellForEdit(object sender, DataGridPreparingCellForEditEventArgs e)
+    private bool UKontoCeliji => _aktivniKontoCombo != null && DgStavke.CurrentCell.Column == ColKonto;
+
+    private void KontoCombo_Loaded(object sender, RoutedEventArgs e)
     {
-        if (e.Column != ColKonto || e.EditingElement is not ComboBox cb) return;
+        if (sender is not ComboBox cb) return;
 
-        cb.IsEditable = true;
-        cb.IsTextSearchEnabled = false;
-        cb.StaysOpenOnEdit = true;
-        cb.ItemsSource = _svaKonta;
         _aktivniKontoCombo = cb;
+        _aktivnaKontoStavka = cb.DataContext as StavkaNaloga;
+        _kontoPreIzmene = _aktivnaKontoStavka?.BrojKonta ?? string.Empty;
 
-        cb.ApplyTemplate();
+        _bezReakcijeNaKonto = true;
+        cb.ItemsSource = FiltrirajKonta(_kontoPreIzmene);
+        cb.Text = _kontoPreIzmene;
+        _bezReakcijeNaKonto = false;
+
+        // Klik mišem na stavku liste hvatamo direktno (a ne preko SelectionChanged /
+        // DropDownClosed) da bismo znali da je izbor zaista potvrđen mišem, a ne samo
+        // označen strelicama.
+        cb.RemoveHandler(PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(KontoCombo_PreviewMouseLeftButtonUp));
+        cb.AddHandler(PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(KontoCombo_PreviewMouseLeftButtonUp), true);
+
         if (cb.Template.FindName("PART_EditableTextBox", cb) is TextBox tb)
         {
+            tb.TextChanged -= ComboKonto_TextChanged;
             tb.TextChanged += ComboKonto_TextChanged;
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 tb.SelectAll();
                 tb.Focus();
-                cb.IsDropDownOpen = true;
+                PostaviPadajucuListu(cb, cb.Items.Count > 0);
             }), System.Windows.Threading.DispatcherPriority.Input);
+        }
+    }
+
+    private void KontoCombo_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not ComboBox cb) return;
+
+        cb.RemoveHandler(PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(KontoCombo_PreviewMouseLeftButtonUp));
+        if (cb.Template?.FindName("PART_EditableTextBox", cb) is TextBox tb) tb.TextChanged -= ComboKonto_TextChanged;
+
+        if (ReferenceEquals(_aktivniKontoCombo, cb))
+        {
+            _aktivniKontoCombo = null;
+            _aktivnaKontoStavka = null;
         }
     }
 
     private void ComboKonto_TextChanged(object sender, TextChangedEventArgs e)
     {
+        if (_bezReakcijeNaKonto) return;
         if (sender is not TextBox tb || tb.TemplatedParent is not ComboBox cb) return;
 
-        string query = tb.Text.Trim().ToLower();
-        var filtrirano = string.IsNullOrEmpty(query)
-            ? _svaKonta
-            : _svaKonta.Where(k => k.BrojKonta.ToLower().Contains(query) || k.NazivKonta.ToLower().Contains(query)).ToList();
+        // Tekst se promenio zato što je stavka izabrana u listi (ComboBox upisuje
+        // "broj - naziv"), a ne zato što korisnik kuca — tada se ne filtrira.
+        if (cb.SelectedItem is KontoOption izabran && tb.Text == izabran.Prikaz) return;
 
+        string tekst = tb.Text;
+        int kursor = tb.CaretIndex;
+        var filtrirano = FiltrirajKonta(tekst);
+
+        _bezReakcijeNaKonto = true;
         cb.ItemsSource = filtrirano;
-        cb.IsDropDownOpen = filtrirano.Count > 0;
+        // Zamena ItemsSource poništava selekciju, a ComboBox tada ume da obriše i
+        // otkucani tekst — vraćamo ga zajedno sa pozicijom kursora.
+        if (tb.Text != tekst)
+        {
+            tb.Text = tekst;
+            tb.CaretIndex = Math.Min(kursor, tekst.Length);
+        }
+        _bezReakcijeNaKonto = false;
+
+        PostaviPadajucuListu(cb, filtrirano.Count > 0);
     }
 
-    // Editable ComboBox's own Text/SelectedItem sync becomes unreliable once
-    // ItemsSource is swapped on every keystroke (WPF quirk), so on commit we
-    // resolve the typed text against _svaKonta ourselves instead of trusting cb.Text/SelectedItem.
-    private void RazresiUnetiKontoPriPotvrdi()
+    private List<KontoOption> FiltrirajKonta(string upit)
+    {
+        string q = upit.Trim().ToLowerInvariant();
+        var rezultat = new List<KontoOption>(MaxPrikazanihKonta);
+
+        if (q.Length == 0)
+        {
+            for (int i = 0; i < _svaKonta.Count && rezultat.Count < MaxPrikazanihKonta; i++)
+            {
+                rezultat.Add(_svaKonta[i]);
+            }
+            return rezultat;
+        }
+
+        // Unos obično počinje brojem konta, pa konta koja počinju upitom idu prva.
+        foreach (var k in _svaKonta)
+        {
+            if (k.BrojMala.StartsWith(q, StringComparison.Ordinal))
+            {
+                rezultat.Add(k);
+                if (rezultat.Count >= MaxPrikazanihKonta) return rezultat;
+            }
+        }
+
+        foreach (var k in _svaKonta)
+        {
+            if (k.BrojMala.StartsWith(q, StringComparison.Ordinal)) continue;
+            if (k.BrojMala.Contains(q, StringComparison.Ordinal) || k.NazivMala.Contains(q, StringComparison.Ordinal))
+            {
+                rezultat.Add(k);
+                if (rezultat.Count >= MaxPrikazanihKonta) return rezultat;
+            }
+        }
+
+        return rezultat;
+    }
+
+    private void PostaviPadajucuListu(ComboBox cb, bool otvorena)
+    {
+        if (cb.IsDropDownOpen == otvorena) return;
+
+        _internoZatvaranjeListe = true;
+        cb.IsDropDownOpen = otvorena;
+        _internoZatvaranjeListe = false;
+    }
+
+    private void KontoCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_bezReakcijeNaKonto || _internoZatvaranjeListe) return;
+        if (sender is not ComboBox cb || cb.SelectedItem is not KontoOption izabran) return;
+
+        // Pokriva i izbor strelicama u otvorenoj listi; potvrda (Enter/Tab/klik)
+        // samo zatvara ćeliju.
+        UpisiKonto(izabran.BrojKonta);
+    }
+
+    private void KontoCombo_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is not DependencyObject izvor) return;
+
+        var stavkaListe = ItemsControl.ContainerFromElement(sender as ComboBox, izvor) as ComboBoxItem;
+        if (stavkaListe?.DataContext is not KontoOption izabran) return;
+
+        UpisiKonto(izabran.BrojKonta);
+
+        // ComboBox tek posle ovog događaja završava sopstvenu obradu klika, pa se
+        // zatvaranje ćelije odlaže da mu se ne bi izmakao editor ispod ruke.
+        var stavka = _aktivnaKontoStavka;
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            ZavrsiUnosKonta();
+            PredjiNaKolonuPosleKonta(stavka);
+        }), System.Windows.Threading.DispatcherPriority.Input);
+    }
+
+    private void UpisiKonto(string brojKonta)
+    {
+        if (_aktivnaKontoStavka != null) _aktivnaKontoStavka.BrojKonta = brojKonta;
+    }
+
+    /// <summary>
+    /// Prihvata ono što je korisnik uneo u ćeliju konta: izabranu stavku iz liste,
+    /// a ako izbora nema — otkucani tekst se razrešava u kontnom planu.
+    /// </summary>
+    private void PrihvatiUnetiKonto()
     {
         var cb = _aktivniKontoCombo;
-        if (cb == null || DgStavke.CurrentCell.Column != ColKonto) return;
-        if (cb.SelectedItem is KontoOption) return;
+        if (cb == null) return;
 
-        string typed = (cb.Template.FindName("PART_EditableTextBox", cb) as TextBox)?.Text?.Trim() ?? string.Empty;
-        if (typed.Length == 0) return;
-
-        var poklapanje = _svaKonta.FirstOrDefault(k => k.BrojKonta.Equals(typed, StringComparison.OrdinalIgnoreCase))
-            ?? _svaKonta.FirstOrDefault(k => k.BrojKonta.ToLower().Contains(typed.ToLower()) || k.NazivKonta.ToLower().Contains(typed.ToLower()));
-
-        // Not cb.SelectedItem = poklapanje: the ComboBox's ItemsSource was just
-        // swapped by the last keystroke's filter, and WPF's ItemContainerGenerator
-        // for the popup's (separate visual root) content hasn't caught up yet —
-        // assigning SelectedItem right after silently no-ops (confirmed via logging:
-        // SelectedItem read back as null immediately after the assignment). Go
-        // straight to the row's model instead of fighting the ComboBox's selection
-        // machinery; nothing else writes BrojKonta here since we never touch
-        // SelectedValue, so there's no competing binding push to race against.
-        if (poklapanje != null && DgStavke.SelectedItem is StavkaNaloga trenutna)
+        if (cb.SelectedItem is KontoOption izabran)
         {
-            trenutna.BrojKonta = poklapanje.BrojKonta;
+            UpisiKonto(izabran.BrojKonta);
+            return;
         }
+
+        string uneto = TekstUnetogKonta();
+        if (uneto.Length == 0) return;
+
+        var poklapanje = NadjiKonto(uneto);
+        if (poklapanje != null) UpisiKonto(poklapanje.BrojKonta);
+    }
+
+    private string TekstUnetogKonta()
+    {
+        var cb = _aktivniKontoCombo;
+        if (cb == null) return string.Empty;
+
+        return ((cb.Template?.FindName("PART_EditableTextBox", cb) as TextBox)?.Text ?? cb.Text ?? string.Empty).Trim();
+    }
+
+    // Ako je u polju ostao prikaz oblika "2413/1 - POSEBAN TEKUCI RACUN",
+    // upotrebljiv je samo broj konta ispred crte.
+    private static string SamoBrojKonta(string tekst)
+    {
+        int crta = tekst.IndexOf(" - ", StringComparison.Ordinal);
+        return crta > 0 ? tekst[..crta].Trim() : tekst.Trim();
+    }
+
+    private KontoOption? NadjiKonto(string uneto)
+    {
+        string broj = SamoBrojKonta(uneto);
+
+        var poGodak = _svaKonta.FirstOrDefault(k => k.BrojKonta.Equals(broj, StringComparison.OrdinalIgnoreCase));
+        if (poGodak != null) return poGodak;
+
+        var kandidati = FiltrirajKonta(uneto);
+        return kandidati.FirstOrDefault();
+    }
+
+    private void ZavrsiUnosKonta()
+    {
+        var cb = _aktivniKontoCombo;
+        if (cb != null) PostaviPadajucuListu(cb, false);
+
+        DgStavke.CommitEdit(DataGridEditingUnit.Cell, true);
+        _aktivniKontoCombo = null;
+        _aktivnaKontoStavka = null;
+    }
+
+    private void OtkaziUnosKonta()
+    {
+        var cb = _aktivniKontoCombo;
+        if (cb != null) PostaviPadajucuListu(cb, false);
+
+        DgStavke.CancelEdit(DataGridEditingUnit.Cell);
+        _aktivniKontoCombo = null;
+        _aktivnaKontoStavka = null;
+    }
+
+    private void PredjiNaKolonuPosleKonta(StavkaNaloga? stavka)
+    {
+        stavka ??= DgStavke.SelectedItem as StavkaNaloga;
+        if (stavka == null) return;
+
+        int indeks = DgStavke.Columns.IndexOf(ColKonto);
+        if (indeks < 0 || indeks + 1 >= DgStavke.Columns.Count) return;
+
+        DgStavke.CurrentCell = new DataGridCellInfo(stavka, DgStavke.Columns[indeks + 1]);
+        DgStavke.BeginEdit();
     }
 
     private void PrikaziSaldo()
@@ -496,6 +722,11 @@ public partial class NalogEditWindow : Window
 
     private async void BtnSnimi_Click(object sender, RoutedEventArgs e)
     {
+        // Klik na dugme ne mora da zatvori ćeliju koja je u režimu izmene, pa se
+        // poslednji unos (najčešće konto) potvrđuje pre provere i snimanja.
+        if (UKontoCeliji) PrihvatiUnetiKonto();
+        DgStavke.CommitEdit(DataGridEditingUnit.Row, true);
+
         if (!int.TryParse(TxtBrojNaloga.Text.Trim(), out int brojNaloga))
         {
             MessageBox.Show("Unesite ispravan broj naloga.", "Greška", MessageBoxButton.OK, MessageBoxImage.Warning);
