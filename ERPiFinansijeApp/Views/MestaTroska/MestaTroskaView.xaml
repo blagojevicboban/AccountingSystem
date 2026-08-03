@@ -20,15 +20,15 @@
                     <!-- TOOLBAR -->
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovoMesto" Content="➕ Novo mesto troška / projekat" Style="{StaticResource ActionButtonStyle}" Background="#4338CA" Margin="0,2,8,2" Click="BtnNovoMesto_Click"/>
-                                <Button x:Name="BtnIzmeni" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeni_Click"/>
-                                <Button x:Name="BtnObrisi" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" Click="BtnObrisi_Click"/>
-                                <Button x:Name="BtnExportExcel" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcel_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
                                 <TextBox x:Name="TxtPretraga" Height="34" Width="220" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged"/>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovoMesto" Content="➕ Novo mesto troška / projekat" Style="{StaticResource ActionButtonStyle}" Background="#4338CA" Margin="0,2,8,2" ToolTip="Kreiraj novo mesto troška ili projektni centar" Click="BtnNovoMesto_Click"/>
+                                <Button x:Name="BtnIzmeni" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" ToolTip="Izmeni izabrano mesto troška" Click="BtnIzmeni_Click"/>
+                                <Button x:Name="BtnObrisi" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" ToolTip="Obriši izabrano mesto troška" Click="BtnObrisi_Click"/>
+                                <Button x:Name="BtnExportExcel" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz mesta troška u Excel" Margin="0,2,0,2" Click="BtnExportExcel_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>

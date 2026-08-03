@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:nalozi="clr-namespace:ERPiFinansijeApp.Views.Nalozi"
         Title="Nalog za knjiženje" Height="680" Width="950"
+        WindowState="Maximized"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BackgroundBrush}"
         KeyDown="Window_KeyDown">
@@ -119,6 +120,7 @@
         </Border>
 
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="BtnRasknjizi" Content="🔓 Rasknjiži i izmeni" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Click="BtnRasknjizi_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
             <Button x:Name="BtnOtkazi" Content="Otkaži (Esc)" IsCancel="True" Style="{StaticResource ActionButtonStyle}" Background="#64748B" Click="BtnOtkazi_Click" Margin="0,0,10,0"/>
             <Button x:Name="BtnSnimi" Content="💾 Snimi nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Click="BtnSnimi_Click"/>
         </StackPanel>

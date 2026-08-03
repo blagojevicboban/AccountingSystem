@@ -1,6 +1,7 @@
 <Application x:Class="ERPiFinansijeApp.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helpers="clr-namespace:ERPiFinansijeApp.Helpers">
     <Application.Resources>
         <Color x:Key="PrimaryColor">#2563EB</Color>
         <Color x:Key="PrimaryDarkColor">#1E40AF</Color>
@@ -170,6 +171,83 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="#D97706"/>
                                 <Setter TargetName="border" Property="BorderThickness" Value="2"/>
                             </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- SearchTextBoxStyle: Lupa (🔍) na levoj strani unutar polja i dugme X (✖) na desnoj strani unutar polja -->
+        <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="helpers:SearchInputHelper.IsSearch" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Lupa na levoj strani unutar polja -->
+                                <TextBlock Grid.Column="0" Text="🔍" FontSize="11" Foreground="#94A3B8"
+                                           VerticalAlignment="Center" Margin="8,0,4,0" IsHitTestVisible="False"/>
+
+                                <!-- Sadržaj teksta -->
+                                <ScrollViewer Grid.Column="1" x:Name="PART_ContentHost"
+                                              Focusable="False" HorizontalScrollBarVisibility="Hidden"
+                                              VerticalScrollBarVisibility="Hidden" VerticalAlignment="Center"
+                                              Margin="4,0,4,0"/>
+
+                                <!-- Dugme X na desnoj strani unutar polja -->
+                                <Button Grid.Column="2" x:Name="PART_ClearButton" Content="✖"
+                                        Width="18" Height="18" Margin="2,0,6,0"
+                                        Background="#E2E8F0" Foreground="#64748B" FontSize="9" FontWeight="Bold"
+                                        Cursor="Hand" Focusable="False" ToolTip="Očisti pretragu" Visibility="Visible">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="9">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#CBD5E1"/>
+                                                    <Setter Property="Foreground" Value="#0F172A"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="PART_ClearButton" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="Text" Value="{x:Null}">
+                                <Setter TargetName="PART_ClearButton" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>

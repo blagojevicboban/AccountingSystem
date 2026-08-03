@@ -13,33 +13,34 @@
             <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="12,10" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-            <WrapPanel VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,16,2">
-                    <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                    <TextBox x:Name="TxtPretraga" Width="180" Height="32" VerticalContentAlignment="Center" Padding="6,0" TextChanged="TxtPretraga_TextChanged"/>
-                    <WrapPanel VerticalAlignment="Center" Margin="12,0,0,0">
+        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel LastChildFill="True">
+                <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
+                    <TextBlock Text="Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                    <TextBox x:Name="TxtPretraga" Style="{StaticResource SearchTextBoxStyle}" Width="180" Height="34" TextChanged="TxtPretraga_TextChanged"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
                         <RadioButton x:Name="RbSviNalozi" Content="Svi" GroupName="StatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Changed"/>
                         <RadioButton x:Name="RbProknjizeni" Content="Proknjiženi" GroupName="StatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Changed"/>
                         <RadioButton x:Name="RbNeproknjizeni" Content="Neproknjiženi" GroupName="StatusFilter" VerticalAlignment="Center" Margin="0,0,0,0" Checked="Filter_Changed"/>
-                    </WrapPanel>
-                </StackPanel>
-
-                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
-                    <Button x:Name="BtnNoviNalog" Content="➕ Novi nalog" Style="{StaticResource ActionButtonStyle}" Margin="0,2,6,2" Click="BtnNoviNalog_Click"/>
-                    <Button x:Name="BtnIzmeniNalog" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,6,2" Click="BtnIzmeniNalog_Click"/>
-                    <Button x:Name="BtnProknjizi" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" Click="BtnProknjizi_Click"/>
-                    <Button x:Name="BtnProknjiziSve" Content="⚡ Proknjiži sve" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,2,6,2" Click="BtnProknjiziSve_Click"/>
-                    <Button x:Name="BtnRasknjizi" Content="🔓 Rasknjiži" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Margin="0,2,6,2" Click="BtnRasknjizi_Click"/>
-                    <Button x:Name="BtnPreknjizavanje" Content="🔄 Preknjižavanje" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,2,6,2" Click="BtnPreknjizavanje_Click"/>
-                    <Button x:Name="BtnNapredniFilter" Content="⚙️ Napredni filter" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,2,6,2" Click="BtnNapredniFilter_Click"/>
-                    <Button x:Name="BtnUvozIzvoda" Content="🏦 Uvoz izvoda" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Margin="0,2,6,2" Click="BtnUvozIzvoda_Click"/>
-                    <Button x:Name="BtnStampa" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampa" Margin="0,2,6,2" Click="BtnStampa_Click"/>
-                    <Button x:Name="BtnExportExcelNalozi" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,6,2" Click="BtnExportExcelNalozi_Click"/>
-                    <Separator Width="1" Height="24" Background="{StaticResource BorderBrush}" Margin="2,4,8,4"/>
-                    <Button x:Name="BtnNovaGodina" Content="📅 Nova godina" Style="{StaticResource ActionButtonStyle}" Background="#0F172A" Margin="0,2,6,2" Click="BtnNovaGodina_Click"/>
+                    </StackPanel>
                 </WrapPanel>
-            </WrapPanel>
+
+                <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="BtnNoviNalog" Content="➕ Novi nalog" Style="{StaticResource ActionButtonStyle}" Margin="0,2,6,2" ToolTip="Kreiraj novi nalog za knjiženje (F2)" Click="BtnNoviNalog_Click"/>
+                    <Button x:Name="BtnIzmeniNalog" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,6,2" ToolTip="Izmeni izabrani nalog" Click="BtnIzmeniNalog_Click"/>
+                    <Button x:Name="BtnProknjizi" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" ToolTip="Proknjiži izabrani nalog u glavnu knjigu" Click="BtnProknjizi_Click"/>
+                    <Button x:Name="BtnProknjiziSve" Content="⚡ Proknjiži sve" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,2,6,2" ToolTip="Masovno proknjiži sve neproknjižene naloge" Click="BtnProknjiziSve_Click"/>
+                    <Button x:Name="BtnRasknjizi" Content="🔓 Rasknjiži" Style="{StaticResource ActionButtonStyle}" Background="#DC2626" Margin="0,2,6,2" ToolTip="Rasknjiži izabrani nalog" Click="BtnRasknjizi_Click"/>
+                    <Button x:Name="BtnPreknjizavanje" Content="🔄 Preknjižavanje" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Margin="0,2,6,2" ToolTip="Preknjižavanje stavki sa konta na konto" Click="BtnPreknjizavanje_Click"/>
+                    <Button x:Name="BtnNapredniFilter" Content="⚙️ Napredni filter" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,2,6,2" ToolTip="Napredna pretraga nalozi po datumu, vrsti i opisu" Click="BtnNapredniFilter_Click"/>
+                    <Button x:Name="BtnUvozIzvoda" Content="🏦 Uvoz izvoda" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Margin="0,2,6,2" ToolTip="Uvoz bankarskih izvoda u naloge" Click="BtnUvozIzvoda_Click"/>
+                    <Button x:Name="BtnUvozZarada" Content="📒 Uvoz zarada" Style="{StaticResource ActionButtonStyle}" Background="#0EA5E9" Margin="0,2,6,2" ToolTip="Uvoz naloga za knjiženje koji je napravio ERPiZarade" Click="BtnUvozZarada_Click"/>
+                    <Button x:Name="BtnStampa" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj nalog u PDF" Margin="0,2,6,2" Click="BtnStampa_Click"/>
+                    <Button x:Name="BtnExportExcelNalozi" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz naloga u Excel" Margin="0,2,6,2" Click="BtnExportExcelNalozi_Click"/>
+                    <Separator Width="1" Height="24" Background="{StaticResource BorderBrush}" Margin="2,4,8,4"/>
+                    <Button x:Name="BtnNovaGodina" Content="📅 Nova godina" Style="{StaticResource ActionButtonStyle}" Background="#0F172A" Margin="0,2,6,2" ToolTip="Otvaranje počeštnog stanja i nove poslovne godine" Click="BtnNovaGodina_Click"/>
+                </WrapPanel>
+            </DockPanel>
         </Border>
 
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">

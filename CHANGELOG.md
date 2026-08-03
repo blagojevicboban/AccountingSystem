@@ -4,6 +4,41 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.3.0] - 2026-08-04
+
+> Prati **ERPiZarade 1.15.0**, koja od ove verzije knjiži refundaciju bolovanja na konta
+> 225, 454, 455 i 456. ERPiFinansije nema podrazumevani kontni plan — konta stižu iz DBF
+> migracije ili se unose ručno — pa bi prvi uvoz iz nove verzije stao na poruci „konto ne
+> postoji", a korisnik bi četiri konta otvarao rukom, tražeći im nazive u propisu.
+
+### 📗 Konta koja nedostaju se nude na zavođenje (`ZaradeImportService`, `ZaradeKontniOkvir`)
+- Kad uvoz zarada stane zbog konta kojih nema u kontnom planu, program **prikaže spisak sa predloženim nazivima iz Pravilnika o Kontnom okviru** i zavede ih po potvrdi, pa se fajl čita ponovo i uvoz nastavlja.
+- **Provera time nije zaobiđena nego rešena.** Pravilo iz 1.2.0 ostaje: proknjižen iznos na nepostojećem kontu ne bi bio ni na jednoj kartici. Posle zavođenja konto postoji, pa iznos ima svoju karticu i vidi se u bilansu.
+- Nudi se **samo kad su konta jedina greška**. Nalog van ravnoteže ili tuđ fajl se zavođenjem konta ne rešavaju, pa bi ponuda tu značila da korisnik zavede konta i opet ostane bez uvoza.
+- **Naziv je predlog, ne pravilo** — vidi se pre potvrde i posle se menja u „Kontnom planu" kao i kod svakog konta. Za analitiku koju firma vodi po svom (npr. `520-1`) predlaže se naziv **sintetike**; za konto koji Kontni okvir uopšte ne poznaje uzima se opis stavke iz naloga, uz napomenu da naziv nije iz propisa.
+- Klasa i oznaka sintetike se izvode iz samog broja konta, istim pravilom kao pri DBF migraciji. Ponovljeno zavođenje ne pravi duplikat.
+
+### 🩺 Šta stiže iz ERPiZarade 1.15.0
+- Naknada zarade **na teret RFZO nije trošak poslodavca**: umesto na 520/450 dolazi kao **potraživanje na 225**, uz obaveze na **454** (neto), **455** (porez i doprinosi zaposlenog) i **456** (doprinosi poslodavca). Potraživanje na 225 se zatvara **izvodom posebnog računa** kad refundacija stigne od Fonda — taj korak je ovde, u ERPiFinansije.
+- Format fajla je nepromenjen (verzija 1), pa stariji nalozi i dalje ulaze bez izmene.
+
+### 🎯 Nalog otvoren iz kartice pozicionira se na kliknutu stavku (`KarticeView`, `NalogEditWindow`)
+- Kad se iz kartice konta otvori nalog (dupli klik, „Pregledaj nalog" ili „Izmeni / Rasknjiži nalog"), grid stavki se sada odmah **selektuje i skroluje baš na stavku iz koje je nalog otvoren**. Kod naloga sa desetinama stavki više se ne traži ručno red sa kog se došlo.
+- Kartica sada nosi i `StavkaNalogaId`/`RedniBroj` po redu (`KarticaService`, `OtvoreneStavkeService`), pa je red kartice jednoznačno vezan za stavku naloga, a ne samo za nalog.
+
+## [1.2.0] - 2026-08-04
+
+> Prva veza sa **ERPiZarade**: obračun zarada se knjiži u glavnu knjigu bez ručnog prepisivanja.
+
+### 📒 Uvoz naloga za knjiženje iz ERPiZarade (`NaloziView`, `ZaradeImportService`)
+- Dugme **„📒 Uvoz zarada"** na ekranu naloga učitava fajl koji ERPiZarade izveze menijem „Nalog za knjiženje". Fajl je **već nalog** — stavke, konta i iznosi su izvedeni iz obračuna, gde jedino i postoje podaci o radnicima.
+- **Pri uvozu se ništa ne računa**, samo proverava i prepisuje. Svako računanje pri prenosu bilo bi drugo mesto koje ume da se raziđe sa obračunom, poreskom prijavom i nalozima za prenos.
+- Nalog se prvo **pročita i pokaže** (firma, period, broj stavki, duguje/potražuje, broj koji će dobiti), pa tek po potvrdi snimi — i to kao **neproknjižen**. Knjiženje ostaje odluka korisnika, kao i kod svakog drugog naloga.
+- **Uvoz se zaustavlja u tri slučaja:** fajl nije iz ERPiZarade (prepoznaje se po oznaci formata i verziji), nalog nije u ravnoteži, ili neki konto ne postoji u kontnom planu. Poslednje je namerno strogo — proknjižen iznos na nepostojećem kontu ne bi bio ni na jednoj kartici, a u bilansu bi nedostajao bez traga.
+- **Mesta troška se uparuju po šifri.** Nepoznata šifra ne zaustavlja uvoz: te stavke ulaze bez podele, a podela se dobija kad se mesto troška zavede. Obaveze prema radnicima se po mestima troška ne dele.
+- **Ponovljen uvoz se prijavljuje, ali ne zabranjuje** — legitiman je kad se obračun ispravi. Ako nalog istog opisa i datuma već postoji, program to javi pre potvrde, da isti nalog ne uđe u knjige dvaput nezapaženo.
+- Broj naloga se dodeljuje sam, po najvećem zatečenom; datum se čita po ISO zapisu, nezavisno od regionalnih podešavanja.
+
 ## [1.1.6] - 2026-08-03
 
 ### 🐛 Izbor konta u nalogu za knjiženje (`NalogEditWindow`)

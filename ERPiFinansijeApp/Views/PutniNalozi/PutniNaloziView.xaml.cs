@@ -165,11 +165,33 @@ public partial class PutniNaloziView : UserControl
     private void BtnExportExcel_Click(object sender, RoutedEventArgs e)
         => ExcelExportService.ExportDataGridToExcel(DgPutniNalozi, "Evidencija putnih naloga i dnevnica", "PutniNalozi");
 
-    private void BtnStampa_Click(object sender, RoutedEventArgs e)
+    private async void BtnStampa_Click(object sender, RoutedEventArgs e)
     {
         if (DgPutniNalozi?.SelectedItem is PutniNalog pn)
         {
-            MessageBox.Show($"Generisanje PDF Obrasca Putnog Naloga br. {pn.BrojNaloga} je pripremljeno za štampu.", "Štampa", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                    .UseSqlite($"Data Source={AppConfig.DbPath}")
+                    .Options;
+                using var db = new AccountingDbContext(options);
+                var full = await new PutniNalogService(db).GetPutniNalogByIdAsync(pn.PutniNalogId) ?? pn;
+                var firma = await db.Firme.FirstOrDefaultAsync() ?? AppSession.TrenutnaFirma ?? new Firma { Naziv = "NAZIV FIRME" };
+
+                var pdfBytes = PdfReportService.GenerisiPutniNalogPdf(firma, full);
+                string siguranBroj = (full.BrojNaloga ?? "PN").Replace('/', '_').Replace('\\', '_');
+                string tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"PutniNalog_{siguranBroj}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+                await System.IO.File.WriteAllBytesAsync(tempPath, pdfBytes);
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = tempPath, UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri generisanju obrasca Putnog Naloga: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        else
+        {
+            MessageBox.Show("Molimo izaberite putni nalog za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }

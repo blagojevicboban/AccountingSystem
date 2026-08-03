@@ -221,7 +221,31 @@ public partial class KarticeView : UserControl
         await UcitajKarticu();
     }
 
+    private void DgKarticaRow_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var red = FindAncestor<DataGridRow>(e.OriginalSource as DependencyObject);
+        if (red?.Item is KarticaRed kr)
+        {
+            DgKartica.SelectedItem = kr;
+        }
+    }
+
+    private async void CtxPregledajNalog_Click(object sender, RoutedEventArgs e)
+    {
+        await OtvariNalogZaIzabranuStavku(samoPregled: true);
+    }
+
+    private async void CtxIzmeniNalog_Click(object sender, RoutedEventArgs e)
+    {
+        await OtvariNalogZaIzabranuStavku(samoPregled: false);
+    }
+
     private async void DgKartica_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        await OtvariNalogZaIzabranuStavku(samoPregled: true);
+    }
+
+    private async Task OtvariNalogZaIzabranuStavku(bool samoPregled = true)
     {
         if (DgKartica.SelectedItem is not KarticaRed red)
         {
@@ -244,7 +268,7 @@ public partial class KarticeView : UserControl
             }
 
             bool rasknjizen = false;
-            if (nalog.IsKnjizen)
+            if (nalog.IsKnjizen && !samoPregled)
             {
                 var odgovor = MessageBox.Show(
                     $"Nalog #{nalog.BrojNaloga} je proknjižen i ne može se menjati u ovom statusu.\n\nDa li želite da ga rasknjižite radi izmene?",
@@ -268,7 +292,8 @@ public partial class KarticeView : UserControl
                 }
             }
 
-            var dijalog = new NalogEditWindow(nalog) { Owner = Window.GetWindow(this) };
+            bool isReadOnly = nalog.IsKnjizen && samoPregled;
+            var dijalog = new NalogEditWindow(nalog, isReadOnly, red.StavkaNalogaId) { Owner = Window.GetWindow(this) };
             if (dijalog.ShowDialog() == true || rasknjizen)
             {
                 await UcitajKarticu();

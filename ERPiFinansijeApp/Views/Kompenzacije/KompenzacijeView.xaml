@@ -22,17 +22,17 @@
                     <!-- TOOLBAR -->
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovaKompenzacija" Content="➕ Novi predlog kompenzacije" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaKompenzacija_Click"/>
-                                <Button x:Name="BtnIzmeni" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeni_Click"/>
-                                <Button x:Name="BtnObrisi" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" Click="BtnObrisi_Click"/>
-                                <Button x:Name="BtnKnjizi" Content="✅ Proknjiži &amp; Zatvori IOS" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjizi_Click"/>
-                                <Button x:Name="BtnExportExcel" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcel_Click"/>
-                                <Button x:Name="BtnStampa" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj PDF Izjavu" Margin="0,2,0,2" Click="BtnStampa_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
                                 <TextBox x:Name="TxtPretraga" Height="34" Width="220" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged"/>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaKompenzacija" Content="➕ Novi predlog kompenzacije" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Kreiraj novi predlog dvojne ili trojne kompenzacije" Click="BtnNovaKompenzacija_Click"/>
+                                <Button x:Name="BtnIzmeni" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" ToolTip="Izmeni izabrani predlog kompenzacije" Click="BtnIzmeni_Click"/>
+                                <Button x:Name="BtnObrisi" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" ToolTip="Obriši izabrani predlog kompenzacije" Click="BtnObrisi_Click"/>
+                                <Button x:Name="BtnKnjizi" Content="✅ Proknjiži &amp; Zatvori IOS" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" ToolTip="Proknjiži kompenzaciju i automatski zatvori otvorene stavke (IOS)" Click="BtnKnjizi_Click"/>
+                                <Button x:Name="BtnExportExcel" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz kompenzacija u Excel" Margin="0,2,8,2" Click="BtnExportExcel_Click"/>
+                                <Button x:Name="BtnStampa" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj Izjavu o kompenzaciji (PDF)" Margin="0,2,0,2" Click="BtnStampa_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>

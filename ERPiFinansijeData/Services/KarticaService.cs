@@ -5,6 +5,8 @@ namespace ERPiFinansijeData.Services;
 
 public class KarticaRed
 {
+    public int StavkaNalogaId { get; set; }
+    public int RedniBroj { get; set; }
     public int NalogId { get; set; }
     public DateTime Datum { get; set; }
     public int BrojNaloga { get; set; }
@@ -128,6 +130,8 @@ public class KarticaService
 
             rezultat.Add(new KarticaRed
             {
+                StavkaNalogaId = s.StavkaNalogaId,
+                RedniBroj = s.RedniBroj,
                 NalogId = s.Nalog!.NalogId,
                 Datum = s.Nalog.DatumNaloga,
                 BrojNaloga = s.Nalog.BrojNaloga,

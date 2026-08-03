@@ -21,23 +21,27 @@
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
                             <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovaUplata" Content="📥 Nalog za uplatn" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,2,8,2" Click="BtnNovaUplata_Click"/>
-                                <Button x:Name="BtnNovaIsplata" Content="📤 Nalog za isplatu" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,8,2" Click="BtnNovaIsplata_Click"/>
-                                <Button x:Name="BtnIzmeni" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeni_Click"/>
-                                <Button x:Name="BtnObrisi" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" Click="BtnObrisi_Click"/>
-                                <Button x:Name="BtnKnjizi" Content="✅ Proknjiži u GK" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjizi_Click"/>
-                                <Button x:Name="BtnExportExcel" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcel_Click"/>
-                                <Button x:Name="BtnStampa" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj Uplatnicu / Isplatnicu" Margin="0,2,0,2" Click="BtnStampa_Click"/>
+                                <Button x:Name="BtnNovaUplata" Content="📥 Nalog za uplatu" Style="{StaticResource ActionButtonStyle}" Background="#059669" Margin="0,2,8,2" ToolTip="Kreiraj novi nalog za uplatu u blagajnu" Click="BtnNovaUplata_Click"/>
+                                <Button x:Name="BtnNovaIsplata" Content="📤 Nalog za isplatu" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,8,2" ToolTip="Kreiraj novi nalog za isplatu iz blagajne" Click="BtnNovaIsplata_Click"/>
+                                <Button x:Name="BtnIzmeni" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" ToolTip="Izmeni izabrani blagajnički nalog" Click="BtnIzmeni_Click"/>
+                                <Button x:Name="BtnObrisi" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" ToolTip="Obriši izabrani blagajnički nalog" Click="BtnObrisi_Click"/>
+                                <Button x:Name="BtnKnjizi" Content="✅ Proknjiži u GK" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" ToolTip="Proknjiži izabrane naloge u Glavnu knjigu" Click="BtnKnjizi_Click"/>
+                                <Button x:Name="BtnExportExcel" Content="📊 Excel" FontWeight="Bold" Style="{StaticResource ActionButtonStyle}" Background="#059669" Padding="10,0" ToolTip="Izvoz spiska naloga u Excel datoteku" Margin="0,2,8,2" Click="BtnExportExcel_Click"/>
+                                <Button x:Name="BtnStampa" Content="🖨️ Štampa" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Padding="10,0" ToolTip="Štampaj Uplatnicu / Isplatnicu za izabrani nalog" Margin="0,2,0,2" Click="BtnStampa_Click"/>
                             </WrapPanel>
                             <WrapPanel VerticalAlignment="Center">
-                                <TextBlock Text="Blagajna:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                                <ComboBox x:Name="CmbFilterBlagajna" Width="150" Height="34" SelectionChanged="CmbFilterBlagajna_SelectionChanged" Margin="0,0,16,0">
-                                    <ComboBoxItem Content="Sve blagajne" IsSelected="True"/>
-                                    <ComboBoxItem Content="Dinarska (2430)"/>
-                                    <ComboBoxItem Content="Devizna (2440)"/>
-                                </ComboBox>
-                                <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                                <TextBox x:Name="TxtPretraga" Height="34" Width="200" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged"/>
+                                <StackPanel Orientation="Vertical" Margin="0,0,16,0" VerticalAlignment="Center">
+                                    <TextBlock Text="Blagajna:" FontSize="11" Foreground="{StaticResource TextMutedBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                    <ComboBox x:Name="CmbFilterBlagajna" Width="150" Height="34" SelectionChanged="CmbFilterBlagajna_SelectionChanged">
+                                        <ComboBoxItem Content="Sve blagajne" IsSelected="True"/>
+                                        <ComboBoxItem Content="Dinarska (2430)"/>
+                                        <ComboBoxItem Content="Devizna (2440)"/>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                    <TextBlock Text="Pretraga:" FontSize="11" Foreground="{StaticResource TextMutedBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                    <TextBox x:Name="TxtPretraga" Style="{StaticResource SearchTextBoxStyle}" Height="34" Width="200" TextChanged="TxtPretraga_TextChanged"/>
+                                </StackPanel>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -74,21 +78,27 @@
                     <!-- TOOLBAR & FILTERS -->
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <Button Content="🖨️ Štampaj Dnevnik PDF" Style="{StaticResource PrimaryButton}" DockPanel.Dock="Right" Height="36" Padding="16,0" Click="BtnStampaDnevnik_Click"/>
+                            <Button Content="🖨️ Štampaj Dnevnik PDF" Style="{StaticResource PrimaryButton}" DockPanel.Dock="Right" Height="36" Padding="16,0" ToolTip="Generiši i odštampaj Blagajnički Dnevnik u PDF formatu" Click="BtnStampaDnevnik_Click"/>
                             <WrapPanel VerticalAlignment="Center">
-                                <TextBlock Text="Blagajna:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                                <ComboBox x:Name="CmbDnevnikBlagajna" Width="160" Height="34" SelectionChanged="CmbDnevnikFilter_SelectionChanged" Margin="0,0,16,0">
-                                    <ComboBoxItem Content="Dinarska (2430)" IsSelected="True"/>
-                                    <ComboBoxItem Content="Devizna (2440)"/>
-                                </ComboBox>
+                                <StackPanel Orientation="Vertical" Margin="0,0,16,0" VerticalAlignment="Center">
+                                    <TextBlock Text="Blagajna:" FontSize="11" Foreground="{StaticResource TextMutedBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                    <ComboBox x:Name="CmbDnevnikBlagajna" Width="160" Height="34" SelectionChanged="CmbDnevnikFilter_SelectionChanged">
+                                        <ComboBoxItem Content="Dinarska (2430)" IsSelected="True"/>
+                                        <ComboBoxItem Content="Devizna (2440)"/>
+                                    </ComboBox>
+                                </StackPanel>
 
-                                <TextBlock Text="Od:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,4,0"/>
-                                <DatePicker x:Name="DpDnevnikOd" Height="34" SelectedDateChanged="DpDnevnikFilter_SelectedDateChanged" Margin="0,0,12,0"/>
+                                <StackPanel Orientation="Vertical" Margin="0,0,12,0" VerticalAlignment="Center">
+                                    <TextBlock Text="Od datuma:" FontSize="11" Foreground="{StaticResource TextMutedBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                    <DatePicker x:Name="DpDnevnikOd" Height="34" SelectedDateChanged="DpDnevnikFilter_SelectedDateChanged"/>
+                                </StackPanel>
 
-                                <TextBlock Text="Do:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,4,0"/>
-                                <DatePicker x:Name="DpDnevnikDo" Height="34" SelectedDateChanged="DpDnevnikFilter_SelectedDateChanged" Margin="0,0,16,0"/>
+                                <StackPanel Orientation="Vertical" Margin="0,0,16,0" VerticalAlignment="Center">
+                                    <TextBlock Text="Do datuma:" FontSize="11" Foreground="{StaticResource TextMutedBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                    <DatePicker x:Name="DpDnevnikDo" Height="34" SelectedDateChanged="DpDnevnikFilter_SelectedDateChanged"/>
+                                </StackPanel>
 
-                                <Button Content="🔄 Osveži Dnevnik" Style="{StaticResource ActionButtonStyle}" Height="34" Padding="14,0" Click="BtnOsveziDnevnik_Click"/>
+                                <Button Content="🔄 Osveži Dnevnik" Style="{StaticResource ActionButtonStyle}" Height="34" Padding="14,0" VerticalAlignment="Bottom" ToolTip="Učitaj podatke dnevnika za izabrani period" Click="BtnOsveziDnevnik_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>

@@ -25,6 +25,7 @@ public partial class NalogEditWindow : Window
     private string _kontoPreIzmene = string.Empty;
     private bool _bezReakcijeNaKonto;
     private bool _internoZatvaranjeListe;
+    private string _poslednjiOtkucaniUpit = string.Empty;
 
     public class KontoOption
     {
@@ -38,7 +39,11 @@ public partial class NalogEditWindow : Window
         public string NazivMala { get; set; } = string.Empty;
     }
 
-    public NalogEditWindow(Nalog? existingNalog = null)
+    /// <param name="fokusStavkaNalogaId">
+    /// Kad se nalog otvara iz kartice konta (ili kartice partnera), prosleđuje se ID stavke
+    /// na koju je korisnik kliknuo da bi se grid odmah pozicionirao baš na taj red.
+    /// </param>
+    public NalogEditWindow(Nalog? existingNalog = null, bool isReadOnly = false, int? fokusStavkaNalogaId = null)
     {
         InitializeComponent();
         DataContext = this;
@@ -76,6 +81,7 @@ public partial class NalogEditWindow : Window
 
                 _stavke.Add(new StavkaNaloga
                 {
+                    StavkaNalogaId = s.StavkaNalogaId,
                     RedniBroj = s.RedniBroj,
                     BrojKonta = s.BrojKonta,
                     BrojDokumenta = s.BrojDokumenta,
@@ -86,7 +92,7 @@ public partial class NalogEditWindow : Window
                     PromenaKod = s.PromenaKod
                 });
             }
-            Title = $"Izmena naloga #{existingNalog.BrojNaloga}";
+            Title = isReadOnly ? $"📖 Pregled proknjiženog naloga #{existingNalog.BrojNaloga} (Samo za čitanje)" : $"Izmena naloga #{existingNalog.BrojNaloga}";
         }
         else
         {
@@ -95,10 +101,62 @@ public partial class NalogEditWindow : Window
             _ = PredloziSledeciBrojAsync();
         }
 
+        if (isReadOnly)
+        {
+            TxtBrojNaloga.IsReadOnly = true;
+            DpDatum.IsEnabled = false;
+            TxtOpisNaloga.IsReadOnly = true;
+            DgStavke.IsReadOnly = true;
+            BtnDodajStavku.Visibility = Visibility.Collapsed;
+            BtnObrisiStavku.Visibility = Visibility.Collapsed;
+            BtnSnimi.Visibility = Visibility.Collapsed;
+            BtnRasknjizi.Visibility = Visibility.Visible;
+            BtnOtkazi.Content = "Zatvori (Esc)";
+        }
+
+        PozicionirajNaStavku(fokusStavkaNalogaId);
+
         _ = UcitajKontaAsync();
         _ = UcitajPartnereAsync();
         _ = UcitajPromeneAsync();
         PrikaziSaldo();
+    }
+
+    /// <summary>
+    /// Selektuje i skroluje na stavku iz koje je nalog otvoren (klik u kartici konta/partnera).
+    /// Redovi DataGrid-a postoje tek posle prvog layout prolaza, pa se pozicioniranje radi
+    /// na Loaded, sa niskim prioritetom da ne bi bilo pregaženo inicijalnom selekcijom grida.
+    /// </summary>
+    private void PozicionirajNaStavku(int? stavkaNalogaId)
+    {
+        if (stavkaNalogaId is not int id || id <= 0) return;
+
+        var trazena = _stavke.FirstOrDefault(s => s.StavkaNalogaId == id);
+        if (trazena == null) return;
+
+        Loaded += (_, _) =>
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                DgStavke.SelectedItem = trazena;
+                DgStavke.ScrollIntoView(trazena);
+                DgStavke.UpdateLayout();
+
+                if (DgStavke.Columns.Count > 1)
+                {
+                    DgStavke.CurrentCell = new DataGridCellInfo(trazena, DgStavke.Columns[1]);
+                }
+
+                if (DgStavke.ItemContainerGenerator.ContainerFromItem(trazena) is DataGridRow red)
+                {
+                    red.Focus();
+                }
+                else
+                {
+                    DgStavke.Focus();
+                }
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        };
     }
 
     public ObservableCollection<string> OpisiPromenaOptions { get; } = new();
@@ -465,6 +523,7 @@ public partial class NalogEditWindow : Window
         _aktivniKontoCombo = cb;
         _aktivnaKontoStavka = cb.DataContext as StavkaNaloga;
         _kontoPreIzmene = _aktivnaKontoStavka?.BrojKonta ?? string.Empty;
+        _poslednjiOtkucaniUpit = _kontoPreIzmene;
 
         _bezReakcijeNaKonto = true;
         cb.ItemsSource = FiltrirajKonta(_kontoPreIzmene);
@@ -481,6 +540,8 @@ public partial class NalogEditWindow : Window
         {
             tb.TextChanged -= ComboKonto_TextChanged;
             tb.TextChanged += ComboKonto_TextChanged;
+            tb.PreviewKeyDown -= ComboKonto_PreviewKeyDown;
+            tb.PreviewKeyDown += ComboKonto_PreviewKeyDown;
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 tb.SelectAll();
@@ -495,12 +556,102 @@ public partial class NalogEditWindow : Window
         if (sender is not ComboBox cb) return;
 
         cb.RemoveHandler(PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(KontoCombo_PreviewMouseLeftButtonUp));
-        if (cb.Template?.FindName("PART_EditableTextBox", cb) is TextBox tb) tb.TextChanged -= ComboKonto_TextChanged;
+        if (cb.Template?.FindName("PART_EditableTextBox", cb) is TextBox tb)
+        {
+            tb.TextChanged -= ComboKonto_TextChanged;
+            tb.PreviewKeyDown -= ComboKonto_PreviewKeyDown;
+        }
 
         if (ReferenceEquals(_aktivniKontoCombo, cb))
         {
             _aktivniKontoCombo = null;
             _aktivnaKontoStavka = null;
+        }
+    }
+
+    private void ComboKonto_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (sender is not TextBox tb || tb.TemplatedParent is not ComboBox cb) return;
+
+        if (e.Key == Key.Down)
+        {
+            if (!cb.IsDropDownOpen)
+            {
+                PostaviPadajucuListu(cb, true);
+                e.Handled = true;
+                return;
+            }
+
+            if (cb.Items.Count > 0)
+            {
+                int nextIndex = cb.SelectedIndex + 1;
+                if (nextIndex < cb.Items.Count)
+                {
+                    cb.SelectedIndex = nextIndex;
+                    if (cb.SelectedItem is KontoOption izabran)
+                    {
+                        SkrolujDoStavke(cb, izabran);
+                        UpisiKonto(izabran.BrojKonta);
+                    }
+                }
+                e.Handled = true;
+            }
+        }
+        else if (e.Key == Key.Up)
+        {
+            if (cb.IsDropDownOpen && cb.Items.Count > 0)
+            {
+                if (cb.SelectedIndex > 0)
+                {
+                    int prevIndex = cb.SelectedIndex - 1;
+                    cb.SelectedIndex = prevIndex;
+                    if (cb.SelectedItem is KontoOption izabran)
+                    {
+                        SkrolujDoStavke(cb, izabran);
+                        UpisiKonto(izabran.BrojKonta);
+                    }
+                }
+                else if (cb.SelectedIndex == 0)
+                {
+                    cb.SelectedIndex = -1;
+                    if (!string.IsNullOrEmpty(_poslednjiOtkucaniUpit))
+                    {
+                        _bezReakcijeNaKonto = true;
+                        tb.Text = _poslednjiOtkucaniUpit;
+                        tb.CaretIndex = _poslednjiOtkucaniUpit.Length;
+                        _bezReakcijeNaKonto = false;
+                    }
+                }
+                e.Handled = true;
+            }
+        }
+        else if (e.Key == Key.PageDown)
+        {
+            if (cb.IsDropDownOpen && cb.Items.Count > 0)
+            {
+                int nextIndex = Math.Min(cb.Items.Count - 1, Math.Max(0, cb.SelectedIndex + 5));
+                cb.SelectedIndex = nextIndex;
+                if (cb.SelectedItem is KontoOption izabran)
+                {
+                    SkrolujDoStavke(cb, izabran);
+                    UpisiKonto(izabran.BrojKonta);
+                }
+                e.Handled = true;
+            }
+        }
+        else if (e.Key == Key.PageUp)
+        {
+            if (cb.IsDropDownOpen && cb.Items.Count > 0)
+            {
+                int prevIndex = Math.Max(0, cb.SelectedIndex - 5);
+                cb.SelectedIndex = prevIndex;
+                if (cb.SelectedItem is KontoOption izabran)
+                {
+                    SkrolujDoStavke(cb, izabran);
+                    UpisiKonto(izabran.BrojKonta);
+                }
+                e.Handled = true;
+            }
         }
     }
 
@@ -515,6 +666,13 @@ public partial class NalogEditWindow : Window
 
         string tekst = tb.Text;
         int kursor = tb.CaretIndex;
+
+        // Pamti ono što je korisnik kucao pre izbora strelicom
+        if (cb.SelectedItem == null)
+        {
+            _poslednjiOtkucaniUpit = tekst;
+        }
+
         var filtrirano = FiltrirajKonta(tekst);
 
         _bezReakcijeNaKonto = true;
@@ -585,6 +743,19 @@ public partial class NalogEditWindow : Window
         // Pokriva i izbor strelicama u otvorenoj listi; potvrda (Enter/Tab/klik)
         // samo zatvara ćeliju.
         UpisiKonto(izabran.BrojKonta);
+        SkrolujDoStavke(cb, izabran);
+    }
+
+    private static void SkrolujDoStavke(ComboBox cb, object item)
+    {
+        if (cb == null || item == null) return;
+        cb.Dispatcher.BeginInvoke(new Action(() =>
+        {
+            if (cb.ItemContainerGenerator.ContainerFromItem(item) is FrameworkElement element)
+            {
+                element.BringIntoView();
+            }
+        }), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     private void KontoCombo_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -801,5 +972,55 @@ public partial class NalogEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private async void BtnRasknjizi_Click(object sender, RoutedEventArgs e)
+    {
+        if (_existingNalogId <= 0) return;
+
+        var res = MessageBox.Show(
+            $"Da li ste sigurni da želite da rasknjižite nalog #{TxtBrojNaloga.Text} radi izmene?",
+            "Potvrda rasknjižavanja",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (res != MessageBoxResult.Yes) return;
+
+        if (!AppSession.IsAdministrator)
+        {
+            MessageBox.Show("Rasknjižavanje naloga dozvoljeno je samo administratoru.", "Nedozvoljena akcija", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+            var service = new NaloziService(db);
+            await service.RasknjiziNalogAsync(_existingNalogId);
+
+            PrebaciURezimIzmene();
+            MessageBox.Show($"Nalog #{TxtBrojNaloga.Text} je uspešno rasknjižen i omogućen za izmenu.", "Uspeh", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri rasknjižavanju naloga: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void PrebaciURezimIzmene()
+    {
+        Title = $"Izmena naloga #{TxtBrojNaloga.Text}";
+        TxtBrojNaloga.IsReadOnly = false;
+        DpDatum.IsEnabled = true;
+        TxtOpisNaloga.IsReadOnly = false;
+        DgStavke.IsReadOnly = false;
+        BtnDodajStavku.Visibility = Visibility.Visible;
+        BtnObrisiStavku.Visibility = Visibility.Visible;
+        BtnSnimi.Visibility = Visibility.Visible;
+        BtnRasknjizi.Visibility = Visibility.Collapsed;
+        BtnOtkazi.Content = "Otkaži (Esc)";
     }
 }

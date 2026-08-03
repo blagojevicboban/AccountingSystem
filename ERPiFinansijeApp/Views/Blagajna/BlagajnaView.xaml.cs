@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -215,17 +217,60 @@ public partial class BlagajnaView : UserControl
     private void BtnExportExcel_Click(object sender, RoutedEventArgs e)
         => ExcelExportService.ExportDataGridToExcel(DgBlagajnickiNalozi, "Evidencija naloga blagajne", "NaloziBlagajne");
 
-    private void BtnStampa_Click(object sender, RoutedEventArgs e)
+    private async void BtnStampa_Click(object sender, RoutedEventArgs e)
     {
         if (DgBlagajnickiNalozi?.SelectedItem is BlagajnickiNalog bn)
         {
-            string naslov = bn.VrstaNaloga == VrstaBlagajnickogNaloga.Uplata ? "Naloga za uplatu u blagajnu" : "Naloga za isplatu iz blagajne";
-            MessageBox.Show($"Generisanje PDF {naslov} br. {bn.BrojNaloga} je pripremljeno za štampu.", "Štampa", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                    .UseSqlite($"Data Source={AppConfig.DbPath}")
+                    .Options;
+                using var db = new AccountingDbContext(options);
+                var firma = await db.Firme.FirstOrDefaultAsync() ?? AppSession.TrenutnaFirma ?? new Firma { Naziv = "NAZIV FIRME" };
+
+                var pdfBytes = PdfReportService.GenerisiBlagajnickiNalogPdf(firma, bn);
+                string siguranBroj = (bn.BrojNaloga ?? "Nalog").Replace('/', '_').Replace('\\', '_');
+                string tempPath = Path.Combine(Path.GetTempPath(), $"BlagajnickiNalog_{siguranBroj}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+                await File.WriteAllBytesAsync(tempPath, pdfBytes);
+                Process.Start(new ProcessStartInfo { FileName = tempPath, UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Greška pri generisanju štampanog naloga: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        else
+        {
+            MessageBox.Show("Molimo izaberite nalog blagajne za štampu.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
-    private void BtnStampaDnevnik_Click(object sender, RoutedEventArgs e)
+    private async void BtnStampaDnevnik_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Generisanje PDF Dnevnika blagajne sa prikazom salda je pripremljeno za štampu.", "Štampa Dnevnika", MessageBoxButton.OK, MessageBoxImage.Information);
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+            using var db = new AccountingDbContext(options);
+            var service = new BlagajnaService(db);
+            var firma = await db.Firme.FirstOrDefaultAsync() ?? AppSession.TrenutnaFirma ?? new Firma { Naziv = "NAZIV FIRME" };
+
+            VrstaBlagajne vrsta = CmbDnevnikBlagajna?.SelectedIndex == 1 ? VrstaBlagajne.Devizna : VrstaBlagajne.Dinarska;
+            DateTime odD = DpDnevnikOd?.SelectedDate ?? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            DateTime doD = DpDnevnikDo?.SelectedDate ?? DateTime.Today;
+
+            var (redovi, summary) = await service.GetBlagajnickiDnevnikAsync(vrsta, odD, doD);
+            var pdfBytes = PdfReportService.GenerisiBlagajnickiDnevnikPdf(firma, vrsta, odD, doD, redovi, summary);
+
+            string tempPath = Path.Combine(Path.GetTempPath(), $"BlagajnickiDnevnik_{vrsta}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            await File.WriteAllBytesAsync(tempPath, pdfBytes);
+            Process.Start(new ProcessStartInfo { FileName = tempPath, UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri generisanju Dnevnika blagajne: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 }

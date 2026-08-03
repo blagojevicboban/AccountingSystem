@@ -46,7 +46,10 @@ public class OtvoreneStavkeService
             saldo += s.Duguje - s.Potrazuje;
             rezultat.Add(new KarticaRed
             {
-                Datum = s.Nalog!.DatumNaloga,
+                StavkaNalogaId = s.StavkaNalogaId,
+                RedniBroj = s.RedniBroj,
+                NalogId = s.Nalog!.NalogId,
+                Datum = s.Nalog.DatumNaloga,
                 BrojNaloga = s.Nalog.BrojNaloga,
                 Opis = string.IsNullOrWhiteSpace(s.Opis) ? (s.BrojDokumenta ?? s.Nalog.Opis) : s.Opis,
                 Duguje = s.Duguje,
@@ -241,7 +244,10 @@ public class OtvoreneStavkeService
 
             grupa.Stavke.Add(new KarticaRed
             {
-                Datum = s.Nalog!.DatumNaloga,
+                StavkaNalogaId = s.StavkaNalogaId,
+                RedniBroj = s.RedniBroj,
+                NalogId = s.Nalog!.NalogId,
+                Datum = s.Nalog.DatumNaloga,
                 BrojNaloga = s.Nalog.BrojNaloga,
                 Opis = string.IsNullOrWhiteSpace(s.Opis) ? (s.BrojDokumenta ?? s.Nalog.Opis) : s.Opis,
                 OpisPromene = s.BrojDokumenta,

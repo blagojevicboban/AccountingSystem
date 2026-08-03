@@ -20,17 +20,17 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovaPonuda" Content="➕ Nova ponuda / predračun" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaPonuda_Click"/>
-                                <Button x:Name="BtnIzmeniPonudu" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeniPonudu_Click"/>
-                                <Button x:Name="BtnObrisiPonudu" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" Click="BtnObrisiPonudu_Click"/>
-                                <Button x:Name="BtnPretvoriURacun" Content="🚀 Pretvori u Fakturu &amp; SEF" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Margin="0,2,8,2" Click="BtnPretvoriURacun_Click"/>
-                                <Button x:Name="BtnExportExcelPonude" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelPonude_Click"/>
-                                <Button x:Name="BtnStampaPonuda" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,0,2" Click="BtnStampaPonuda_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
                                 <TextBox x:Name="TxtPretragaPonuda" Height="34" Width="220" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPonuda_TextChanged"/>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaPonuda" Content="➕ Nova ponuda / predračun" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Kreiraj novu ponudu ili predračun (F2)" Click="BtnNovaPonuda_Click"/>
+                                <Button x:Name="BtnIzmeniPonudu" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" ToolTip="Izmeni izabranu ponudu ili predračun" Click="BtnIzmeniPonudu_Click"/>
+                                <Button x:Name="BtnObrisiPonudu" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" ToolTip="Obriši izabranu ponudu ili predračun" Click="BtnObrisiPonudu_Click"/>
+                                <Button x:Name="BtnPretvoriURacun" Content="🚀 Pretvori u Fakturu &amp; SEF" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Margin="0,2,8,2" ToolTip="Pretvori ponudu u račun i pošalji na SEF portal" Click="BtnPretvoriURacun_Click"/>
+                                <Button x:Name="BtnExportExcelPonude" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz ponuda i predračuna u Excel" Margin="0,2,8,2" Click="BtnExportExcelPonude_Click"/>
+                                <Button x:Name="BtnStampaPonuda" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj ponudu/predračun u PDF" Margin="0,2,0,2" Click="BtnStampaPonuda_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -86,17 +86,17 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovaNarudzbenica" Content="➕ Nova narudžbenica" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaNarudzbenica_Click"/>
-                                <Button x:Name="BtnIzmeniNarudzbenicu" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeniNarudzbenicu_Click"/>
-                                <Button x:Name="BtnObrisiNarudzbenicu" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" Click="BtnObrisiNarudzbenicu_Click"/>
-                                <Button x:Name="BtnPretvoriUKalkulaciju" Content="📥 Pretvori u Kalkulaciju" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnPretvoriUKalkulaciju_Click"/>
-                                <Button x:Name="BtnExportExcelNarudzbenice" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelNarudzbenice_Click"/>
-                                <Button x:Name="BtnStampaNarudzbenica" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,0,2" Click="BtnStampaNarudzbenica_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
                                 <TextBox x:Name="TxtPretragaNarudzbenice" Height="34" Width="220" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaNarudzbenice_TextChanged"/>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaNarudzbenica" Content="➕ Nova narudžbenica" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Kreiraj novu narudžbenicu dobavljaču (F2)" Click="BtnNovaNarudzbenica_Click"/>
+                                <Button x:Name="BtnIzmeniNarudzbenicu" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" ToolTip="Izmeni izabranu narudžbenicu" Click="BtnIzmeniNarudzbenicu_Click"/>
+                                <Button x:Name="BtnObrisiNarudzbenicu" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" ToolTip="Obriši izabranu narudžbenicu" Click="BtnObrisiNarudzbenicu_Click"/>
+                                <Button x:Name="BtnPretvoriUKalkulaciju" Content="📥 Pretvori u Kalkulaciju" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" ToolTip="Pretvori narudžbenicu u kalkulaciju ulaza robe" Click="BtnPretvoriUKalkulaciju_Click"/>
+                                <Button x:Name="BtnExportExcelNarudzbenice" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz narudžbenica u Excel" Margin="0,2,8,2" Click="BtnExportExcelNarudzbenice_Click"/>
+                                <Button x:Name="BtnStampaNarudzbenica" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj narudžbenicu u PDF" Margin="0,2,0,2" Click="BtnStampaNarudzbenica_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -149,16 +149,16 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNoviRacunopol" Content="➕ Novi računopolagač" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNoviRacunopol_Click"/>
-                                <Button x:Name="BtnIzmeniRacunopol" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniRacunopol_Click"/>
-                                <Button x:Name="BtnBrisiRacunopol" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" Click="BtnBrisiRacunopol_Click"/>
-                                <Button x:Name="BtnStampaRacunopol" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj šifarnik" Margin="0,2,8,2" Click="BtnStampaRacunopol_Click"/>
-                                <Button x:Name="BtnExportExcelRacunopol" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelRacunopol_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
                                 <TextBox x:Name="TxtPretragaRacunopol" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRacunopol_TextChanged"/>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNoviRacunopol" Content="➕ Novi računopolagač" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Dodaj novog računopolagača / magacin" Click="BtnNoviRacunopol_Click"/>
+                                <Button x:Name="BtnIzmeniRacunopol" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" ToolTip="Izmeni podatke o računopolagaču" Click="BtnIzmeniRacunopol_Click"/>
+                                <Button x:Name="BtnBrisiRacunopol" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" ToolTip="Obriši računopolagača" Click="BtnBrisiRacunopol_Click"/>
+                                <Button x:Name="BtnStampaRacunopol" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj šifarnik računopolagača (PDF)" Margin="0,2,8,2" Click="BtnStampaRacunopol_Click"/>
+                                <Button x:Name="BtnExportExcelRacunopol" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz šifarnika računopolagača u Excel" Margin="0,2,0,2" Click="BtnExportExcelRacunopol_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -186,16 +186,16 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNoviArtikal" Content="➕ Novi artikal" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNoviArtikal_Click"/>
-                                <Button x:Name="BtnIzmeniArtikal" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniArtikal_Click"/>
-                                <Button x:Name="BtnBrisiArtikal" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" Click="BtnBrisiArtikal_Click"/>
-                                <Button x:Name="BtnStampaSifrarnikaArtikala" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj šifarnik" Margin="0,2,8,2" Click="BtnStampaSifrarnikaArtikala_Click"/>
-                                <Button x:Name="BtnExportExcelArtikli" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelArtikli_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga artikala:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
                                 <TextBox x:Name="TxtPretragaSifrarnikArtikala" Width="280" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaSifrarnikArtikala_TextChanged"/>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNoviArtikal" Content="➕ Novi artikal" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Dodaj novi artikal u šifrarnik (F2)" Click="BtnNoviArtikal_Click"/>
+                                <Button x:Name="BtnIzmeniArtikal" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" ToolTip="Izmeni izabrani artikal" Click="BtnIzmeniArtikal_Click"/>
+                                <Button x:Name="BtnBrisiArtikal" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" ToolTip="Obriši izabrani artikal" Click="BtnBrisiArtikal_Click"/>
+                                <Button x:Name="BtnStampaSifrarnikaArtikala" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj šifrarnik artikala (PDF)" Margin="0,2,8,2" Click="BtnStampaSifrarnikaArtikala_Click"/>
+                                <Button x:Name="BtnExportExcelArtikli" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz šifrarnika artikala u Excel" Margin="0,2,0,2" Click="BtnExportExcelArtikli_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -226,16 +226,16 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovaPoreskaTarifa" Content="➕ Nova tarifa" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaPoreskaTarifa_Click"/>
-                                <Button x:Name="BtnIzmeniPoreskaTarifa" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniPoreskaTarifa_Click"/>
-                                <Button x:Name="BtnBrisiPoreskaTarifa" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" Click="BtnBrisiPoreskaTarifa_Click"/>
-                                <Button x:Name="BtnExportExcelTarife" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelTarife_Click"/>
-                                <Button x:Name="BtnStampajPoreskeTarife" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj šifarnik" Margin="0,2,0,2" Click="BtnStampajPoreskeTarife_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
                                 <TextBox x:Name="TxtPretragaPoreskeTarife" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPoreskeTarife_TextChanged"/>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaPoreskaTarifa" Content="➕ Nova tarifa" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Dodaj novu poresku tarifu" Click="BtnNovaPoreskaTarifa_Click"/>
+                                <Button x:Name="BtnIzmeniPoreskaTarifa" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" ToolTip="Izmeni poresku tarifu" Click="BtnIzmeniPoreskaTarifa_Click"/>
+                                <Button x:Name="BtnBrisiPoreskaTarifa" Content="🗑️ Obriši" Width="90" Height="34" Background="#EF4444" Foreground="White" Margin="0,2,8,2" ToolTip="Obriši poresku tarifu" Click="BtnBrisiPoreskaTarifa_Click"/>
+                                <Button x:Name="BtnExportExcelTarife" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz poreskih tarifa u Excel" Margin="0,2,8,2" Click="BtnExportExcelTarife_Click"/>
+                                <Button x:Name="BtnStampajPoreskeTarife" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj poreske tarife (PDF)" Margin="0,2,0,2" Click="BtnStampajPoreskeTarife_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -265,22 +265,22 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovoZaduzenje" Content="➕ Novo zaduženje" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovoZaduzenje_Click"/>
-                                <Button x:Name="BtnIzmeniZaduzenje" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniZaduzenje_Click"/>
-                                <Button x:Name="BtnKnjiziZaduzenje" Content="✅ Proknjiži nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjiziZaduzenje_Click"/>
-                                <Button x:Name="BtnMasovnoKnjizenjeZaduzenja" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,8,2" Click="BtnMasovnoKnjizenjeZaduzenja_Click"/>
-                                <Button x:Name="BtnStampajZaduzenje" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,8,2" Click="BtnStampajZaduzenje_Click"/>
-                                <Button x:Name="BtnExportExcelZaduzenja" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelZaduzenja_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga zaduženja:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaZaduzenja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaZaduzenja_TextChanged" Margin="0,2,16,2"/>
-                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                <TextBox x:Name="TxtPretragaZaduzenja" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaZaduzenja_TextChanged" Margin="0,2,16,2"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,2">
                                     <RadioButton x:Name="RbSviZaduzenja" Content="Svi" GroupName="ZaduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Zaduzenja_Changed"/>
                                     <RadioButton x:Name="RbProknjizeniZaduzenja" Content="Proknjiženi" GroupName="ZaduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Zaduzenja_Changed"/>
                                     <RadioButton x:Name="RbNeproknjizeniZaduzenja" Content="Neproknjiženi" GroupName="ZaduzenjaStatusFilter" VerticalAlignment="Center" Checked="Filter_Zaduzenja_Changed"/>
-                                </WrapPanel>
+                                </StackPanel>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovoZaduzenje" Content="➕ Novo zaduženje" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Unos novog naloga zaduženja magacina (F2)" Click="BtnNovoZaduzenje_Click"/>
+                                <Button x:Name="BtnIzmeniZaduzenje" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" ToolTip="Izmeni izabrano zaduženje" Click="BtnIzmeniZaduzenje_Click"/>
+                                <Button x:Name="BtnKnjiziZaduzenje" Content="✅ Proknjiži nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" ToolTip="Proknjiži izabrani nalog zaduženja" Click="BtnKnjiziZaduzenje_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjeZaduzenja" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,8,2" ToolTip="Masovno proknjiži sve neproknjižene naloge zaduženja" Click="BtnMasovnoKnjizenjeZaduzenja_Click"/>
+                                <Button x:Name="BtnStampajZaduzenje" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj nalog zaduženja u PDF" Margin="0,2,8,2" Click="BtnStampajZaduzenje_Click"/>
+                                <Button x:Name="BtnExportExcelZaduzenja" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz zaduženja u Excel" Margin="0,2,0,2" Click="BtnExportExcelZaduzenja_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -330,22 +330,22 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovoRazduzenje" Content="➕ Novo razduženje" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovoRazduzenje_Click"/>
-                                <Button x:Name="BtnIzmeniRazduzenje" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniRazduzenje_Click"/>
-                                <Button x:Name="BtnKnjiziRazduzenje" Content="✅ Proknjiži nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjiziRazduzenje_Click"/>
-                                <Button x:Name="BtnMasovnoKnjizenjeRazduzenja" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,8,2" Click="BtnMasovnoKnjizenjeRazduzenja_Click"/>
-                                <Button x:Name="BtnStampajRazduzenje" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,8,2" Click="BtnStampajRazduzenje_Click"/>
-                                <Button x:Name="BtnExportExcelRazduzenja" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelRazduzenja_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga razduženja:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaRazduzenja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRazduzenja_TextChanged" Margin="0,2,16,2"/>
-                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                <TextBox x:Name="TxtPretragaRazduzenja" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRazduzenja_TextChanged" Margin="0,2,16,2"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,2">
                                     <RadioButton x:Name="RbSviRazduzenja" Content="Svi" GroupName="RazduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Razduzenja_Changed"/>
                                     <RadioButton x:Name="RbProknjizeniRazduzenja" Content="Proknjiženi" GroupName="RazduzenjaStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Razduzenja_Changed"/>
                                     <RadioButton x:Name="RbNeproknjizeniRazduzenja" Content="Neproknjiženi" GroupName="RazduzenjaStatusFilter" VerticalAlignment="Center" Checked="Filter_Razduzenja_Changed"/>
-                                </WrapPanel>
+                                </StackPanel>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovoRazduzenje" Content="➕ Novo razduženje" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Unos novog naloga razduženja magacina (F2)" Click="BtnNovoRazduzenje_Click"/>
+                                <Button x:Name="BtnIzmeniRazduzenje" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" ToolTip="Izmeni izabrano razduženje" Click="BtnIzmeniRazduzenje_Click"/>
+                                <Button x:Name="BtnKnjiziRazduzenje" Content="✅ Proknjiži nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" ToolTip="Proknjiži izabrani nalog razduženja" Click="BtnKnjiziRazduzenje_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjeRazduzenja" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,8,2" ToolTip="Masovno proknjiži sve neproknjižene naloge razduženja" Click="BtnMasovnoKnjizenjeRazduzenja_Click"/>
+                                <Button x:Name="BtnStampajRazduzenje" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj nalog razduženja u PDF" Margin="0,2,8,2" Click="BtnStampajRazduzenje_Click"/>
+                                <Button x:Name="BtnExportExcelRazduzenja" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz razduženja u Excel" Margin="0,2,0,2" Click="BtnExportExcelRazduzenja_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -395,22 +395,22 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovaPrimopredaja" Content="➕ Nova primopredaja" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaPrimopredaja_Click"/>
-                                <Button x:Name="BtnIzmeniPrimopredaju" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" Click="BtnIzmeniPrimopredaju_Click"/>
-                                <Button x:Name="BtnKnjiziPrimopredaju" Content="✅ Proknjiži nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjiziPrimopredaju_Click"/>
-                                <Button x:Name="BtnMasovnoKnjizenjePrimopredaja" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,8,2" Click="BtnMasovnoKnjizenjePrimopredaja_Click"/>
-                                <Button x:Name="BtnStampajPrimopredaju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,8,2" Click="BtnStampajPrimopredaju_Click"/>
-                                <Button x:Name="BtnExportExcelPrimopredajeTrg" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelPrimopredajeTrg_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga primopredaja:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaPrimopredaja" Width="260" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPrimopredaja_TextChanged" Margin="0,2,16,2"/>
-                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                <TextBox x:Name="TxtPretragaPrimopredaja" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaPrimopredaja_TextChanged" Margin="0,2,16,2"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,2">
                                     <RadioButton x:Name="RbSviPrimopredajeTrg" Content="Svi" GroupName="PrimopredajeTrgStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_PrimopredajeTrg_Changed"/>
                                     <RadioButton x:Name="RbProknjizeniPrimopredajeTrg" Content="Proknjiženi" GroupName="PrimopredajeTrgStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_PrimopredajeTrg_Changed"/>
                                     <RadioButton x:Name="RbNeproknjizeniPrimopredajeTrg" Content="Neproknjiženi" GroupName="PrimopredajeTrgStatusFilter" VerticalAlignment="Center" Checked="Filter_PrimopredajeTrg_Changed"/>
-                                </WrapPanel>
+                                </StackPanel>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaPrimopredaja" Content="➕ Nova primopredaja" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Unos novog naloga primopredaje (F2)" Click="BtnNovaPrimopredaja_Click"/>
+                                <Button x:Name="BtnIzmeniPrimopredaju" Content="✏️ Izmeni" Width="90" Height="34" Margin="0,2,8,2" ToolTip="Izmeni izabranu primopredaju" Click="BtnIzmeniPrimopredaju_Click"/>
+                                <Button x:Name="BtnKnjiziPrimopredaju" Content="✅ Proknjiži nalog" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" ToolTip="Proknjiži izabranu primopredaju" Click="BtnKnjiziPrimopredaju_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjePrimopredaja" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,8,2" ToolTip="Masovno proknjiži sve neproknjižene primopredaje" Click="BtnMasovnoKnjizenjePrimopredaja_Click"/>
+                                <Button x:Name="BtnStampajPrimopredaju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj primopredaju u PDF" Margin="0,2,8,2" Click="BtnStampajPrimopredaju_Click"/>
+                                <Button x:Name="BtnExportExcelPrimopredajeTrg" Content="X" FontWeight="Bold" FontSize="20" Width="36" Height="34" Background="#059669" Foreground="White" ToolTip="Izvoz primopredaja u Excel" Margin="0,2,0,2" Click="BtnExportExcelPrimopredajeTrg_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -460,27 +460,27 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNovaKalkulacija" Content="➕ Nova kalkulacija" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" Click="BtnNovaKalkulacija_Click"/>
-                                <Button x:Name="BtnIzmeniKalkulaciju" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" Click="BtnIzmeniKalkulaciju_Click"/>
-                                <Button x:Name="BtnKnjiziKalkulaciju" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnKnjiziKalkulaciju_Click"/>
-                                <Button x:Name="BtnNapredniFilterKalkulacije" Content="⚙️ Napredni filter" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,2,8,2" Click="BtnNapredniFilterTrgovina_Click"/>
-                                <Button x:Name="BtnExportExcelKalkulacije" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelKalkulacije_Click"/>
-                                <Button x:Name="BtnStampajKalkulaciju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,0,2" Click="BtnStampajKalkulaciju_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="Tip:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
                                 <ComboBox x:Name="CmbTipKalkulacije" Height="34" Width="170" VerticalContentAlignment="Center" Margin="0,2,16,2" SelectionChanged="CmbTipKalkulacije_SelectionChanged">
                                     <ComboBoxItem Content="🏬 Veleprodaja" IsSelected="True"/>
                                     <ComboBoxItem Content="🏪 Maloprodaja"/>
                                 </ComboBox>
                                 <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                                <TextBox x:Name="TxtPretraga" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged" Margin="0,2,16,2"/>
-                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                <TextBox x:Name="TxtPretraga" Width="180" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretraga_TextChanged" Margin="0,2,16,2"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,2">
                                     <RadioButton x:Name="RbSviKalkulacije" Content="Svi" GroupName="KalkulacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Kalkulacije_Changed"/>
                                     <RadioButton x:Name="RbProknjizeniKalkulacije" Content="Proknjiženi" GroupName="KalkulacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Kalkulacije_Changed"/>
                                     <RadioButton x:Name="RbNeproknjizeniKalkulacije" Content="Neproknjiženi" GroupName="KalkulacijeStatusFilter" VerticalAlignment="Center" Checked="Filter_Kalkulacije_Changed"/>
-                                </WrapPanel>
+                                </StackPanel>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNovaKalkulacija" Content="➕ Nova kalkulacija" Style="{StaticResource ActionButtonStyle}" Margin="0,2,8,2" ToolTip="Unos nove kalkulacije ulaza robe (F2)" Click="BtnNovaKalkulacija_Click"/>
+                                <Button x:Name="BtnIzmeniKalkulaciju" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" ToolTip="Izmeni izabranu kalkulaciju" Click="BtnIzmeniKalkulaciju_Click"/>
+                                <Button x:Name="BtnKnjiziKalkulaciju" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" ToolTip="Proknjiži izabranu kalkulaciju u magacin" Click="BtnKnjiziKalkulaciju_Click"/>
+                                <Button x:Name="BtnNapredniFilterKalkulacije" Content="⚙️ Napredni filter" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Margin="0,2,8,2" ToolTip="Otvori napredni filter kalkulacija po periodu i dobavljaču" Click="BtnNapredniFilterTrgovina_Click"/>
+                                <Button x:Name="BtnExportExcelKalkulacije" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz kalkulacija u Excel" Margin="0,2,8,2" Click="BtnExportExcelKalkulacije_Click"/>
+                                <Button x:Name="BtnStampajKalkulaciju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj kalkulaciju u PDF" Margin="0,2,0,2" Click="BtnStampajKalkulaciju_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -538,28 +538,28 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnNoviRacun" Content="➕ Novi račun" Style="{StaticResource ActionButtonStyle}" Margin="0,2,6,2" Click="BtnNoviRacun_Click"/>
-                                <Button x:Name="BtnIzmeniRacun" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,6,2" Click="BtnIzmeniRacun_Click"/>
-                                <Button x:Name="BtnKnjiziRacun" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" Click="BtnKnjiziRacun_Click"/>
-                                <Button x:Name="BtnMasovnoKnjizenjeRacuna" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,6,2" Click="BtnMasovnoKnjizenjeRacuna_Click"/>
-                                <Button x:Name="BtnPretvoriPredracun" Content="🔁" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Width="36" Padding="0" ToolTip="Pretvori predračun u račun" Margin="0,2,6,2" Click="BtnPretvoriPredracun_Click"/>
-                                <Button x:Name="BtnPosaljiNaSef" Content="📤 Pošalji na SEF" Style="{StaticResource ActionButtonStyle}" Background="#0284C7" Margin="0,2,6,2" ToolTip="Pošalji e-fakturu na SEF portal" Click="BtnPosaljiNaSef_Click"/>
-                                <Button x:Name="BtnSacuvajUblXml" Content="📄 UBL XML" Style="{StaticResource ActionButtonStyle}" Background="#334155" Margin="0,2,6,2" ToolTip="Sačuvaj UBL 2.1 XML fajl" Click="BtnSacuvajUblXml_Click"/>
-                                <Button x:Name="BtnFiskalizujPfr" Content="🧾 Fiskalizuj (PFR)" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,6,2" ToolTip="Izdavanje fiskalnog računa preko PFR-a" Click="BtnFiskalizujPfr_Click"/>
-                                <Button x:Name="BtnPreuzmiUlazneSef" Content="📥 Ulazne SEF" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,6,2" ToolTip="Preuzmi ulazne e-fakture sa SEF-a" Click="BtnPreuzmiUlazneSef_Click"/>
-                                <Button x:Name="BtnExportExcelRacuni" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,6,2" Click="BtnExportExcelRacuni_Click"/>
-                                <Button x:Name="BtnStampajRacun" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj Račun (PDF)" Margin="0,2,0,2" Click="BtnStampajRacun_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga faktura:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaRacuna" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRacuna_TextChanged" Margin="0,2,16,2"/>
-                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                <TextBox x:Name="TxtPretragaRacuna" Width="180" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaRacuna_TextChanged" Margin="0,2,16,2"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,2">
                                     <RadioButton x:Name="RbSviRacuni" Content="Svi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
                                     <RadioButton x:Name="RbProknjizeniRacuni" Content="Proknjiženi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
                                     <RadioButton x:Name="RbNeproknjizeniRacuni" Content="Neproknjiženi" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Racuni_Changed"/>
                                     <RadioButton x:Name="RbPredracuniRacuni" Content="Predračuni" GroupName="RacuniStatusFilter" VerticalAlignment="Center" Checked="Filter_Racuni_Changed"/>
-                                </WrapPanel>
+                                </StackPanel>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnNoviRacun" Content="➕ Novi račun" Style="{StaticResource ActionButtonStyle}" Margin="0,2,6,2" ToolTip="Unos novog računa / otpremnice (F2)" Click="BtnNoviRacun_Click"/>
+                                <Button x:Name="BtnIzmeniRacun" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,6,2" ToolTip="Izmeni izabrani račun / otpremnicu" Click="BtnIzmeniRacun_Click"/>
+                                <Button x:Name="BtnKnjiziRacun" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" ToolTip="Proknjiži izabrani račun / otpremnicu" Click="BtnKnjiziRacun_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjeRacuna" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,6,2" ToolTip="Masovno proknjiži sve neproknjižene račune" Click="BtnMasovnoKnjizenjeRacuna_Click"/>
+                                <Button x:Name="BtnPretvoriPredracun" Content="🔁" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Width="36" Padding="0" ToolTip="Pretvori predračun u račun" Margin="0,2,6,2" Click="BtnPretvoriPredracun_Click"/>
+                                <Button x:Name="BtnPosaljiNaSef" Content="📤 Pošalji na SEF" Style="{StaticResource ActionButtonStyle}" Background="#0284C7" Margin="0,2,6,2" ToolTip="Pošalji e-fakturu na SEF portal" Click="BtnPosaljiNaSef_Click"/>
+                                <Button x:Name="BtnSacuvajUblXml" Content="📄 UBL XML" Style="{StaticResource ActionButtonStyle}" Background="#334155" Margin="0,2,6,2" ToolTip="Sačuvaj UBL 2.1 XML fajl e-fakture" Click="BtnSacuvajUblXml_Click"/>
+                                <Button x:Name="BtnFiskalizujPfr" Content="🧾 Fiskalizuj (PFR)" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,6,2" ToolTip="Izdavanje fiskalnog računa preko PFR-a" Click="BtnFiskalizujPfr_Click"/>
+                                <Button x:Name="BtnPreuzmiUlazneSef" Content="📥 Ulazne SEF" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,6,2" ToolTip="Preuzmi ulazne e-fakture sa SEF-a" Click="BtnPreuzmiUlazneSef_Click"/>
+                                <Button x:Name="BtnExportExcelRacuni" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz računa u Excel" Margin="0,2,6,2" Click="BtnExportExcelRacuni_Click"/>
+                                <Button x:Name="BtnStampajRacun" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj Račun (PDF)" Margin="0,2,0,2" Click="BtnStampajRacun_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -622,23 +622,23 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnGenerisiNivelaciju" Content="⚙️ Svođenje cena" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,6,2" Click="BtnGenerisiNivelaciju_Click"/>
-                                <Button x:Name="BtnNovaNivelacija" Content="➕ Nova nivelacija" Style="{StaticResource ActionButtonStyle}" Margin="0,2,6,2" Click="BtnNovaNivelacija_Click"/>
-                                <Button x:Name="BtnIzmeniNivelaciju" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,6,2" Click="BtnIzmeniNivelaciju_Click"/>
-                                <Button x:Name="BtnKnjiziNivelaciju" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" Click="BtnKnjiziNivelaciju_Click"/>
-                                <Button x:Name="BtnMasovnoKnjizenjeNivelacija" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,6,2" Click="BtnMasovnoKnjizenjeNivelacija_Click"/>
-                                <Button x:Name="BtnExportExcelNivelacije" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,6,2" Click="BtnExportExcelNivelacije_Click"/>
-                                <Button x:Name="BtnStampajNivelaciju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj Zapisnik (PDF)" Margin="0,2,0,2" Click="BtnStampajNivelaciju_Click"/>
-                            </WrapPanel>
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="🔍 Pretraga nivelacija:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                <TextBox x:Name="TxtPretragaNivelacija" Width="220" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaNivelacija_TextChanged" Margin="0,2,16,2"/>
-                                <WrapPanel VerticalAlignment="Center" Margin="0,2,0,2">
+                                <TextBox x:Name="TxtPretragaNivelacija" Width="180" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaNivelacija_TextChanged" Margin="0,2,16,2"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,2">
                                     <RadioButton x:Name="RbSviNivelacije" Content="Svi" GroupName="NivelacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Nivelacije_Changed"/>
                                     <RadioButton x:Name="RbProknjizeniNivelacije" Content="Proknjiženi" GroupName="NivelacijeStatusFilter" VerticalAlignment="Center" Margin="0,0,8,0" Checked="Filter_Nivelacije_Changed"/>
                                     <RadioButton x:Name="RbNeproknjizeniNivelacije" Content="Neproknjiženi" GroupName="NivelacijeStatusFilter" VerticalAlignment="Center" Checked="Filter_Nivelacije_Changed"/>
-                                </WrapPanel>
+                                </StackPanel>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnGenerisiNivelaciju" Content="⚙️ Svođenje cena" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,6,2" ToolTip="Automatska nivelacija na zadate prodajne cene" Click="BtnGenerisiNivelaciju_Click"/>
+                                <Button x:Name="BtnNovaNivelacija" Content="➕ Nova nivelacija" Style="{StaticResource ActionButtonStyle}" Margin="0,2,6,2" ToolTip="Unos novog zapisnika o nivelaciji cena (F2)" Click="BtnNovaNivelacija_Click"/>
+                                <Button x:Name="BtnIzmeniNivelaciju" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,6,2" ToolTip="Izmeni zapisnik o nivelaciji" Click="BtnIzmeniNivelaciju_Click"/>
+                                <Button x:Name="BtnKnjiziNivelaciju" Content="✅ Proknjiži" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,6,2" ToolTip="Proknjiži nivelaciju cena" Click="BtnKnjiziNivelaciju_Click"/>
+                                <Button x:Name="BtnMasovnoKnjizenjeNivelacija" Content="⚡ Masovno knjiženje" Style="{StaticResource ActionButtonStyle}" Background="#8B5CF6" Margin="0,2,6,2" ToolTip="Masovno proknjiži sve neproknjižene nivelacije" Click="BtnMasovnoKnjizenjeNivelacija_Click"/>
+                                <Button x:Name="BtnExportExcelNivelacije" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz nivelacija u Excel" Margin="0,2,6,2" Click="BtnExportExcelNivelacije_Click"/>
+                                <Button x:Name="BtnStampajNivelaciju" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj Zapisnik (PDF)" Margin="0,2,0,2" Click="BtnStampajNivelaciju_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>
@@ -807,15 +807,7 @@
 
                     <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                         <DockPanel LastChildFill="True">
-                            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button x:Name="BtnOsveziBruto" Content="🔄 Osveži bilans" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" Click="BtnOsveziBruto_Click"/>
-                                <Button x:Name="BtnStampajRasporedArtikala" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Width="36" Padding="0" ToolTip="Raspored artikala (PDF)" Margin="0,2,8,2" Click="BtnStampajRasporedArtikala_Click"/>
-                                <Button x:Name="BtnStampajStanjePoArtiklima" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Width="36" Padding="0" ToolTip="Stanje po artiklima (PDF)" Margin="0,2,8,2" Click="BtnStampajStanjePoArtiklima_Click"/>
-                                <Button x:Name="BtnExportExcelRobniBruto" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,8,2" Click="BtnExportExcelRobniBruto_Click"/>
-                                <Button x:Name="BtnStampajRobniBruto" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj PDF" Margin="0,2,0,2" Click="BtnStampajRobniBruto_Click"/>
-                            </WrapPanel>
-
-                            <WrapPanel VerticalAlignment="Center">
+                            <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,2,16,2">
                                 <TextBlock Text="Magacin:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0"/>
                                 <ComboBox x:Name="CmbMagacinBruto" Width="180" Height="34" DisplayMemberPath="NazivMagacina" SelectedValuePath="MagacinId" SelectionChanged="CmbMagacinBruto_SelectionChanged" Margin="0,2,16,2"/>
 
@@ -824,6 +816,13 @@
 
                                 <TextBlock Text="🔍 Pretraga:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0"/>
                                 <TextBox x:Name="TxtPretragaBruto" Width="180" Height="34" VerticalContentAlignment="Center" Padding="8,0" TextChanged="TxtPretragaBruto_TextChanged" Margin="0,2,0,2"/>
+                            </WrapPanel>
+                            <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnOsveziBruto" Content="🔄 Osveži bilans" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" ToolTip="Preračunaj i osveži robni bruto bilans" Click="BtnOsveziBruto_Click"/>
+                                <Button x:Name="BtnStampajRasporedArtikala" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Width="36" Padding="0" ToolTip="Raspored artikala po magacinima (PDF)" Margin="0,2,8,2" Click="BtnStampajRasporedArtikala_Click"/>
+                                <Button x:Name="BtnStampajStanjePoArtiklima" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Width="36" Padding="0" ToolTip="Stanje zaliha po artiklima (PDF)" Margin="0,2,8,2" Click="BtnStampajStanjePoArtiklima_Click"/>
+                                <Button x:Name="BtnExportExcelRobniBruto" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz robnog bruto bilansa u Excel" Margin="0,2,8,2" Click="BtnExportExcelRobniBruto_Click"/>
+                                <Button x:Name="BtnStampajRobniBruto" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Width="36" Padding="0" ToolTip="Štampaj robni bruto bilans (PDF)" Margin="0,2,0,2" Click="BtnStampajRobniBruto_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Border>

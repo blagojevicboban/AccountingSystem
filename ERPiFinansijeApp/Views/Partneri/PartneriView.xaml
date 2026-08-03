@@ -14,7 +14,7 @@
         <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="16" Margin="0,0,16,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
                 <TextBlock Text="👥 Partneri" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
-                <TextBox x:Name="TxtPretragaPartnera" DockPanel.Dock="Top" Height="34" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,12" TextChanged="TxtPretragaPartnera_TextChanged"/>
+                <TextBox x:Name="TxtPretragaPartnera" Style="{StaticResource SearchTextBoxStyle}" DockPanel.Dock="Top" Height="34" Margin="0,0,0,12" ToolTip="Pretraga partnera po nazivu, PIV-u ili matičnom broju" TextChanged="TxtPretragaPartnera_TextChanged"/>
                 <ListBox x:Name="LstPartneri" DockPanel.Dock="Top" BorderThickness="0" SelectionChanged="LstPartneri_SelectionChanged">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -42,8 +42,8 @@
                         <Button x:Name="BtnKursnaLista" Content="💱 Kursna lista NBS" Style="{StaticResource ActionButtonStyle}" Background="#0284C7" Margin="0,2,10,2" ToolTip="Prikaz kursne liste NBS i kalkulator valuta" Click="BtnKursnaLista_Click"/>
                         <Button x:Name="BtnVerifikujRacun" Content="🔍 Verifikuj račun (NBS)" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,10,2" ToolTip="Provera tekućeg računa i blokada u NBS registru" Click="BtnVerifikujRacun_Click"/>
                         <Button x:Name="BtnStampajIOS" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Width="36" Padding="0" ToolTip="Izvezi IOS (PDF)" Margin="0,2,10,2" Click="BtnStampajIOS_Click"/>
-                        <Button x:Name="BtnObracunKamate" Content="💰 Obračun kamate" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,10,2" Click="BtnObracunKamate_Click"/>
-                        <Button x:Name="BtnExportExcelPartneri" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" Margin="0,2,0,2" Click="BtnExportExcelPartneri_Click"/>
+                        <Button x:Name="BtnObracunKamate" Content="💰 Obračun kamate" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,10,2" ToolTip="Kalkulacija i obračun zatezne kamate za dospela potraživanja" Click="BtnObracunKamate_Click"/>
+                        <Button x:Name="BtnExportExcelPartneri" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz kartice partnera u Excel" Margin="0,2,0,2" Click="BtnExportExcelPartneri_Click"/>
                     </WrapPanel>
                     <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
                         <TextBlock x:Name="TxtNaslovPartnera" Text="Izaberite partnera sa leve strane" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>

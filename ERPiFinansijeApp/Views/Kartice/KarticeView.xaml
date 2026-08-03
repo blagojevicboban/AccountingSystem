@@ -14,13 +14,13 @@
         <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="16" Margin="0,0,16,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
                 <TextBlock Text="📋 Kontni plan" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
-                <TextBox x:Name="TxtPretragaKonta" DockPanel.Dock="Top" Height="34" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,0,8" ToolTip="Pretraga po broju ili nazivu konta" TextChanged="TxtPretragaKonta_TextChanged"/>
+                <TextBox x:Name="TxtPretragaKonta" Style="{StaticResource SearchTextBoxStyle}" DockPanel.Dock="Top" Height="34" Margin="0,0,0,8" ToolTip="Pretraga po broju ili nazivu konta" TextChanged="TxtPretragaKonta_TextChanged"/>
                 <CheckBox x:Name="ChkSamoSaPrometom" Content="Samo konta sa knjiženjima" DockPanel.Dock="Top" Margin="0,0,0,12" IsChecked="True" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12" ToolTip="Označi za štampu sve konta u opsegu, ili samo &quot;Od&quot; za celu klasu (npr. 5)">
                     <TextBox x:Name="TxtOpsegOd" Width="60" Height="28" VerticalContentAlignment="Center" Padding="4,0" ToolTip="Od konta (ili klasa, npr. 5)"/>
                     <TextBlock Text="–" VerticalAlignment="Center" Margin="4,0"/>
                     <TextBox x:Name="TxtOpsegDo" Width="60" Height="28" VerticalContentAlignment="Center" Padding="4,0" ToolTip="Do konta (opciono)"/>
-                    <Button x:Name="BtnOznaciOpseg" Content="Označi opseg" Style="{StaticResource ActionButtonStyle}" Height="28" Padding="10,0" Margin="8,0,0,0" Click="BtnOznaciOpseg_Click"/>
+                    <Button x:Name="BtnOznaciOpseg" Content="Označi opseg" Style="{StaticResource ActionButtonStyle}" Height="28" Padding="10,0" Margin="8,0,0,0" ToolTip="Označi sva konta u navedenom opsegu kontnog plana" Click="BtnOznaciOpseg_Click"/>
                 </StackPanel>
                 <DataGrid x:Name="LstKonta" AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="FullRow" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" ToolTip="Desni klik za dodatne opcije" SelectionChanged="LstKonta_SelectionChanged" PreviewMouseRightButtonDown="LstKonta_PreviewMouseRightButtonDown">
                     <DataGrid.ContextMenu>
@@ -65,7 +65,7 @@
                             <DatePicker x:Name="DpKarticaDo" Width="115" Height="32" ToolTip="Kraj perioda za karticu konta" SelectedDateChanged="Period_Changed"/>
                         </StackPanel>
                         <Button x:Name="BtnStampajKartice" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Width="36" Padding="0" ToolTip="Štampaj karticu/e (PDF)" VerticalAlignment="Center" Margin="0,2,8,2" Click="BtnStampajKartice_Click" IsEnabled="False"/>
-                        <Button x:Name="BtnExportExcelKartica" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz u Excel" VerticalAlignment="Center" Margin="0,2,0,2" Click="BtnExportExcelKartica_Click"/>
+                        <Button x:Name="BtnExportExcelKartica" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz kartice konta u Excel" VerticalAlignment="Center" Margin="0,2,0,2" Click="BtnExportExcelKartica_Click"/>
                     </WrapPanel>
 
                     <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
@@ -82,7 +82,18 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <DataGrid x:Name="DgKartica" Grid.Row="0" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" ToolTip="Dupli klik na stavku otvara nalog za knjiženje" MouseDoubleClick="DgKartica_MouseDoubleClick">
+                    <DataGrid x:Name="DgKartica" Grid.Row="0" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" ToolTip="Dupli klik ili desni klik na stavku otvara nalog za knjiženje" MouseDoubleClick="DgKartica_MouseDoubleClick">
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="👁️ Pregledaj nalog (Samo za čitanje)" Click="CtxPregledajNalog_Click"/>
+                                <MenuItem Header="✏️ Izmeni / Rasknjiži nalog" Click="CtxIzmeniNalog_Click"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <EventSetter Event="PreviewMouseRightButtonDown" Handler="DgKarticaRow_PreviewMouseRightButtonDown"/>
+                            </Style>
+                        </DataGrid.RowStyle>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
                             <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="120"/>

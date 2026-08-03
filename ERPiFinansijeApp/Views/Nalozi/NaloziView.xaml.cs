@@ -288,6 +288,139 @@ public partial class NaloziView : UserControl
         }
     }
 
+    /// <summary>
+    /// Uvoz naloga za knjiženje iz ERPiZarade.
+    ///
+    /// Nalog se prvo pročita i pokaže, pa tek po potvrdi snimi — i to kao
+    /// <b>neproknjižen</b>. Knjiženje ostaje odluka korisnika, kao i kod svakog drugog naloga.
+    /// </summary>
+    private async void BtnUvozZarada_Click(object sender, RoutedEventArgs e)
+    {
+        var ofd = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "Nalog iz ERPiZarade (*.json)|*.json|Svi fajlovi (*.*)|*.*",
+            Title = "Izaberite nalog za knjiženje izvezen iz ERPiZarade"
+        };
+
+        if (ofd.ShowDialog() != true) return;
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new ZaradeImportService(db);
+
+            var rezultat = await service.ProcitajAsync(ofd.FileName);
+
+            // Konta koja nedostaju su jedina greška koja se rešava na licu mesta: kad ih
+            // korisnik potvrdi, zavedu se i fajl se čita ponovo. Provera time nije zaobiđena
+            // nego rešena — posle zavođenja konto postoji, pa iznos ima svoju karticu.
+            if (!rezultat.SmeSeUvesti && rezultat.KontaKojaNedostaju.Count > 0
+                && await PonudiZavodjenjeKontaAsync(service, rezultat))
+            {
+                rezultat = await service.ProcitajAsync(ofd.FileName);
+            }
+
+            if (!rezultat.SmeSeUvesti)
+            {
+                MessageBox.Show(
+                    "Nalog nije uvezen:\n\n" +
+                    string.Join(Environment.NewLine,
+                        rezultat.Nalazi
+                            .Where(n => n.Tezina == TezinaNalazaUvoza.Greska)
+                            .Take(10)
+                            .Select(n => $"• {n.Provera}: {n.Opis}")),
+                    "Uvoz zaustavljen", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var nalog = rezultat.Nalog!;
+
+            string poruka =
+                $"Iz fajla je pročitano:\n\n" +
+                $"• Firma: {rezultat.FirmaNaziv}\n" +
+                $"• Period: {rezultat.Mesec:D2}/{rezultat.Godina}" +
+                (rezultat.RedniBrojIsplate > 1 ? $", isplata {rezultat.RedniBrojIsplate}" : "") + "\n" +
+                $"• Opis: {nalog.Opis}\n" +
+                $"• Stavki: {nalog.Stavke.Count}\n" +
+                $"• Duguje: {nalog.UkupnoDuguje:N2}   Potražuje: {nalog.UkupnoPotrazuje:N2}\n" +
+                $"• Broj naloga koji će dobiti: {nalog.BrojNaloga}\n";
+
+            var upozorenja = rezultat.Nalazi.Where(n => n.Tezina == TezinaNalazaUvoza.Upozorenje).ToList();
+            if (upozorenja.Count > 0)
+            {
+                poruka += "\nProveriti:\n" +
+                          string.Join(Environment.NewLine, upozorenja.Select(n => $"• {n.Provera}: {n.Opis}")) + "\n";
+            }
+
+            if (rezultat.MogucDuplikat != null)
+            {
+                poruka += $"\nPAŽNJA: nalog #{rezultat.MogucDuplikat.BrojNaloga} istog opisa i datuma " +
+                          "već postoji. Verovatno je ovaj fajl već uvezen.\n";
+            }
+
+            poruka += "\nUvesti nalog? Ostaje neproknjižen dok ga sami ne proknjižite.";
+
+            if (MessageBox.Show(poruka, "Potvrda uvoza", MessageBoxButton.YesNo, MessageBoxImage.Question)
+                != MessageBoxResult.Yes)
+                return;
+
+            await service.UveziAsync(nalog);
+
+            LoadNalozi();
+
+            MessageBox.Show($"Uvezen nalog #{nalog.BrojNaloga} sa {nalog.Stavke.Count} stavki.",
+                "Uvoz završen", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri uvozu naloga: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Nudi da se konta koja nalogu nedostaju zavedu u kontni plan, sa nazivima iz Kontnog
+    /// okvira. Vraća <c>true</c> ako je bar jedan konto zaveden, pa se fajl čita ponovo.
+    ///
+    /// Postoji zato što ERPiFinansije nema podrazumevani kontni plan: nova faza u ERPiZarade
+    /// donese konto koji firma nikad nije otvorila, i prvi uvoz stane. Nazivi se pokazuju
+    /// pre potvrde — konto se zavodi u knjige, a ne usput.
+    /// </summary>
+    private static async Task<bool> PonudiZavodjenjeKontaAsync(
+        ZaradeImportService service, RezultatCitanjaZarada rezultat)
+    {
+        var konta = rezultat.KontaKojaNedostaju;
+
+        // Druge greške (nalog van ravnoteže, pogrešan format) se zavođenjem konta ne rešavaju,
+        // pa nema smisla ni nuditi ga — korisnik bi zaveo konta i opet ostao bez uvoza.
+        bool samoKonta = rezultat.Nalazi
+            .Where(n => n.Tezina == TezinaNalazaUvoza.Greska)
+            .All(n => n.Provera == "Konto ne postoji u kontnom planu");
+
+        if (!samoKonta) return false;
+
+        bool sviIzOkvira = konta.All(k => k.IzKontnogOkvira);
+
+        string poruka =
+            $"Kontni plan nema {konta.Count} konta koja ovaj nalog traži:\n\n" +
+            string.Join(Environment.NewLine, konta.Select(k => $"• {k.Prikaz}")) + "\n\n" +
+            (sviIzOkvira
+                ? "Nazivi su iz Pravilnika o Kontnom okviru."
+                : "Za konta koja Kontni okvir ne prepoznaje predložen je opis stavke iz naloga.") +
+            "\n\nZavesti ih u kontni plan? Naziv i ostalo možete izmeniti kasnije u „Kontnom planu“.";
+
+        if (MessageBox.Show(poruka, "Nedostaju konta", MessageBoxButton.YesNo, MessageBoxImage.Question)
+            != MessageBoxResult.Yes)
+            return false;
+
+        int dodato = await service.ZavediKontaAsync(konta);
+
+        return dodato > 0;
+    }
+
     private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
     {
         while (current != null)

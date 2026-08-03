@@ -74,7 +74,31 @@
                     <TextBlock Text="Pri kreiranju nove stavke, sistem izračunava razliku između ukupno Duguje i Potražuje i automatski predlaže iznos razlike na suprotnoj strani da nalog dođe u ravnotežu." TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextMutedBrush}"/>
 
                     <TextBlock Text="• Auto-prepisivanje opisa i dokumenta:" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,2"/>
-                    <TextBlock Text="Svaka nova stavka automatski preuzima broj dokumenta, opis i partnera iz prethodne stavke radi bržeg unosa." TextWrapping="Wrap" Foreground="{StaticResource TextMutedBrush}"/>
+                    <TextBlock Text="Svaka nova stavka automatski preuzima broj dokumenta, opis i partnera iz prethodne stavke radi bržeg unosa." TextWrapping="Wrap" Margin="0,0,0,16" Foreground="{StaticResource TextMutedBrush}"/>
+
+                    <Separator Background="{StaticResource BorderBrush}" Margin="0,0,0,16"/>
+
+                    <TextBlock Text="📒 Uvoz zarada iz ERPiZarade" FontSize="14" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,0,0,8"/>
+
+                    <TextBlock Text="Dugme „📒 Uvoz zarada“ učitava nalog za knjiženje koji je ERPiZarade izvezao (meni „Nalog za knjiženje“ → „Za ERPiFinansije (JSON)“)." TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextMutedBrush}"/>
+
+                    <TextBlock Text="• Ništa se ne računa pri uvozu:" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,2"/>
+                    <TextBlock Text="Stavke, konta i iznosi su izvedeni iz obračuna, gde jedino i postoje podaci o radnicima. Ovde se samo proveravaju i prepisuju — tako nalog ostaje jednak nalozima za prenos i PPP-PD prijavi." TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextMutedBrush}"/>
+
+                    <TextBlock Text="• Uvoz se zaustavlja u tri slučaja:" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,2"/>
+                    <TextBlock Text="fajl nije iz ERPiZarade, nalog nije u ravnoteži, ili neki konto ne postoji u kontnom planu." TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextMutedBrush}"/>
+
+                    <TextBlock Text="• Konta koja nedostaju program nudi da zavede:" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,2"/>
+                    <TextBlock Text="Prikaže spisak sa nazivima iz Pravilnika o Kontnom okviru i zavede ih tek po vašoj potvrdi; naziv posle menjate u „Kontnom planu“ kao i kod svakog konta. Za analitiku (npr. 520-1) predlaže se naziv sintetike. Konto možete i sami dodati, ili ga u ERPiZarade zameniti onim koji vodite." TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextMutedBrush}"/>
+
+                    <TextBlock Text="• Bolovanje na teret RFZO ne ide na trošak:" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,2"/>
+                    <TextBlock Text="Od ERPiZarade 1.15.0 refundirana naknada zarade stiže kao potraživanje na kontu 225, uz obaveze na 454, 455 i 456 — ne na 520/450. Potraživanje na 225 zatvarate izvodom posebnog računa kad refundacija stigne od Fonda." TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextMutedBrush}"/>
+
+                    <TextBlock Text="• Mesta troška se uparuju po šifri:" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,2"/>
+                    <TextBlock Text="Nepoznata šifra ne zaustavlja uvoz — te stavke ulaze bez podele, a podela se dobija kad se mesto troška zavede. Obaveze se po mestima troška ne dele." TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextMutedBrush}"/>
+
+                    <TextBlock Text="• Nalog ostaje neproknjižen:" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,2"/>
+                    <TextBlock Text="Knjiženje je vaša odluka, kao i kod svakog drugog naloga. Ako nalog istog opisa i datuma već postoji, program to javi pre potvrde — verovatno je isti fajl već uvezen." TextWrapping="Wrap" Foreground="{StaticResource TextMutedBrush}"/>
                 </StackPanel>
             </ScrollViewer>
         </Border>
