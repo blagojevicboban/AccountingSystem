@@ -56,7 +56,7 @@
                 </ComboBox>
 
                 <TextBlock Grid.Row="0" Grid.Column="1" Text="Kupac / Partner:" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
-                <ComboBox Grid.Row="1" Grid.Column="1" x:Name="CmbPartneri" DisplayMemberPath="Naziv" SelectedValuePath="PartnerId" Height="32" Margin="0,2,10,0"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" x:Name="CmbPartneri" Height="32" Margin="0,2,10,0" MaxDropDownHeight="280"/>
 
                 <TextBlock Grid.Row="0" Grid.Column="2" Text="Datum dok.:" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
                 <DatePicker Grid.Row="1" Grid.Column="2" x:Name="DpDatum" Height="32" Margin="0,2,10,0"/>

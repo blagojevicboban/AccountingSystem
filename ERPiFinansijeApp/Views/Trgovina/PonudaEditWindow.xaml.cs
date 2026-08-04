@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ERPiFinansijeApp.Services;
 using ERPiFinansijeData;
 using ERPiFinansijeData.Models;
 using ERPiFinansijeData.Services;
@@ -42,7 +43,9 @@ public partial class PonudaEditWindow : Window
         try
         {
             _partneri = await _db.Partneri.OrderBy(p => p.Naziv).ToListAsync();
-            CmbPartneri.ItemsSource = _partneri;
+            // Pretraga po šifri/nazivu/PIB-u dok se kuca, isto kao Kupac na računu-otpremnici
+            // (KontoPicker) — vidi ERPiFinansijeApp/Services/PartnerPicker.cs.
+            PartnerPicker.Poveži(CmbPartneri, _partneri);
 
             _artikli = await _db.Artikli.OrderBy(a => a.Naziv).ToListAsync();
             CmbArtikli.ItemsSource = _artikli;
@@ -50,10 +53,7 @@ public partial class PonudaEditWindow : Window
             DpDatum.SelectedDate = _ponuda.Datum;
             DpRokVazenja.SelectedDate = _ponuda.RokVazenja;
 
-            if (_ponuda.PartnerId.HasValue)
-            {
-                CmbPartneri.SelectedValue = _ponuda.PartnerId.Value;
-            }
+            PartnerPicker.PostaviPartnera(CmbPartneri, _ponuda.PartnerId);
 
             TxtNapomena.Text = _ponuda.Napomena;
 
@@ -147,7 +147,7 @@ public partial class PonudaEditWindow : Window
         _ponuda.Datum = DpDatum.SelectedDate ?? DateTime.Today;
         _ponuda.RokVazenja = DpRokVazenja.SelectedDate ?? DateTime.Today.AddDays(15);
 
-        if (CmbPartneri.SelectedItem is Partner p)
+        if (PartnerPicker.IzabraniPartner(CmbPartneri) is { } p)
         {
             _ponuda.PartnerId = p.PartnerId;
             _ponuda.NazivPartnera = p.Naziv;

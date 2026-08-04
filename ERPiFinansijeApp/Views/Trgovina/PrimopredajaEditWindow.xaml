@@ -63,10 +63,32 @@
                     <Button x:Name="BtnDodajStavku" Content="➕ Dodaj stavku" Style="{StaticResource ActionButtonStyle}" Click="BtnDodajStavku_Click"/>
                 </StackPanel>
 
-                <DataGrid x:Name="DgStavke" AutoGenerateColumns="False" CanUserAddRows="False" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                <DataGrid x:Name="DgStavke" AutoGenerateColumns="False" CanUserAddRows="False" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                          CellEditEnding="DgStavke_CellEditEnding">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="R.br." Binding="{Binding RedniBroj}" Width="50" IsReadOnly="True"/>
-                        <DataGridComboBoxColumn x:Name="ColArtikal" Header="Artikal *" Width="2.5*"/>
+                        <!-- Template column (ne DataGridComboBoxColumn): pretraga po šifri i nazivu
+                             filtrira listu dok se kuca, isti obrazac kao ColKonto u NalogEditWindow. -->
+                        <DataGridTemplateColumn x:Name="ColArtikal" Header="Artikal *" Width="2.5*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding PrikazArtikla}" VerticalAlignment="Center" Margin="4,0" TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <ComboBox IsEditable="True"
+                                              IsTextSearchEnabled="False"
+                                              StaysOpenOnEdit="True"
+                                              DisplayMemberPath="Prikaz"
+                                              MaxDropDownHeight="280"
+                                              VerticalContentAlignment="Center"
+                                              Loaded="ArtikalCombo_Loaded"
+                                              Unloaded="ArtikalCombo_Unloaded"
+                                              SelectionChanged="ArtikalCombo_SelectionChanged"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Količina *" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="100"/>
                         <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="110"/>
                         <DataGridTextColumn Header="Iznos" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="120" IsReadOnly="True"/>

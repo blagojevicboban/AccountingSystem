@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERPiFinansijeData.Models;
 
@@ -35,4 +36,8 @@ public class Partner
 
     [MaxLength(20)]
     public string? KontoPartnera { get; set; }
+
+    /// <summary>"šifra - naziv" za padajuće liste, isti obrazac kao Artikal/Magacin/Konto.Prikaz.</summary>
+    [NotMapped]
+    public string Prikaz => string.IsNullOrWhiteSpace(SifraPartnera) ? Naziv : $"{SifraPartnera} - {Naziv}";
 }

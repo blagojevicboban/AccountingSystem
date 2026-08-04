@@ -4,6 +4,14 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.5.0] - 2026-08-05
+
+### 🔍 Pretraga po šifri i nazivu u ćeliji artikla (Primopredaje/Zaduženja/Razduženja) i polju kupca (Ponude)
+- **Artikal u `PrimopredajaEditWindow`** (deljen za tabove Primopredaje/Zaduženja/Razduženja u Trgovini) je bio obična padajuća lista bez pretrage, sa samo nazivom artikla — nemoguće pronaći artikal po šifri, a bez ijedne pretrage kroz nekoliko hiljada stavki šifarnika. Kolona je zamenjena template kolonom (isti obrazac kao `ColKonto` u `NalogEditWindow`): kucanje filtrira listu uživo po šifri ili nazivu, strelice gore/dole/PageUp/PageDown biraju kroz filtrirane rezultate, a Enter/Tab/klik mišem potvrđuju izbor. Ćelija van režima izmene sad prikazuje „šifra - naziv" (`PrimopredajaStavkaModel.PrikazArtikla`) umesto samo naziva.
+- **Kupac / Partner u `PonudaEditWindow`** je isto bio obična nepretraživa lista (samo naziv). Novi `PartnerPicker` (analogan postojećem `KontoPicker` za konta) čini polje editable sa pretragom po šifri, nazivu i PIB-u dok se kuca; `Partner` dobija `Prikaz` computed property („šifra - naziv"), isti obrazac kao `Artikal`/`Magacin`/`Konto`.
+- Verifikovano UI automatizacijom (`run-accounting-app` drajver): otvoren nalog Zaduženja, otkucano „rep" u ćeliji artikla, strelica dole + Enter je izabrala „R-02060 - reparatur malter"; otvorena postojeća ponuda, Kupac prikazuje „202094 - beles trans", polje prima kucani unos.
+- Isti nepretraživi obrazac (`DisplayMemberPath="Naziv"`) i dalje postoji na artikal/kupac poljima u drugim prozorima (npr. `RacunOtpremnicaEditWindow`, `KalkulacijaEditWindow`, `PonudaEditWindow.CmbArtikli`) — nije dirano u ovom koraku, ostaje za kasnije ako zatreba ista doslednost.
+
 ## [1.4.9] - 2026-08-04
 
 ### 🔄 Primopredaja veleprodaja↔maloprodaja pravi nalog u Glavnoj knjizi (`PrimopredajaService`, `PrimopredajaNalog`)
