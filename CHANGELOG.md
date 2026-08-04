@@ -4,6 +4,14 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.4.6] - 2026-08-04
+
+### 🐛 Ispravka pada pri otvaranju baze bez istorije migracija (`AccountingDbContext`)
+- **Aplikacija je padala sa `SQLite Error 1: 'table "Firme" already exists'`** kad je kao aktivna baza bila otvorena datoteka koju je kreirao drugi modul (npr. ERPi Zarade), ili baza čija je `__EFMigrationsHistory` tabela bila prazna. EF Core nije video nijednu primenjenu migraciju i pokušao da napravi `Firme` i ostale tabele koje već postoje.
+- **Uzrok:** `AccountingDbContext.Create` je zvao `ctx.Database.Migrate()` direktno, bez provere da li baza već ima šemu ali ne i evidenciju migracija.
+- **Popravka:** dodate tri privatne metode (`InitializeDatabase`, `PostojiZatecenaSemaBezMigracija`, `OznaciSveMigracijeKaoPrimenjene`) po uzoru na isti, već dokazan obrazac u `PlataDbContext` (ERPi Zarade). Pre `Migrate()` se proverava: ako baza postoji, sadrži tabele, ali nema ni jednu primenjenu migraciju — sve poznate migracije se upisuju u `__EFMigrationsHistory` bez izvršavanja (`INSERT OR IGNORE`), pa `Migrate()` primenjuje samo stvarno nove izmene šeme.
+- Pokrivena su tri scenarija: nova baza (sve od nule), zatečena baza bez istorije (sva migracijska evidencija se žigoše), baza sa potpunom istorijom (standardna nadogradnja).
+
 ## [1.4.5] - 2026-08-04
 
 ### 🧾 Ukalkulisani PDV maloprodaje ide na konto svoje stope (`RobnaKonta`, `MaloprodajnaKalkulacijaService`)
