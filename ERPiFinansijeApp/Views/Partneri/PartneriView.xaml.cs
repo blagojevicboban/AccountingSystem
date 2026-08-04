@@ -14,6 +14,7 @@ public partial class PartneriView : UserControl
 {
     private List<Partner> _sviPartneri = new();
     private Partner? _izabraniPartner;
+    private bool _ucitavanjeKonta;
 
     public PartneriView()
     {
@@ -69,9 +70,28 @@ public partial class PartneriView : UserControl
             using var db = new AccountingDbContext(options);
             var service = new OtvoreneStavkeService(db);
 
-            var stavke = await service.GetOtvoreneStavkeAsync(partner.PartnerId);
-            DgOtvoreneStavke.ItemsSource = stavke;
-            TxtSaldoPartnera.Text = (stavke.Count > 0 ? stavke[^1].Saldo : 0m).ToString("N2");
+            // Partner sa PartnerId=0 je "sintetički" — legacy analitički konto (204xxx/435xxx)
+            // bez veze u Partneri tabeli (vidi OtvoreneStavkeService.GetPartneriAsync). Za njega
+            // postoji tačno jedan konto (partner.KontoPartnera), pa GetPartnerKontaAsync (koja
+            // pretražuje po PartnerId-ju) nema smisla — kombo se puni direktno.
+            List<PartnerKontoInfo> konta = partner.PartnerId > 0
+                ? await service.GetPartnerKontaAsync(partner.PartnerId)
+                : new List<PartnerKontoInfo> { new() { BrojKonta = partner.KontoPartnera ?? partner.SifraPartnera, NazivKonta = partner.Naziv, BrojStavki = 0 } };
+
+            _ucitavanjeKonta = true;
+            CmbKontoKartice.ItemsSource = konta;
+            CmbKontoKartice.SelectedIndex = konta.Count > 0 ? 0 : -1;
+            _ucitavanjeKonta = false;
+
+            if (konta.Count > 0)
+            {
+                await UcitajKarticuZaKontoAsync(partner, konta[0].BrojKonta);
+            }
+            else
+            {
+                DgOtvoreneStavke.ItemsSource = null;
+                TxtSaldoPartnera.Text = 0m.ToString("N2");
+            }
         }
         catch (Exception ex)
         {
@@ -81,6 +101,38 @@ public partial class PartneriView : UserControl
         if (TabStavke.SelectedIndex == 1)
         {
             await LoadPraveOtvoreneStavkeAsync();
+        }
+    }
+
+    private async void CmbKontoKartice_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_ucitavanjeKonta || _izabraniPartner == null) return;
+        if (CmbKontoKartice.SelectedItem is not PartnerKontoInfo konto) return;
+
+        await UcitajKarticuZaKontoAsync(_izabraniPartner, konto.BrojKonta);
+    }
+
+    private async Task UcitajKarticuZaKontoAsync(Partner partner, string brojKonta)
+    {
+        try
+        {
+            var options = new DbContextOptionsBuilder<AccountingDbContext>()
+                .UseSqlite($"Data Source={AppConfig.DbPath}")
+                .Options;
+
+            using var db = new AccountingDbContext(options);
+            var service = new OtvoreneStavkeService(db);
+
+            var stavke = partner.PartnerId > 0
+                ? await service.GetOtvoreneStavkeAsync(partner.PartnerId, brojKonta)
+                : await service.GetOtvoreneStavkeZaKontoAsync(brojKonta);
+
+            DgOtvoreneStavke.ItemsSource = stavke;
+            TxtSaldoPartnera.Text = (stavke.Count > 0 ? stavke[^1].Saldo : 0m).ToString("N2");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Greška pri učitavanju kartice: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -104,7 +156,9 @@ public partial class PartneriView : UserControl
             using var db = new AccountingDbContext(options);
             var service = new ZatvaranjeStavkiService(db);
 
-            DgPraveOtvoreneStavke.ItemsSource = await service.GetOtvoreneStavkeZaPartneraAsync(_izabraniPartner.PartnerId);
+            DgPraveOtvoreneStavke.ItemsSource = _izabraniPartner.PartnerId > 0
+                ? await service.GetOtvoreneStavkeZaPartneraAsync(_izabraniPartner.PartnerId)
+                : await service.GetOtvoreneStavkeZaKontoAsync(_izabraniPartner.KontoPartnera ?? _izabraniPartner.SifraPartnera);
         }
         catch (Exception ex)
         {
@@ -117,6 +171,12 @@ public partial class PartneriView : UserControl
         if (_izabraniPartner == null)
         {
             MessageBox.Show("Izaberite partnera.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (_izabraniPartner.PartnerId <= 0)
+        {
+            MessageBox.Show("Ručno zatvaranje stavki je za sada dostupno samo za partnere iz šifarnika, ne i za legacy analitičke konte (204xxx/435xxx bez matičnog partnera).", "Nije podržano", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -136,6 +196,12 @@ public partial class PartneriView : UserControl
         if (_izabraniPartner == null)
         {
             MessageBox.Show("Izaberite partnera.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (_izabraniPartner.PartnerId <= 0)
+        {
+            MessageBox.Show("Istorija zatvaranja je za sada dostupna samo za partnere iz šifarnika, ne i za legacy analitičke konte (204xxx/435xxx bez matičnog partnera).", "Nije podržano", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -163,7 +229,10 @@ public partial class PartneriView : UserControl
 
             using var db = new AccountingDbContext(options);
             var service = new OtvoreneStavkeService(db);
-            var stavke = await service.GetOtvoreneStavkeAsync(partner.PartnerId);
+            string? brojKonta = (CmbKontoKartice.SelectedItem as PartnerKontoInfo)?.BrojKonta;
+            var stavke = partner.PartnerId > 0
+                ? await service.GetOtvoreneStavkeAsync(partner.PartnerId, brojKonta)
+                : await service.GetOtvoreneStavkeZaKontoAsync(brojKonta ?? partner.KontoPartnera ?? partner.SifraPartnera);
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "ARHIBEL - 2026" };
 
             byte[] pdfBytes = PdfReportService.GenerisiIOSPdf(firma, partner, stavke);

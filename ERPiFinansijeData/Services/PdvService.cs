@@ -13,7 +13,9 @@ public class PdvService
     }
 
     /// <summary>
-    /// Vraća stavke Knjige izdatih računa (KIR) iz proknjiženih računa-otpremnica za zadati period.
+    /// Vraća stavke Knjige izdatih računa (KIR) iz proknjiženih računa-otpremnica, kao i iz ručno
+    /// unetih GK naloga koji nisu prošli kroz Trgovinu (prepoznaju se po liniji na kontu 4700 —
+    /// izlazni PDV — sa popunjenom Osnovicom/Stopom PDV), za zadati period.
     /// </summary>
     public async Task<List<PdvZapis>> GetKirZapisiAsync(DateTime? odDatuma = null, DateTime? doDatuma = null)
     {
@@ -74,7 +76,70 @@ public class PdvService
             });
         }
 
-        return rezultat;
+        // Ručno proknjižene fakture (Nalozi/StavkeNaloga) sa linijom na kontu 4700 koja nosi
+        // Osnovicu/StopuPdv — isključujemo naloge koje je Trgovina već sama kreirala (NalogId
+        // povezan sa RacunOtpremnica) da se ista faktura ne bi brojala dvaput.
+        var vecObuhvaceniNalogIdKir = await _db.RacuniOtpremnice
+            .Where(r => r.NalogId != null)
+            .Select(r => r.NalogId!.Value)
+            .ToListAsync();
+
+        var rucneKirStavkeQuery = _db.StavkeNaloga
+            .Include(s => s.Nalog)
+            .Include(s => s.Partner)
+            .Where(s => s.BrojKonta.StartsWith("4700") && s.Nalog != null && s.Nalog.IsKnjizen
+                && s.Osnovica != null && s.StopaPdv != null
+                && !vecObuhvaceniNalogIdKir.Contains(s.NalogId));
+
+        if (odDatuma.HasValue) rucneKirStavkeQuery = rucneKirStavkeQuery.Where(s => s.Nalog!.DatumNaloga >= odDatuma.Value);
+        if (doDatuma.HasValue) rucneKirStavkeQuery = rucneKirStavkeQuery.Where(s => s.Nalog!.DatumNaloga <= doDatuma.Value);
+
+        var rucneKirStavke = await rucneKirStavkeQuery.OrderBy(s => s.Nalog!.DatumNaloga).ToListAsync();
+
+        foreach (var s in rucneKirStavke)
+        {
+            rezultat.Add(NapraviRucniPdvZapis(s, TipPdvKnjige.KIR_IzdatRacun, rbr++, s.Potrazuje));
+        }
+
+        return PreurediPoDatumu(rezultat);
+    }
+
+    /// <summary>Konačno sortiranje mešanog izvora (dokumenti + ručni unosi) po datumu, sa ponovnim brojanjem R.br.</summary>
+    private static List<PdvZapis> PreurediPoDatumu(List<PdvZapis> zapisi)
+    {
+        var sortirano = zapisi.OrderBy(z => z.DatumRacuna).ThenBy(z => z.BrojDokumenta).ToList();
+        for (int i = 0; i < sortirano.Count; i++) sortirano[i].RedniBroj = i + 1;
+        return sortirano;
+    }
+
+    private static PdvZapis NapraviRucniPdvZapis(StavkaNaloga s, TipPdvKnjige tip, int rbr, decimal pdvIznos)
+    {
+        decimal osnovica = s.Osnovica ?? 0m;
+        decimal stopa = s.StopaPdv ?? 0m;
+
+        decimal osn20 = 0m, pdv20 = 0m, osn10 = 0m, pdv10 = 0m, oslobodjen = 0m;
+        if (stopa >= 18m) { osn20 = osnovica; pdv20 = pdvIznos; }
+        else if (stopa > 0m) { osn10 = osnovica; pdv10 = pdvIznos; }
+        else { oslobodjen = osnovica; }
+
+        return new PdvZapis
+        {
+            PdvZapisId = s.StavkaNalogaId,
+            TipKnjige = tip,
+            RedniBroj = rbr,
+            DatumRacuna = s.DatumDokumenta ?? s.Nalog!.DatumNaloga,
+            DatumKnjizenja = s.Nalog!.DatumNaloga,
+            BrojDokumenta = s.BrojDokumenta ?? s.Nalog.BrojNaloga.ToString(),
+            PartnerNaziv = s.Partner?.Naziv ?? "Ručni unos",
+            PartnerPib = s.Partner?.Pib ?? "",
+            UkupnaNaknadaSaPdv = osnovica + pdvIznos,
+            Osnovica20 = osn20,
+            Pdv20 = pdv20,
+            Osnovica10 = osn10,
+            Pdv10 = pdv10,
+            OslobodjenPromet = oslobodjen,
+            IzvornoDokumentId = s.NalogId
+        };
     }
 
     /// <summary>
@@ -133,7 +198,31 @@ public class PdvService
             });
         }
 
-        return rezultat;
+        // Ručno proknjižene ulazne fakture sa linijom na kontu 2700 (ulazni PDV, Osnovica/StopaPdv
+        // popunjeni), isključujući naloge koje je Kalkulacija sama kreirala (NalogId povezan).
+        var vecObuhvaceniNalogIdKpr = await _db.Kalkulacije
+            .Where(k => k.NalogId != null)
+            .Select(k => k.NalogId!.Value)
+            .ToListAsync();
+
+        var rucneKprStavkeQuery = _db.StavkeNaloga
+            .Include(s => s.Nalog)
+            .Include(s => s.Partner)
+            .Where(s => s.BrojKonta.StartsWith("2700") && s.Nalog != null && s.Nalog.IsKnjizen
+                && s.Osnovica != null && s.StopaPdv != null
+                && !vecObuhvaceniNalogIdKpr.Contains(s.NalogId));
+
+        if (odDatuma.HasValue) rucneKprStavkeQuery = rucneKprStavkeQuery.Where(s => s.Nalog!.DatumNaloga >= odDatuma.Value);
+        if (doDatuma.HasValue) rucneKprStavkeQuery = rucneKprStavkeQuery.Where(s => s.Nalog!.DatumNaloga <= doDatuma.Value);
+
+        var rucneKprStavke = await rucneKprStavkeQuery.OrderBy(s => s.Nalog!.DatumNaloga).ToListAsync();
+
+        foreach (var s in rucneKprStavke)
+        {
+            rezultat.Add(NapraviRucniPdvZapis(s, TipPdvKnjige.KPR_PrimljenRacun, rbr++, s.Duguje));
+        }
+
+        return PreurediPoDatumu(rezultat);
     }
 
     /// <summary>

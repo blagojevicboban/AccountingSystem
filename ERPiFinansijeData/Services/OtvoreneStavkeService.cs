@@ -12,6 +12,17 @@ public class OtvoreneStavkeService
         _db = db;
     }
 
+    /// <summary>
+    /// Vraća prave partnere (Partneri tabela) ZAJEDNO sa "sintetičkim" partnerima izvedenim
+    /// direktno iz kontnog plana — legacy DBF uvoz ne popunjava StavkaNaloga.PartnerId nego
+    /// svakog kupca/dobavljača vodi kao sopstvenu analitičku podšifru unutar 204xxx/435xxx
+    /// (npr. "204015 — USLUZNO PREDUZECE KAI"), tačno kako to legacy daj_konto(us) iz
+    /// FIN2.PRG:1223-1228 radi (vidi komentar u KontoPicker.cs). Bez ovoga bi ogromna većina
+    /// uvezene istorije bila nevidljiva na ovom ekranu jer nema PartnerId vezu.
+    /// Sintetički zapisi nose PartnerId=0 kao sentinel (isti obrazac kao u GetIosIzvestajAsync)
+    /// i SifraPartnera/KontoPartnera = tačan broj konta, da pozivalac zna da za njih mora
+    /// da čita po kontu (GetOtvoreneStavkeZaKontoAsync), a ne po PartnerId-ju.
+    /// </summary>
     public async Task<List<Partner>> GetPartneriAsync(string? search = null)
     {
         var query = _db.Partneri.AsQueryable();
@@ -19,25 +30,122 @@ public class OtvoreneStavkeService
         {
             query = query.Where(p => p.SifraPartnera.Contains(search) || p.Naziv.Contains(search));
         }
-        return await query.OrderBy(p => p.Naziv).ToListAsync();
+        var pravi = await query.ToListAsync();
+
+        var konti = await _db.StavkeNaloga
+            .Where(s => s.PartnerId == null && s.Nalog != null && s.Nalog.IsKnjizen &&
+                (s.BrojKonta.StartsWith("204") || s.BrojKonta.StartsWith("435") ||
+                 s.BrojKonta.StartsWith("120") || s.BrojKonta.StartsWith("220")))
+            .Select(s => s.BrojKonta)
+            .Distinct()
+            .ToListAsync();
+
+        if (konti.Count > 0)
+        {
+            var kontaMap = await _db.Konta
+                .AsNoTracking()
+                .ToDictionaryAsync(k => k.BrojKonta.Trim(), k => k.NazivKonta, StringComparer.OrdinalIgnoreCase);
+
+            IEnumerable<Partner> sinteticki = konti.Select(k => new Partner
+            {
+                PartnerId = 0,
+                SifraPartnera = k,
+                Naziv = kontaMap.TryGetValue(k.Trim(), out var naziv) && !string.IsNullOrWhiteSpace(naziv) ? naziv : $"Konto {k}",
+                KontoPartnera = k
+            });
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                sinteticki = sinteticki.Where(p =>
+                    p.SifraPartnera.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    p.Naziv.Contains(search, StringComparison.OrdinalIgnoreCase));
+            }
+
+            pravi.AddRange(sinteticki);
+        }
+
+        return pravi.OrderBy(p => p.Naziv).ToList();
+    }
+
+    /// <summary>
+    /// Konta na kojima partner ima proknjižene stavke, sa nazivom i brojem stavki —
+    /// koristi se da kartica ponudi izbor (npr. "2040 — Kupci" / "4350 — Dobavljači")
+    /// umesto da meša sve konte partnera u jedan saldo (koji ne odgovara nijednom
+    /// stvarnom kontu GK). Poredak po broju stavki opadajuće, tako da dominantna
+    /// uloga partnera (kupac ili dobavljač) ispadne prva.
+    /// </summary>
+    public async Task<List<PartnerKontoInfo>> GetPartnerKontaAsync(int partnerId)
+    {
+        var grupe = await _db.StavkeNaloga
+            .Where(s => s.PartnerId == partnerId && s.Nalog != null && s.Nalog.IsKnjizen)
+            .GroupBy(s => s.BrojKonta)
+            .Select(g => new { BrojKonta = g.Key, BrojStavki = g.Count() })
+            .ToListAsync();
+
+        var kontaMap = await _db.Konta
+            .AsNoTracking()
+            .ToDictionaryAsync(k => k.BrojKonta.Trim(), k => k.NazivKonta, StringComparer.OrdinalIgnoreCase);
+
+        return grupe
+            .Select(g => new PartnerKontoInfo
+            {
+                BrojKonta = g.BrojKonta,
+                NazivKonta = kontaMap.TryGetValue(g.BrojKonta.Trim(), out var naziv) ? naziv : null,
+                BrojStavki = g.BrojStavki
+            })
+            .OrderByDescending(k => k.BrojStavki)
+            .ThenBy(k => k.BrojKonta)
+            .ToList();
     }
 
     /// <summary>
     /// Otvorene stavke (izvod) za partnera — hronološki, sa kumulativnim saldom,
     /// analogno legacy gk91/otv_st_zag proceduri iz FIN2.PRG, ali vezano preko
     /// StavkaNaloga.PartnerId (ne preko konta, jer legacy ANAL modul za ovu firmu
-    /// nije korišćen pa nema podataka za uparivanje po kontu partnera).
+    /// nije korišćen pa nema podataka za uparivanje po kontu partnera). Saldo se
+    /// računa samo unutar zadatog konta (ili prefiksa konta) — mešanje kupčevog (204)
+    /// i dobavljačevog (435) konta u jedan saldo ne odgovara nijednom stvarnom kontu.
     /// </summary>
-    public async Task<List<KarticaRed>> GetOtvoreneStavkeAsync(int partnerId)
+    public async Task<List<KarticaRed>> GetOtvoreneStavkeAsync(int partnerId, string? brojKontaPrefix = null)
     {
-        var stavke = await _db.StavkeNaloga
+        var upit = _db.StavkeNaloga
             .Include(s => s.Nalog)
-            .Where(s => s.PartnerId == partnerId && s.Nalog != null && s.Nalog.IsKnjizen)
+            .Where(s => s.PartnerId == partnerId && s.Nalog != null && s.Nalog.IsKnjizen);
+
+        if (!string.IsNullOrWhiteSpace(brojKontaPrefix))
+        {
+            upit = upit.Where(s => s.BrojKonta.StartsWith(brojKontaPrefix));
+        }
+
+        var stavke = await upit
             .OrderBy(s => s.Nalog!.DatumNaloga)
             .ThenBy(s => s.Nalog!.NalogId)
             .ThenBy(s => s.RedniBroj)
             .ToListAsync();
 
+        return IzgradiKarticu(stavke);
+    }
+
+    /// <summary>
+    /// Kartica za "sintetičkog" partnera (legacy analitički konto bez PartnerId veze, vidi
+    /// GetPartneriAsync) — ista hronološka/kumulativna logika kao GetOtvoreneStavkeAsync,
+    /// samo se pronalaze po tačnom broju konta umesto po PartnerId-ju.
+    /// </summary>
+    public async Task<List<KarticaRed>> GetOtvoreneStavkeZaKontoAsync(string brojKonta)
+    {
+        var stavke = await _db.StavkeNaloga
+            .Include(s => s.Nalog)
+            .Where(s => s.PartnerId == null && s.BrojKonta == brojKonta && s.Nalog != null && s.Nalog.IsKnjizen)
+            .OrderBy(s => s.Nalog!.DatumNaloga)
+            .ThenBy(s => s.Nalog!.NalogId)
+            .ThenBy(s => s.RedniBroj)
+            .ToListAsync();
+
+        return IzgradiKarticu(stavke);
+    }
+
+    private static List<KarticaRed> IzgradiKarticu(List<StavkaNaloga> stavke)
+    {
         var rezultat = new List<KarticaRed>();
         decimal saldo = 0m;
 
@@ -317,5 +425,13 @@ public class BrutoBilansAnalitikeRed
     public decimal Duguje { get; set; }
     public decimal Potrazuje { get; set; }
     public decimal Saldo { get; set; }
+}
+
+public class PartnerKontoInfo
+{
+    public string BrojKonta { get; set; } = string.Empty;
+    public string? NazivKonta { get; set; }
+    public int BrojStavki { get; set; }
+    public string Prikaz => string.IsNullOrWhiteSpace(NazivKonta) ? BrojKonta : $"{BrojKonta} — {NazivKonta}";
 }
 

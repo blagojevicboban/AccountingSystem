@@ -82,17 +82,42 @@ public class KamataService
     /// </summary>
     public async Task<List<KamataStavka>> ObracunajKamatuAsync(int partnerId, DateTime datumObracuna)
     {
+        var zatvaranjeService = new ZatvaranjeStavkiService(_db);
+        var otvoreneStavke = await zatvaranjeService.GetOtvoreneStavkeZaPartneraAsync(partnerId, datumObracuna, samoOtvorene: true);
+        return await ObracunajKamatuIzStavkiAsync(otvoreneStavke, datumObracuna);
+    }
+
+    /// <summary>
+    /// Isti obračun kao ObracunajKamatuAsync, ali za "sintetičkog" partnera — legacy analitički
+    /// konto (204xxx/120xxx) bez veze u šifarniku Partneri (vidi OtvoreneStavkeService.GetPartneriAsync).
+    /// </summary>
+    public async Task<List<KamataStavka>> ObracunajKamatuZaKontoAsync(string brojKonta, DateTime datumObracuna)
+    {
+        if (!JeKontoKupca(brojKonta))
+        {
+            throw new InvalidOperationException("Obračun kamate se radi samo na kontu kupca (204/120) — izabrani konto je dobavljački i ne predstavlja dug prema nama.");
+        }
+
+        var zatvaranjeService = new ZatvaranjeStavkiService(_db);
+        var otvoreneStavke = await zatvaranjeService.GetOtvoreneStavkeZaKontoAsync(brojKonta, datumObracuna, samoOtvorene: true);
+        return await ObracunajKamatuIzStavkiAsync(otvoreneStavke, datumObracuna);
+    }
+
+    /// <summary>
+    /// Kamata se obračunava samo na dug kupca prema nama (konto kupaca 204/120, strana Duguje) —
+    /// otvorene stavke na kontu dobavljača (435/220) su naše obaveze/uplate prema partneru, ne
+    /// njegov dug prema nama, pa ne ulaze u osnovicu.
+    /// </summary>
+    private async Task<List<KamataStavka>> ObracunajKamatuIzStavkiAsync(List<OtvorenaStavkaRed> otvoreneStavke, DateTime datumObracuna)
+    {
         var stope = await GetStopeAsync();
         if (stope.Count == 0)
         {
             throw new InvalidOperationException("Nema unetih kamatnih stopa — unesite bar jednu stopu pre obračuna.");
         }
 
-        var zatvaranjeService = new ZatvaranjeStavkiService(_db);
-        var otvoreneStavke = await zatvaranjeService.GetOtvoreneStavkeZaPartneraAsync(partnerId, datumObracuna, samoOtvorene: true);
-
         var rezultat = new List<KamataStavka>();
-        foreach (var s in otvoreneStavke.Where(s => s.Strana == "Duguje"))
+        foreach (var s in otvoreneStavke.Where(s => s.Strana == "Duguje" && JeKontoKupca(s.BrojKonta)))
         {
             var datumDuga = s.Datum.Date;
             if (datumDuga >= datumObracuna.Date) continue;
@@ -116,6 +141,10 @@ public class KamataService
 
         return rezultat;
     }
+
+    /// <summary>Konto kupaca po novom (204) ili starom (120) zakonu — ista podela kao KontoPicker.Grupe u UI sloju.</summary>
+    private static bool JeKontoKupca(string? brojKonta)
+        => !string.IsNullOrWhiteSpace(brojKonta) && (brojKonta.StartsWith("204") || brojKonta.StartsWith("120"));
 
     private static decimal ObracunajKamatuZaPeriod(decimal glavnica, DateTime od, DateTime doDatuma, List<KamatnaStopa> stopeSortirane)
     {
@@ -154,9 +183,6 @@ public class KamataService
     /// </summary>
     public async Task<Nalog> ProknjiziKamatuNalogAsync(int partnerId, decimal ukupnaKamata, DateTime datumObracuna, string opis)
     {
-        if (ukupnaKamata <= 0)
-            throw new InvalidOperationException("Iznos kamate za knjiženje mora biti veći od 0.");
-
         var partner = await _db.Partneri.FindAsync(partnerId);
         if (partner == null)
             throw new ArgumentException("Partner nije pronađen.");
@@ -169,6 +195,22 @@ public class KamataService
             kontoKupca = zadnjaStavka.BrojKonta;
         }
 
+        return await ProknjiziKamatuStavkuAsync(kontoKupca, partnerId, partner.Naziv, ukupnaKamata, datumObracuna, opis);
+    }
+
+    /// <summary>
+    /// Isto kao ProknjiziKamatuNalogAsync, ali za "sintetičkog" partnera — legacy analitički konto
+    /// bez veze u šifarniku Partneri. Kamata linija ostaje na TAČNO tom kontu (bez PartnerId veze),
+    /// da bi se videla na kartici tog konta (OtvoreneStavkeService.GetOtvoreneStavkeZaKontoAsync).
+    /// </summary>
+    public async Task<Nalog> ProknjiziKamatuNalogZaKontoAsync(string brojKonta, string nazivPartnera, decimal ukupnaKamata, DateTime datumObracuna, string opis)
+        => await ProknjiziKamatuStavkuAsync(brojKonta, null, nazivPartnera, ukupnaKamata, datumObracuna, opis);
+
+    private async Task<Nalog> ProknjiziKamatuStavkuAsync(string kontoKupca, int? partnerId, string nazivPartnera, decimal ukupnaKamata, DateTime datumObracuna, string opis)
+    {
+        if (ukupnaKamata <= 0)
+            throw new InvalidOperationException("Iznos kamate za knjiženje mora biti veći od 0.");
+
         int maxBrojNaloga = await _db.Nalozi.MaxAsync(n => (int?)n.BrojNaloga) ?? 0;
         int noviBroj = maxBrojNaloga + 1;
 
@@ -176,7 +218,7 @@ public class KamataService
         {
             BrojNaloga = noviBroj,
             DatumNaloga = datumObracuna,
-            Opis = string.IsNullOrWhiteSpace(opis) ? $"Obračun zatezne kamate za partnera {partner.Naziv}" : opis,
+            Opis = string.IsNullOrWhiteSpace(opis) ? $"Obračun zatezne kamate za partnera {nazivPartnera}" : opis,
             IsKnjizen = true,
             UkupnoDuguje = ukupnaKamata,
             UkupnoPotrazuje = ukupnaKamata,
@@ -195,7 +237,7 @@ public class KamataService
                 {
                     RedniBroj = 2,
                     BrojKonta = "662000", // Prihodi od zateznih kamata
-                    Opis = $"Prihod od zatezne kamate — {partner.Naziv}",
+                    Opis = $"Prihod od zatezne kamate — {nazivPartnera}",
                     Duguje = 0m,
                     Potrazuje = ukupnaKamata
                 }

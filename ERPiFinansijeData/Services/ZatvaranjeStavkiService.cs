@@ -51,6 +51,31 @@ public class ZatvaranjeStavkiService
                 && s.Nalog.DatumNaloga <= granicniDatum)
             .ToListAsync();
 
+        return await IzracunajOtvoreneStavkeAsync(stavke, granicniDatum, samoOtvorene);
+    }
+
+    /// <summary>
+    /// Otvorene stavke za "sintetičkog" partnera (legacy analitički konto bez PartnerId veze —
+    /// vidi OtvoreneStavkeService.GetPartneriAsync) — ista logika kao
+    /// GetOtvoreneStavkeZaPartneraAsync, samo se stavke pronalaze po tačnom broju konta.
+    /// </summary>
+    public async Task<List<OtvorenaStavkaRed>> GetOtvoreneStavkeZaKontoAsync(
+        string brojKonta, DateTime? naDan = null, bool samoOtvorene = true)
+    {
+        var granicniDatum = naDan ?? DateTime.Now;
+
+        var stavke = await _db.StavkeNaloga
+            .Include(s => s.Nalog)
+            .Where(s => s.PartnerId == null && s.BrojKonta == brojKonta && s.Nalog != null && s.Nalog.IsKnjizen
+                && s.Nalog.DatumNaloga <= granicniDatum)
+            .ToListAsync();
+
+        return await IzracunajOtvoreneStavkeAsync(stavke, granicniDatum, samoOtvorene);
+    }
+
+    private async Task<List<OtvorenaStavkaRed>> IzracunajOtvoreneStavkeAsync(
+        List<StavkaNaloga> stavke, DateTime granicniDatum, bool samoOtvorene)
+    {
         var stavkaIds = stavke.Select(s => s.StavkaNalogaId).ToList();
 
         var zatvaranja = await _db.ZatvaranjaStavki

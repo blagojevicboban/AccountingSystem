@@ -46,17 +46,27 @@
 
                 <StackPanel Grid.Column="0" Margin="0,0,10,0">
                     <TextBlock Text="Vrsta poravnanja:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
-                    <ComboBox x:Name="CmbVrsta" Height="32">
+                    <ComboBox x:Name="CmbVrsta" Height="32" SelectionChanged="CmbVrsta_SelectionChanged">
                         <ComboBoxItem Content="Dvojna kompenzacija" IsSelected="True"/>
                         <ComboBoxItem Content="Ugovor o asignaciji"/>
                         <ComboBoxItem Content="Ugovor o cesiji"/>
                     </ComboBox>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                    <TextBlock Text="Partner / Ugovorna strana:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
-                    <ComboBox x:Name="CmbPartneri" DisplayMemberPath="Naziv" SelectedValuePath="PartnerId" Height="32" SelectionChanged="CmbPartneri_SelectionChanged"/>
-                </StackPanel>
+                <WrapPanel Grid.Column="1" Margin="0,0,10,0">
+                    <StackPanel Width="200" Margin="0,0,8,0">
+                        <TextBlock x:Name="LblPartner1" Text="Partner / Ugovorna strana:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                        <ComboBox x:Name="CmbPartneri" DisplayMemberPath="Naziv" SelectedValuePath="PartnerId" Height="32" SelectionChanged="CmbPartneri_SelectionChanged"/>
+                    </StackPanel>
+                    <StackPanel x:Name="PnlPartner2" Width="200" Margin="0,0,8,0" Visibility="Collapsed">
+                        <TextBlock x:Name="LblPartner2" Text="Drugo lice:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                        <ComboBox x:Name="CmbPartner2" DisplayMemberPath="Naziv" SelectedValuePath="PartnerId" Height="32" SelectionChanged="CmbPartner2_SelectionChanged"/>
+                    </StackPanel>
+                    <StackPanel x:Name="PnlPartner3" Width="200" Visibility="Collapsed">
+                        <TextBlock x:Name="LblPartner3" Text="Treće lice:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                        <ComboBox x:Name="CmbPartner3" DisplayMemberPath="Naziv" SelectedValuePath="PartnerId" Height="32" SelectionChanged="CmbPartner3_SelectionChanged"/>
+                    </StackPanel>
+                </WrapPanel>
 
                 <StackPanel Grid.Column="2">
                     <TextBlock Text="Datum kompenzacije:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
@@ -72,7 +82,7 @@
                 <ColumnDefinition Width="*"/> <!-- Obaveze (Konto 4350) -->
             </Grid.ColumnDefinitions>
 
-            <!-- Kupci (Konto 2040) -->
+            <!-- Potraživanja (Konto 2040 kod svih uključenih lica) -->
             <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="12" Margin="0,0,6,0" BorderBrush="#E2E8F0" BorderThickness="1">
                 <DockPanel>
                     <TextBlock Text="📤 Potraživanja od kupca (Konto 2040)" FontSize="13" FontWeight="Bold" Foreground="#1E293B" DockPanel.Dock="Top" Margin="0,0,0,8"/>
@@ -80,7 +90,8 @@
                               GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="White" RowHeight="30" FontSize="11">
                         <DataGrid.Columns>
                             <DataGridCheckBoxColumn Header="Prebij" Binding="{Binding IsSelected}" Width="50"/>
-                            <DataGridTextColumn Header="Dokument" Binding="{Binding BrojDokumenta}" Width="90"/>
+                            <DataGridTextColumn Header="Partner" Binding="{Binding NazivPartnera}" Width="100"/>
+                            <DataGridTextColumn Header="Dokument" Binding="{Binding BrojDokumenta}" Width="80"/>
                             <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="80"/>
                             <DataGridTextColumn Header="Preostalo" Binding="{Binding Preostalo, StringFormat=\{0:N2\}}" Width="95" ElementStyle="{StaticResource RightAlign}"/>
                         </DataGrid.Columns>
@@ -88,7 +99,7 @@
                 </DockPanel>
             </Border>
 
-            <!-- Dobavljači (Konto 4350) -->
+            <!-- Obaveze (Konto 4350 kod svih uključenih lica) -->
             <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="12" Margin="6,0,0,0" BorderBrush="#E2E8F0" BorderThickness="1">
                 <DockPanel>
                     <TextBlock Text="📥 Obaveze prema dobavljaču (Konto 4350)" FontSize="13" FontWeight="Bold" Foreground="#1E293B" DockPanel.Dock="Top" Margin="0,0,0,8"/>
@@ -96,7 +107,8 @@
                               GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="White" RowHeight="30" FontSize="11">
                         <DataGrid.Columns>
                             <DataGridCheckBoxColumn Header="Prebij" Binding="{Binding IsSelected}" Width="50"/>
-                            <DataGridTextColumn Header="Dokument" Binding="{Binding BrojDokumenta}" Width="90"/>
+                            <DataGridTextColumn Header="Partner" Binding="{Binding NazivPartnera}" Width="100"/>
+                            <DataGridTextColumn Header="Dokument" Binding="{Binding BrojDokumenta}" Width="80"/>
                             <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="80"/>
                             <DataGridTextColumn Header="Preostalo" Binding="{Binding Preostalo, StringFormat=\{0:N2\}}" Width="95" ElementStyle="{StaticResource RightAlign}"/>
                         </DataGrid.Columns>

@@ -150,21 +150,43 @@ public partial class PomocView : UserControl
         {
             Naslov = "👥 Partneri i Otvorene stavke (IOS)",
             Sadrzaj =
-                "Meni '👥 Partneri i Otvorene stavke' pruža analitiku kupaca i dobavljača i rad sa IOS obrascima (legacy gk91).\n\n" +
-                "1. PODEŠAVANJE I POKRETANJE IOS-A:\n" +
-                "• Polja 'Od konta' i 'Do konta' podrazumevano ostavite prazna — tako će izveštaj obuhvatiti sve analitičke konta partnera (npr. 204 kupci, 435 dobavljači, 150 avansi).\n" +
-                "• Po želji unesite '204' za samo kupce ili '435' za samo dobavljače.\n" +
-                "• Kliknite na dugme '👁 Prikaži na ekranu' za otvaranje interaktivnog ekranskog pregleda.\n\n" +
-                "2. RAD U EKRANSKOM PREGLEDU IOS-A (IosPreviewWindow):\n" +
-                "• U levoj tabeli se prikazuju svi partneri sa učešćem i nazivom iz kontnog plana.\n" +
-                "• Pomoću CheckBox-ova uz svakog partnera možete izabrati partnere za štampu.\n" +
-                "• CheckBox 'Samo neusaglašeni (nenulti) saldo' filtrira partnere koji imaju nezatvoren saldo.\n" +
-                "• Dugme '📄 Štampaj prikazanu (PDF)': Generiše zvanični IOS obrazac sa potvrdom/osporavanjem samo za trenutno izabranog partnera.\n" +
-                "• Dugme '🖨️ Štampaj izabrane (PDF)': Generiše zbirni PDF sa IOS obrascima za sve štriklirane partnere.\n" +
-                "• Dugme '📥 Izvezi sve (PDF)': Generiše zbirni PDF za sve prikazane partnere sa liste.\n\n" +
-                "3. OBRAČUN ZATEZNE KAMATE:\n" +
-                "• Za partnere sa neplaćenim otvorenim stavkama, prozor za obračun kamate izračunava zateznu kamatu na osnovu unetog perioda i stope.",
+                "Meni '👥 Partneri i Otvorene stavke' pruža analitičku karticu i IOS (izvod otvorenih stavki) za kupce i dobavljače.\n\n" +
+                "1. LISTA PARTNERA (levo):\n" +
+                "• Prikazuje i prave zapise iz šifarnika Partneri, i legacy analitička konta (npr. '204457 — Naziv kupca', '435002 — Naziv dobavljača') koja nemaju matični zapis u šifarniku — ovo su konta preneta iz starog DOS/Clipper sistema, gde je svaki kupac/dobavljač sam bio sopstvena analitička podšifra unutar grupe 204 (kupci) ili 435 (dobavljači).\n" +
+                "• Pretraga (gornje polje) filtrira po nazivu i po šifri/broju konta, za oba tipa zapisa.\n\n" +
+                "2. TAB '📇 ANALITIČKA KARTICA':\n" +
+                "• Padajuća lista 'Konto:' bira jedan konkretan konto partnera (npr. kupčev 204... odvojeno od dobavljačevog 435...) — saldo i promet se NIKADA ne mešaju preko dva konta, jer to ne bi odgovaralo nijednom stvarnom kontu Glavne knjige.\n" +
+                "• Legacy analitički konto ima tačno jedan unos u ovoj listi (sam sebe).\n\n" +
+                "3. TAB '🔗 OTVORENE STAVKE (IOS)':\n" +
+                "• Prikazuje nezatvorene Duguje/Potražuje stavke sa datumom dospeća i danima kašnjenja; dugme '🔗' upareno zatvara izabrane stavke, a '🕘' prikazuje istoriju zatvaranja.\n" +
+                "• Ručno zatvaranje i istorija zatvaranja su za sada dostupni samo za partnere iz šifarnika (ne i legacy analitičke konte).\n\n" +
+                "4. AKCIJE (gornji desni ugao):\n" +
+                "• '💱 Kursna lista NBS' i '🔍 Verifikuj račun (NBS)' — verifikacija zahteva PIB/matični broj, pa za legacy konte (koji ga nemaju) prijavljuje da podatak nedostaje.\n" +
+                "• '🖨️' izvozi IOS obrazac (PDF) za trenutno izabrani konto sa kartice.\n" +
+                "• '💰 Obračun kamate' radi i za partnere iz šifarnika i za legacy kupčeve konte (204/120) — vidi temu obračuna kamate ispod.\n" +
+                "• 'X' izvozi prikazanu karticu u Excel.",
             Kljuc = "Partneri"
+        },
+        new PomocTema
+        {
+            Naslov = "🤝 Kompenzacije, Asignacije i Cesije",
+            Sadrzaj =
+                "Meni '🤝 Kompenzacije i Cesije' služi za prebijanje (poravnanje) obostranih dugovanja i potraživanja, bez prometa gotovine.\n\n" +
+                "1. VRSTE PORAVNANJA:\n" +
+                "• Dvojna kompenzacija — jedan partner nam istovremeno duguje (konto 204/kupac) i mi njemu dugujemo (konto 435/dobavljač); prebija se njegovo potraživanje sa njegovom obavezom.\n" +
+                "• Ugovor o asignaciji — do tri strane (Asignant / Asignat / Asignatar): Asignant nalaže Asignatu da direktno plati Asignataru, umesto da plaća Asignantu koji bi onda plaćao Asignataru.\n" +
+                "• Ugovor o cesiji — do tri strane (Cedent / Cesionar / Cesijat): Cedent ustupa svoje potraživanje od Cesijata (dužnika) Cesionaru, obično radi izmirenja sopstvenog duga prema Cesionaru.\n" +
+                "• Svaka od tri strane može biti i partner iz šifarnika i legacy analitički konto (204xxx/435xxx bez matičnog partnera) — birate ih iz iste liste kao na ekranu Partneri.\n\n" +
+                "2. UNOS PREDLOGA:\n" +
+                "• '➕ Novi predlog kompenzacije' otvara formu: izbor vrste, jedne do tri ugovorne strane, i za svaku stranu njena potraživanja (konto 204) i obaveze (konto 435) koje se čekiraju za prebijanje.\n" +
+                "• Zbir čekiranih potraživanja MORA biti jednak zbiru čekiranih obaveza — sistem to proverava i pri knjiženju odbija neuravnoteženo poravnanje.\n\n" +
+                "3. '🔍 PAMETNO SKENIRANJE OBOSTRANIH DUGOVANJA':\n" +
+                "• Automatski pronalazi partnere (iz šifarnika) koji su istovremeno i kupci i dobavljači, sa dugmetom '⚡ Prebij u 1-Klik' za brzo popunjavanje predloga Dvojne kompenzacije.\n" +
+                "• Ovo skeniranje radi samo za partnere iz šifarnika — legacy konte treba ručno birati kroz '➕ Novi predlog kompenzacije'.\n\n" +
+                "4. KNJIŽENJE:\n" +
+                "• '✅ Proknjiži & Zatvori IOS' pravi nalog u Glavnoj knjizi (po jedna zatvarajuća stavka za svaku uključenu stranu) i automatski zatvara odgovarajuće otvorene stavke u IOS-u.\n" +
+                "• Proknjižena kompenzacija se više ne može menjati ni brisati.",
+            Kljuc = "Kompenzacije"
         },
         new PomocTema
         {
@@ -189,13 +211,14 @@ public partial class PomocView : UserControl
                 "• Veleprodajna kalkulacija: Ulaz po dobavljačkoj ceni, zavisni troškovi, marža i formiranje veleprodajne cene.\n" +
                 "• Maloprodajna kalkulacija: Obračun ukalkulisane marže i PDV-a za prodaju fizičkim licima.\n" +
                 "• Artikal se bira iz šifarnika (lista 'šifra - naziv'), a konto dobavljača iz kontnog plana — traži se i po broju i po nazivu. Unose se tri datuma: kalkulacije, otpremnice i računa.\n" +
-                "• Knjiženje pravi i nalog u Glavnoj knjizi. Veleprodaja: roba (1320) duguje po prodajnoj vrednosti BEZ PDV, razlika u ceni (1329) i dobavljač potražuju. Maloprodaja ima 'korak više' — roba (1340) duguje po ceni SA PDV, a potražuju ukalkulisani PDV (1344), ukalkulisana razlika u ceni (1348) i dobavljač.\n" +
+                "• Knjiženje pravi i nalog u Glavnoj knjizi. Veleprodaja: roba (1320) duguje po prodajnoj vrednosti BEZ PDV, razlika u ceni (1329) i dobavljač potražuju. Maloprodaja ima 'korak više' — roba (1340) duguje po ceni SA PDV, a potražuju ukalkulisani PDV (1344 po opštoj stopi, 13441 po stopi 10%), ukalkulisana razlika u ceni (1348) i dobavljač.\n" +
                 "• Nalog pokriva robnu stranu i obavezu prema dobavljaču u neto iznosu. Pretporez i bruto obaveza po ulaznom računu knjiže se zasebno.\n" +
                 "• Kalkulacija bez konta dobavljača se knjiži u magacin, ali bez naloga — bez protivstavke nalog ne bi bio u ravnoteži.\n" +
                 "• Rasknjižavanje uklanja i taj nalog.\n\n" +
                 "2. IZLAZNE FAKTURE I OTPREMNICE (MAT5):\n" +
                 "• Izdavanje faktura kupcima sa automatskim proračunom PDV-a, rabata %, rokom dospelosti i štampom u PDF.\n" +
-                "• Automatsko razduživanje zaliha i mogućnost generisanja naloga za knjiženje u Glavnoj knjizi.\n\n" +
+                "• Kupac se bira iz kontnog plana (konta grupe 204, odnosno 120 kod firmi prenetih sa starog zakona) — traži se i po broju i po nazivu, isto kao konto dobavljača na kalkulaciji.\n" +
+                "• Magacin je obavezno polje. Knjiženje razdužuje robnu karticu po prosečnoj (nabavnoj) ceni i pravi nalog u Glavnoj knjizi: konto kupca duguje bruto iznos, prihod (6120) i PDV (4700) potražuju, a nabavna vrednost prodate robe (5010) duguje / roba na zalihama (1320 ili 1340, prema vrsti magacina) potražuje.\n\n" +
                 "3. NIVELACIJE CENA (MAT7):\n" +
                 "• Promena prodajnih cena artikala po magacinu sa automatskim zapisnikom o nivelaciji i svođenjem na novu vrednost zaliha.\n\n" +
                 "4. ZADUŽENJA, RAZDUŽENJA I PRIMOPREDAJE (MAT4):\n" +
@@ -234,8 +257,9 @@ public partial class PomocView : UserControl
             Naslov = "🧾 PDV Evidencija (KPR, KIR i PP-PDV XML)",
             Sadrzaj =
                 "1. PDV EVIDENCIJA (KPR i KIR):\n" +
-                "• Knjiga primljenih računa (KPR) — uvoz nabavki i ulaznog PDV-a koji se odbija.\n" +
-                "• Knjiga izdatih računa (KIR) — uvoz izlaznih faktura i izlaznog PDV-a.\n" +
+                "• Knjiga primljenih računa (KPR) — nabavke i ulazni PDV koji se odbija; izvor su proknjižene Kalkulacije, ILI ručno unet nalog Glavne knjige sa linijom na kontu 2700 (ulazni PDV) koja ima popunjenu Osnovicu i Stopu PDV.\n" +
+                "• Knjiga izdatih računa (KIR) — izlazne fakture i izlazni PDV; izvor su proknjiženi Računi-otpremnice, ILI ručno unet nalog Glavne knjige sa linijom na kontu 4700 (izlazni PDV) sa popunjenom Osnovicom i Stopom PDV.\n" +
+                "• Ako fakturu unosite ručno kroz Glavnu knjigu (mimo Trgovine/Kalkulacija), obavezno popunite kolone 'Osnovica PDV' i 'Stopa PDV (%)' na liniji konta 4700/2700 — bez toga se ta stavka neće pojaviti u KIR/KPR ni u PP-PDV prijavi.\n" +
                 "• Automatska priprema podataka za POPDV prijavu Poreskoj upravi.\n\n" +
                 "2. IZVOZ XML PRIJAVE ZA ePOREZI (PP-PDV):\n" +
                 "• Dugme '📄 Izvezi XML za ePorezi (PP-PDV)' kreira zvanični XML fajl Obrasca PP-PDV po specifikaciji Poreske uprave RS.\n" +
@@ -355,7 +379,8 @@ public partial class PomocView : UserControl
                 "• Unos iznosa carine (po stopi ili fiksno), špedicije, prevoza i ostalih troškova.\n" +
                 "• Zavisni troškovi se automatski raspoređuju na uvozne nabavne cene artikala po vrednosti.\n\n" +
                 "3. KNJIŽENJE U MAGACIN I GLAVNU KNJIGU:\n" +
-                "• Automatsko knjiženje zaduženja magacina (Konto 1300 / 1010) i obaveza prema ino-dobavljaču (Konto 4350) i špediteru (Konto 4330).",
+                "• Automatsko knjiženje zaduženja magacina (Konto 1300 / 1010) i obaveza prema ino-dobavljaču (Konto 4350) i špediteru (Konto 4330).\n" +
+                "• Napomena: uvozna kalkulacija zasad ne upisuje red u robnu (materijalnu) karticu magacina — knjiži se samo u Glavnu knjigu.",
             Kljuc = "Uvoz"
         },
         new PomocTema

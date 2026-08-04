@@ -24,12 +24,19 @@ public class Kompenzacija
     public int? PartnerId { get; set; }
     public string NazivPartnera { get; set; } = string.Empty;
 
+    // Kad je odgovarajući PartnerIdN == 0 (sintetički partner — legacy analitički konto
+    // 204xxx/435xxx bez zapisa u šifarniku Partneri, vidi OtvoreneStavkeService.GetPartneriAsync),
+    // ovde se čuva tačan broj konta jer Partneri tabela nema taj zapis da bi se pronašao kasnije.
+    public string? KontoPartnera1 { get; set; }
+
     // Za Asignaciju / Cesiju (Trojna kompenzacija)
     public int? Partner2Id { get; set; }
     public string? NazivPartnera2 { get; set; }
+    public string? KontoPartnera2 { get; set; }
 
     public int? Partner3Id { get; set; }
     public string? NazivPartnera3 { get; set; }
+    public string? KontoPartnera3 { get; set; }
 
     public decimal UkupanIznosKompenzacije { get; set; }
 
@@ -54,6 +61,11 @@ public class KompenzacijaStavka
 
     public int RedniBroj { get; set; }
     public int StavkaNalogaId { get; set; } // Povezana otvorena stavka u GK (Konto 2040 ili 4350)
+
+    // Kod Dvojne kompenzacije uvek jednako Kompenzacija.PartnerId; kod Asignacije/Cesije
+    // svaka stavka pripada jednom od 2-3 uključenih partnera (Kompenzacija.PartnerId/Partner2Id/Partner3Id),
+    // pa mora nositi svoj PartnerId da bi se knjiženje i zatvaranje IOS-a moglo ispravno razdvojiti po partneru.
+    public int PartnerId { get; set; }
 
     public string BrojDokumenta { get; set; } = string.Empty;
     public DateTime DatumDokumenta { get; set; } = DateTime.Today;

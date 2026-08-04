@@ -55,18 +55,24 @@
             <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                 <TabControl x:Name="TabStavke" Background="Transparent" BorderThickness="0" SelectionChanged="TabStavke_SelectionChanged">
 
-                    <!-- ===================== ANALITIČKA KARTICA (hronološki izvod sa saldom) ===================== -->
+                    <!-- ===================== ANALITIČKA KARTICA (hronološki izvod sa saldom, po kontu) ===================== -->
                     <TabItem Header="📇 Analitička kartica">
-                        <DataGrid x:Name="DgOtvoreneStavke" Margin="0,12,0,0" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
-                                <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="120"/>
-                                <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
-                                <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
-                                <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
-                                <DataGridTextColumn Header="Saldo (RSD)" Binding="{Binding Saldo, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <DockPanel Margin="0,12,0,0">
+                            <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12" VerticalAlignment="Center">
+                                <TextBlock Text="Konto:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                <ComboBox x:Name="CmbKontoKartice" Width="260" DisplayMemberPath="Prikaz" SelectedValuePath="BrojKonta" SelectionChanged="CmbKontoKartice_SelectionChanged"/>
+                            </WrapPanel>
+                            <DataGrid x:Name="DgOtvoreneStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
+                                    <DataGridTextColumn Header="Br. naloga" Binding="{Binding BrojNaloga}" Width="120"/>
+                                    <DataGridTextColumn Header="Opis" Binding="{Binding Opis}" Width="*"/>
+                                    <DataGridTextColumn Header="Duguje (RSD)" Binding="{Binding Duguje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Potražuje (RSD)" Binding="{Binding Potrazuje, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                    <DataGridTextColumn Header="Saldo (RSD)" Binding="{Binding Saldo, StringFormat=\{0:N2\}}" Width="140" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
                     </TabItem>
 
                     <!-- ===================== PRAVE OTVORENE STAVKE (IOS, zatvaranje/parovanje) ===================== -->

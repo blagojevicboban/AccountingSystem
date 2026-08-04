@@ -57,4 +57,15 @@ public class StavkaNaloga
     public int? MestoTroskaId { get; set; }
     [ForeignKey(nameof(MestoTroskaId))]
     public MestoTroska? MestoTroska { get; set; }
+
+    // Popunjava se ručno samo za PDV-relevantne linije ručno unetih naloga (konto 4700 izlazni
+    // PDV / 2700 ulazni PDV) koje nisu nastale kroz Trgovinu/Kalkulacije — te dokumentne module
+    // već nose Osnovicu/StopuPdv na svojim stavkama (RacunOtpremnicaStavka/KalkulacijaStavka),
+    // pa je ovde null u normalnom slučaju. Bez ovoga PdvService nema odakle da zna poresku
+    // osnovicu i stopu ručno proknjižene fakture za KIR/KPR obrazac.
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal? Osnovica { get; set; }
+
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal? StopaPdv { get; set; }
 }

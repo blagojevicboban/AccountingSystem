@@ -40,12 +40,16 @@
 
             <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                 <Grid>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtNaslovPartnera" Text="Partner" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtNaslovPartnera" Text="Partner" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" Margin="0,0,20,0" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="Datum obračuna:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
                         <DatePicker x:Name="DpDatumObracuna" Width="140" Height="32" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal">
                         <Button x:Name="BtnObracunaj" Content="🧮 Obračunaj" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,0" Click="BtnObracunaj_Click"/>
                         <Button x:Name="BtnStampajKamatu" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Width="36" Padding="0" ToolTip="Izvezi PDF" Click="BtnStampajKamatu_Click"/>
                     </StackPanel>

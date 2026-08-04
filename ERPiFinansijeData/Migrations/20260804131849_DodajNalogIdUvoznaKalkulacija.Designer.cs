@@ -3,6 +3,7 @@ using System;
 using ERPiFinansijeData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERPiFinansijeData.Migrations
 {
     [DbContext(typeof(AccountingDbContext))]
-    partial class AccountingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260804131849_DodajNalogIdUvoznaKalkulacija")]
+    partial class DodajNalogIdUvoznaKalkulacija
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
@@ -591,15 +594,6 @@ namespace ERPiFinansijeData.Migrations
                     b.Property<bool>("IsKnjizeno")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("KontoPartnera1")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("KontoPartnera2")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("KontoPartnera3")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Korisnik")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -672,9 +666,6 @@ namespace ERPiFinansijeData.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("KompenzacijaId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("PartnerId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("RedniBroj")
@@ -2036,9 +2027,6 @@ namespace ERPiFinansijeData.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal?>("Osnovica")
-                        .HasColumnType("decimal(18, 2)");
-
                     b.Property<int?>("PartnerId")
                         .HasColumnType("INTEGER");
 
@@ -2054,9 +2042,6 @@ namespace ERPiFinansijeData.Migrations
                     b.Property<string>("StariKonto")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("StopaPdv")
-                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("Valuta")
                         .IsRequired()

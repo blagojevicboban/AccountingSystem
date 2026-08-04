@@ -104,6 +104,11 @@
                                                  SelectedValuePath="PartnerId"
                                                  DisplayMemberPath="Naziv"
                                                  Width="150"/>
+                        <!-- Popunjava se samo za konto 4700 (izlazni PDV) / 2700 (ulazni PDV) — tako
+                             ručno unete stavke nose istu poresku osnovicu/stopu kao stavke iz
+                             Trgovine/Kalkulacija i ulaze u PDV Evidenciju (KIR/KPR). -->
+                        <DataGridTextColumn Header="Osnovica PDV" Binding="{Binding Osnovica, UpdateSourceTrigger=PropertyChanged, StringFormat=N2, TargetNullValue=''}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
+                        <DataGridTextColumn Header="Stopa PDV (%)" Binding="{Binding StopaPdv, UpdateSourceTrigger=PropertyChanged, StringFormat=N2, TargetNullValue=''}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

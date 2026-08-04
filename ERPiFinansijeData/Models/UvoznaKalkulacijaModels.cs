@@ -59,6 +59,11 @@ public class UvoznaKalkulacija
 
     public bool IsKnjizeno { get; set; }
 
+    /// <summary>Nalog kojim je uvozna kalkulacija proknjižena u glavnu knjigu; rasknjižavanje ga uklanja.</summary>
+    public int? NalogId { get; set; }
+    [ForeignKey(nameof(NalogId))]
+    public Nalog? Nalog { get; set; }
+
     public List<UvoznaStavka> Stavke { get; set; } = new();
 }
 

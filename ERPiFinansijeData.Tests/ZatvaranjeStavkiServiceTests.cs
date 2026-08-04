@@ -176,4 +176,31 @@ public class ZatvaranjeStavkiServiceTests
         Assert.True(fakturaRed.JeDospelo);
         Assert.Equal(12, fakturaRed.DanaKasnjenja);
     }
+
+    [Fact]
+    public async Task GetOtvoreneStavkeZaKontoAsync_VracaOtvoreneStavkeSintetickogPartnera()
+    {
+        using var db = GetInMemoryDbContext();
+
+        var nalogFaktura = new Nalog { BrojNaloga = 1, DatumNaloga = new DateTime(2026, 1, 10), IsKnjizen = true };
+        var nalogUplata = new Nalog { BrojNaloga = 2, DatumNaloga = new DateTime(2026, 1, 20), IsKnjizen = true };
+        db.Nalozi.AddRange(nalogFaktura, nalogUplata);
+        await db.SaveChangesAsync();
+
+        var faktura = new StavkaNaloga { NalogId = nalogFaktura.NalogId, RedniBroj = 1, BrojKonta = "204015", PartnerId = null, Duguje = 5000m };
+        var uplata = new StavkaNaloga { NalogId = nalogUplata.NalogId, RedniBroj = 1, BrojKonta = "204015", PartnerId = null, Potrazuje = 2000m };
+        db.StavkeNaloga.AddRange(faktura, uplata);
+        await db.SaveChangesAsync();
+
+        var service = new ZatvaranjeStavkiService(db);
+
+        var otvoreneSve = await service.GetOtvoreneStavkeZaKontoAsync("204015", samoOtvorene: false);
+        Assert.Equal(2, otvoreneSve.Count);
+
+        await service.ZatvoriAsync(faktura.StavkaNalogaId, uplata.StavkaNalogaId, 2000m, DateTime.Now);
+
+        var otvoreneSamo = await service.GetOtvoreneStavkeZaKontoAsync("204015", samoOtvorene: true);
+        var preostalaFaktura = Assert.Single(otvoreneSamo);
+        Assert.Equal(3000m, preostalaFaktura.Preostalo);
+    }
 }

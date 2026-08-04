@@ -95,7 +95,9 @@ public partial class KamataWindow : Window
             using var db = new AccountingDbContext(options);
             var service = new KamataService(db);
 
-            _poslednjiObracun = await service.ObracunajKamatuAsync(_partner.PartnerId, datumObracuna);
+            _poslednjiObracun = _partner.PartnerId > 0
+                ? await service.ObracunajKamatuAsync(_partner.PartnerId, datumObracuna)
+                : await service.ObracunajKamatuZaKontoAsync(_partner.KontoPartnera ?? _partner.SifraPartnera, datumObracuna);
             DgKamata.ItemsSource = _poslednjiObracun;
             TxtUkupnaKamata.Text = _poslednjiObracun.Sum(k => k.ObracunataKamata).ToString("N2");
 
