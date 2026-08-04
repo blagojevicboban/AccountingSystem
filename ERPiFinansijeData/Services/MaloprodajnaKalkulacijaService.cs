@@ -222,7 +222,7 @@ public class MaloprodajnaKalkulacijaService
     /// (vidi <see cref="RobnaKonta"/>, opis stavke „KALKULACIJA NA MALO"):
     /// <code>
     ///   1340   duguje     prodajna vrednost SA PDV
-    ///   1344   potražuje  ukalkulisani PDV
+    ///   1344   potražuje  ukalkulisani PDV           (13441 kad je kalkulacija po stopi 10%)
     ///   1348   potražuje  ukalkulisana razlika u ceni
     ///   43xxx  potražuje  svega nabavno              (obaveza prema dobavljaču)
     /// </code>
@@ -266,7 +266,7 @@ public class MaloprodajnaKalkulacijaService
             nalog.Stavke.Add(new StavkaNaloga
             {
                 RedniBroj = rb++,
-                BrojKonta = RobnaKonta.UkalkulisaniPdvMaloprodaja,
+                BrojKonta = RobnaKonta.UkalkulisaniPdvZaStopu(kalkulacija.PoreskaStopaProcenat),
                 Opis = opis,
                 Duguje = 0m,
                 Potrazuje = kalkulacija.Porez

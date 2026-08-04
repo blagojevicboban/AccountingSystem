@@ -4,6 +4,15 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.4.5] - 2026-08-04
+
+### 🧾 Ukalkulisani PDV maloprodaje ide na konto svoje stope (`RobnaKonta`, `MaloprodajnaKalkulacijaService`)
+- Kontni plan drži **dve analitike ukalkulisanog PDV-a** — `1344` za opštu i `13441` za posebnu stopu — ali je knjiženje maloprodajne kalkulacije uvek išlo na `1344`. Kalkulacija po nižoj stopi je time završavala na kontu opšte stope, pa bi obe stope stajale pomešane na istom saldu.
+- Konto se sada bira po poreskoj stopi dokumenta (`UkalkulisaniPdvZaStopu`). Prag je isti kao u `PdvService` (≥18% je opšta stopa), da bi i **istorijske stope 18%/8%** iz uvezenih baza pale na ista konta kao današnje 20%/10%.
+
+### 🧹 Uklonjeni zaostali snimci ekrana iz korena repozitorijuma
+- `login.png`, `login2.png`, `recover.png`, `robne_kartice3.png`, `robne_kartice_max.png` — radni snimci koji nisu nigde referencirani.
+
 ## [1.4.3] - 2026-08-04
 
 ### ➕ Eksplicitno dugme za novu stavku u šifarniku opisa promena (`PromeneWindow`)

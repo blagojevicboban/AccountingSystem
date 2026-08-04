@@ -278,7 +278,7 @@ public partial class MaloprodajnaKalkulacijaEditWindow : Window
                 ("Magacin daje", "Ostavite prazno kad roba stiže od dobavljača pravo u prodavnicu — tada roba ULAZI u magacin koji prima. Popunite ga samo za prenos iz veleprodaje, kada se taj magacin razdužuje."),
             },
             "Rabat dobavljača je informativni obračun i ne umanjuje prodajnu vrednost.\n\n" +
-            "Knjiženje pravi i nalog u Glavnoj knjizi: roba u prodavnici (1340) duguje po ceni SA PDV, a potražuju ukalkulisani PDV (1344), " +
+            "Knjiženje pravi i nalog u Glavnoj knjizi: roba u prodavnici (1340) duguje po ceni SA PDV, a potražuju ukalkulisani PDV (1344 po opštoj stopi, 13441 po stopi 10%), " +
             "ukalkulisana razlika u ceni (1348) i konto dobavljača (neto, svega nabavno). To je 'korak više' koji veleprodaja nema — " +
             "roba se u prodavnici vodi sa porezom, pa se porez izdvaja dok se ne ostvari promet.\n\n" +
             "Pretporez i bruto obaveza po ulaznom računu nisu deo ovog naloga. Bez konta dobavljača nalog se ne pravi (ne bi bio u ravnoteži), " +

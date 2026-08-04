@@ -81,6 +81,42 @@ public class MaloprodajnaKalkulacijaKnjizenjeTests
     }
 
     [Fact]
+    public async Task Knjizenje_PoStopi10_IdeNaKontoPosebneStope()
+    {
+        // Kontni plan drži dve analitike ukalkulisanog PDV (1344 opšta, 13441 posebna stopa);
+        // knjiženje je ranije uvek išlo na 1344, pa je niža stopa padala na pogrešan konto.
+        using var db = CreateInMemoryDb();
+        var service = new MaloprodajnaKalkulacijaService(db);
+
+        var saved = await service.SaveKalkulacijuAsync(new MaloprodajnaKalkulacija
+        {
+            BrojKalkulacije = 7,
+            SifraDobavljaca = "435082",
+            NabavnaVrednost = 1000m,
+            MarzaProcenat = 25m,
+            PoreskaStopaProcenat = 10m
+        });
+
+        await service.KnjiziKalkulacijuAsync(saved.MaloprodajnaKalkulacijaId);
+
+        var nalog = await db.Nalozi.Include(n => n.Stavke).SingleAsync();
+        Assert.Equal(saved.Porez, nalog.Stavke.Single(s => s.BrojKonta == "13441").Potrazuje);
+        Assert.DoesNotContain(nalog.Stavke, s => s.BrojKonta == "1344");
+        Assert.Equal(nalog.UkupnoDuguje, nalog.UkupnoPotrazuje);
+    }
+
+    /// <summary>
+    /// Uvezene baze nose i istorijske stope 18%/8% — moraju da padnu na ista konta kao 20%/10%.
+    /// </summary>
+    [Theory]
+    [InlineData(20, "1344")]
+    [InlineData(18, "1344")]
+    [InlineData(10, "13441")]
+    [InlineData(8, "13441")]
+    public void UkalkulisaniPdvZaStopu_PratiPragOpsteStope(int stopa, string ocekivanoKonto)
+        => Assert.Equal(ocekivanoKonto, RobnaKonta.UkalkulisaniPdvZaStopu(stopa));
+
+    [Fact]
     public async Task Rasknjizavanje_UklanjaNalog()
     {
         using var db = CreateInMemoryDb();
