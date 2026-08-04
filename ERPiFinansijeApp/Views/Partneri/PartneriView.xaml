@@ -14,8 +14,18 @@
         <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="16" Margin="0,0,16,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
                 <TextBlock Text="👥 Partneri" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextBrush}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
-                <TextBox x:Name="TxtPretragaPartnera" Style="{StaticResource SearchTextBoxStyle}" DockPanel.Dock="Top" Height="34" Margin="0,0,0,12" ToolTip="Pretraga partnera po nazivu, PIV-u ili matičnom broju" TextChanged="TxtPretragaPartnera_TextChanged"/>
-                <ListBox x:Name="LstPartneri" DockPanel.Dock="Top" BorderThickness="0" SelectionChanged="LstPartneri_SelectionChanged">
+                <TextBox x:Name="TxtPretragaPartnera" Style="{StaticResource SearchTextBoxStyle}" DockPanel.Dock="Top" Height="34" Margin="0,0,0,10" ToolTip="Pretraga partnera po nazivu, PIV-u ili matičnom broju" TextChanged="TxtPretragaPartnera_TextChanged"/>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                    <RadioButton x:Name="RbPartneriSvi" Content="Svi" GroupName="FilterPartneri" IsChecked="True" Margin="0,0,14,0" Checked="RbFilterPartneri_Checked"/>
+                    <RadioButton x:Name="RbPartneriKupci" Content="Kupci" GroupName="FilterPartneri" Margin="0,0,14,0" Checked="RbFilterPartneri_Checked"/>
+                    <RadioButton x:Name="RbPartneriDobavljaci" Content="Dobavljači" GroupName="FilterPartneri" Checked="RbFilterPartneri_Checked"/>
+                </StackPanel>
+                <ListBox x:Name="LstPartneri" DockPanel.Dock="Top" BorderThickness="0" SelectionChanged="LstPartneri_SelectionChanged" PreviewMouseRightButtonDown="LstPartneri_PreviewMouseRightButtonDown">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="✏️ Izmeni podatke/konto" Click="MiIzmeniPartnera_Click"/>
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="4,6">
@@ -42,7 +52,7 @@
                         <Button x:Name="BtnKursnaLista" Content="💱 Kursna lista NBS" Style="{StaticResource ActionButtonStyle}" Background="#0284C7" Margin="0,2,10,2" ToolTip="Prikaz kursne liste NBS i kalkulator valuta" Click="BtnKursnaLista_Click"/>
                         <Button x:Name="BtnVerifikujRacun" Content="🔍 Verifikuj račun (NBS)" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,10,2" ToolTip="Provera tekućeg računa i blokada u NBS registru" Click="BtnVerifikujRacun_Click"/>
                         <Button x:Name="BtnStampajIOS" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Width="36" Padding="0" ToolTip="Izvezi IOS (PDF)" Margin="0,2,10,2" Click="BtnStampajIOS_Click"/>
-                        <Button x:Name="BtnObracunKamate" Content="💰 Obračun kamate" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,10,2" ToolTip="Kalkulacija i obračun zatezne kamate za dospela potraživanja" Click="BtnObracunKamate_Click"/>
+                        <Button x:Name="BtnObracunKamate" Content="💰 Obračun kamate" Style="{StaticResource ActionButtonStyle}" Background="#D97706" Margin="0,2,10,2" IsEnabled="False" ToolTip="Obračun kamate je moguć samo za konto kupca (204/120)" Click="BtnObracunKamate_Click"/>
                         <Button x:Name="BtnExportExcelPartneri" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz kartice partnera u Excel" Margin="0,2,0,2" Click="BtnExportExcelPartneri_Click"/>
                     </WrapPanel>
                     <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
@@ -61,6 +71,7 @@
                             <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12" VerticalAlignment="Center">
                                 <TextBlock Text="Konto:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0"/>
                                 <ComboBox x:Name="CmbKontoKartice" Width="260" DisplayMemberPath="Prikaz" SelectedValuePath="BrojKonta" SelectionChanged="CmbKontoKartice_SelectionChanged"/>
+                                <TextBlock x:Name="TxtKontoJedini" VerticalAlignment="Center" Visibility="Collapsed"/>
                             </WrapPanel>
                             <DataGrid x:Name="DgOtvoreneStavke" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
                                 <DataGrid.Columns>

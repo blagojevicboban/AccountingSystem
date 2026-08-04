@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Net;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ERPiFinansijeData.Models;
 
@@ -7,6 +9,17 @@ namespace ERPiFinansijeData.Services;
 public class NbsApiClient
 {
     private readonly HttpClient _httpClient;
+
+    // Stari javni XML feed (www.nbs.rs/net/xmlrs/kursnaLista.xml) je ugašen — vraća 404 za bilo
+    // koji datum (provereno direktno, ne samo "nema podataka za taj dan"). NBS je kursnu listu
+    // preselio na ovu server-renderovanu web-app formu, bez dokumentovanog javnog JSON/XML API-ja
+    // (zvaničan programski pristup postoji samo kroz registrovani "Sistem veb-servisa NBS",
+    // https://webservices.nbs.rs — zahteva prijavu pravnog lica). Dok se ne obezbedi taj pristup,
+    // parsiramo HTML tabelu ove forme; ExchangeRateListTypeID=3 je zvanični SREDNJI kurs (jedina
+    // vrednost koju knjigovodstvo sme da koristi za preračun, vidi KursnaListaService), a
+    // ExchangeRateListTypeID=1 je devizni (bezgotovinski) kupovni/prodajni kurs, samo za prikaz.
+    // Krhko po prirodi: ako NBS ponovo redizajnira formu, ovo parsiranje puca i treba ažurirati.
+    private const string BazaUrl = "https://webappcenter.nbs.rs/ExchangeRateWebApp/ExchangeRate/IndexByDate";
 
     public NbsApiClient(HttpClient? httpClient = null)
     {
@@ -21,54 +34,80 @@ public class NbsApiClient
     /// </summary>
     public async Task<List<KursnaListaStavka>> PreuzmiKursnuListuAsync(DateTime datum)
     {
-        var rezultati = new List<KursnaListaStavka>();
-
         try
         {
-            // Zvanični NBS XML endpoint
-            string url = $"https://www.nbs.rs/net/xmlrs/kursnaLista.xml?datum={datum:yyyy-MM-dd}";
-            var response = await _httpClient.GetAsync(url);
+            // Srednji kurs je obavezan — bez njega red nema smisla za knjigovodstvo.
+            var srednjiRedovi = await PreuzmiTabeluAsync(datum, listTypeId: 3);
+            if (srednjiRedovi.Count == 0) return new List<KursnaListaStavka>();
 
-            if (response.IsSuccessStatusCode)
+            // Kupovni/prodajni su samo za prikaz u Kalkulatoru — najbolji trud; ako ne uspe,
+            // pada nazad na srednji kurs (isto ponašanje kao stari XML fallback).
+            var kupProdRedovi = await PreuzmiTabeluAsync(datum, listTypeId: 1);
+            var kupProdPoValuti = kupProdRedovi
+                .Where(r => r.Count >= 6 && !string.IsNullOrWhiteSpace(r[0]))
+                .GroupBy(r => r[0].ToUpperInvariant())
+                .ToDictionary(g => g.Key, g => (Kupovni: ParsirajDecimal(g.First()[4]), Prodajni: ParsirajDecimal(g.First()[5])));
+
+            var rezultati = new List<KursnaListaStavka>();
+            foreach (var red in srednjiRedovi)
             {
-                string xml = await response.Content.ReadAsStringAsync();
-                var xdoc = XDocument.Parse(xml);
+                if (red.Count < 5 || string.IsNullOrWhiteSpace(red[0])) continue;
 
-                foreach (var elem in xdoc.Descendants("Stavka"))
+                string valuta = red[0].ToUpperInvariant();
+                int jedinica = int.TryParse(red[3], out int j) ? j : 1;
+                decimal srednji = ParsirajDecimal(red[4]);
+                var (kupovni, prodajni) = kupProdPoValuti.TryGetValue(valuta, out var kp) ? kp : (srednji, srednji);
+
+                rezultati.Add(new KursnaListaStavka
                 {
-                    string valuta = elem.Element("Valuta")?.Value ?? elem.Element("OznakaValute")?.Value ?? "";
-                    if (string.IsNullOrWhiteSpace(valuta)) continue;
-
-                    int jedinica = int.TryParse(elem.Element("Jedinica")?.Value, out int j) ? j : 1;
-
-                    string srednjiStr = elem.Element("SrednjiKurs")?.Value?.Replace(',', '.') ?? "0";
-                    string kupovniStr = elem.Element("KupovniKurs")?.Value?.Replace(',', '.') ?? srednjiStr;
-                    string prodavniStr = elem.Element("ProdavniKurs")?.Value?.Replace(',', '.') ?? srednjiStr;
-
-                    decimal srednji = decimal.TryParse(srednjiStr, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal s) ? s : 0m;
-                    decimal kupovni = decimal.TryParse(kupovniStr, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal k) ? k : srednji;
-                    decimal prodavni = decimal.TryParse(prodavniStr, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal p) ? p : srednji;
-
-                    rezultati.Add(new KursnaListaStavka
-                    {
-                        Datum = datum.Date,
-                        ValutaOznaka = valuta.ToUpperInvariant(),
-                        NazivValute = elem.Element("NazivValute")?.Value ?? valuta,
-                        Jedinica = jedinica,
-                        SrednjiKurs = srednji,
-                        KupovniKurs = kupovni,
-                        ProdavniKurs = prodavni
-                    });
-                }
+                    Datum = datum.Date,
+                    ValutaOznaka = valuta,
+                    NazivValute = red[2],
+                    Jedinica = jedinica,
+                    SrednjiKurs = srednji,
+                    KupovniKurs = kupovni,
+                    ProdavniKurs = prodajni
+                });
             }
+
+            return rezultati;
         }
         catch (Exception ex)
         {
             Serilog.Log.Warning(ex, "NBS kursna lista nije preuzeta za {Datum:dd.MM.yyyy}", datum);
+            return new List<KursnaListaStavka>();
+        }
+    }
+
+    /// <summary>Preuzima i parsira jednu HTML tabelu kursne liste (vidi komentar uz <see cref="BazaUrl"/>).</summary>
+    private async Task<List<List<string>>> PreuzmiTabeluAsync(DateTime datum, int listTypeId)
+    {
+        string url = $"{BazaUrl}?isSearchExecuted=true&Date={datum:dd.MM.yyyy}&ExchangeRateListTypeID={listTypeId}";
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        // Bez ovog kolačića stranica vraća nazive valuta na ćirilici — aplikacija je latinična.
+        request.Headers.Add("Cookie", ".AspNetCore.Culture=c=sr-Latn|uic=sr-Latn");
+
+        var response = await _httpClient.SendAsync(request);
+        if (!response.IsSuccessStatusCode) return new List<List<string>>();
+
+        string html = await response.Content.ReadAsStringAsync();
+        var tbody = Regex.Match(html, "<tbody>(.*?)</tbody>", RegexOptions.Singleline);
+        if (!tbody.Success) return new List<List<string>>();
+
+        var redovi = new List<List<string>>();
+        foreach (Match red in Regex.Matches(tbody.Groups[1].Value, "<tr>(.*?)</tr>", RegexOptions.Singleline))
+        {
+            var celije = Regex.Matches(red.Groups[1].Value, "<td>(.*?)</td>", RegexOptions.Singleline)
+                .Select(m => WebUtility.HtmlDecode(m.Groups[1].Value).Trim())
+                .ToList();
+            if (celije.Count > 0) redovi.Add(celije);
         }
 
-        return rezultati;
+        return redovi;
     }
+
+    private static decimal ParsirajDecimal(string vrednost)
+        => decimal.TryParse(vrednost.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal d) ? d : 0m;
 
     /// <summary>
     /// Proverava podatke i tekući račun partnera u Registru NBS prema PIB-u ili Matičnom broju.

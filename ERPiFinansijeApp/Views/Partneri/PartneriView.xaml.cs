@@ -22,7 +22,9 @@ public partial class PartneriView : UserControl
         LoadPartnere();
     }
 
-    private async void LoadPartnere()
+    private async void LoadPartnere() => await OsveziPartnereAsync();
+
+    private async Task OsveziPartnereAsync(int? selektujPartnerId = null)
     {
         try
         {
@@ -34,7 +36,12 @@ public partial class PartneriView : UserControl
             var service = new OtvoreneStavkeService(db);
 
             _sviPartneri = await service.GetPartneriAsync();
-            LstPartneri.ItemsSource = _sviPartneri;
+            PrimeniFilterPartnera();
+
+            if (selektujPartnerId is int id)
+            {
+                LstPartneri.SelectedItem = _sviPartneri.FirstOrDefault(p => p.PartnerId == id);
+            }
         }
         catch (Exception ex)
         {
@@ -42,12 +49,70 @@ public partial class PartneriView : UserControl
         }
     }
 
-    private void TxtPretragaPartnera_TextChanged(object sender, TextChangedEventArgs e)
+    /// <summary>Desni klik ne selektuje stavku sam po sebi (za razliku od levog) — biramo je ručno da kontekst meni radi nad partnerom pod mišem.</summary>
+    private void LstPartneri_PreviewMouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
+        if (e.OriginalSource is DependencyObject d && ItemsControl.ContainerFromElement(LstPartneri, d) is ListBoxItem item)
+        {
+            item.IsSelected = true;
+        }
+    }
+
+    private async void MiIzmeniPartnera_Click(object sender, RoutedEventArgs e)
+    {
+        if (LstPartneri.SelectedItem is not Partner partner)
+        {
+            MessageBox.Show("Izaberite partnera za izmenu.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var dijalog = new PartnerEditWindow(partner) { Owner = Window.GetWindow(this) };
+        if (dijalog.ShowDialog() == true && dijalog.Sacuvan != null)
+        {
+            await OsveziPartnereAsync(dijalog.Sacuvan.PartnerId);
+        }
+    }
+
+    private void TxtPretragaPartnera_TextChanged(object sender, TextChangedEventArgs e) => PrimeniFilterPartnera();
+
+    private void RbFilterPartneri_Checked(object sender, RoutedEventArgs e) => PrimeniFilterPartnera();
+
+    private void PrimeniFilterPartnera()
+    {
+        if (LstPartneri == null) return; // stiže i tokom InitializeComponent, pre nego što je kontrola spremna
+
+        IEnumerable<Partner> izvor = _sviPartneri;
+        if (RbPartneriKupci?.IsChecked == true)
+        {
+            izvor = izvor.Where(JeKontoKupca);
+        }
+        else if (RbPartneriDobavljaci?.IsChecked == true)
+        {
+            izvor = izvor.Where(JeKontoDobavljaca);
+        }
+
         string search = TxtPretragaPartnera.Text.Trim().ToLower();
-        LstPartneri.ItemsSource = string.IsNullOrEmpty(search)
-            ? _sviPartneri
-            : _sviPartneri.Where(p => p.SifraPartnera.ToLower().Contains(search) || p.Naziv.ToLower().Contains(search)).ToList();
+        if (!string.IsNullOrEmpty(search))
+        {
+            izvor = izvor.Where(p => p.SifraPartnera.ToLower().Contains(search) || p.Naziv.ToLower().Contains(search));
+        }
+
+        LstPartneri.ItemsSource = izvor.ToList();
+    }
+
+    /// <summary>Konto kupca je 204 (novi zakon) ili 120 (stari) — isti prefiksi kao KamataService.IsKupacKonto.</summary>
+    private static bool JeKontoKupca(Partner p)
+    {
+        string konto = p.KontoPartnera ?? p.SifraPartnera;
+        return konto.StartsWith(KontoPicker.Grupe.KupciNoviZakon, StringComparison.Ordinal)
+            || konto.StartsWith(KontoPicker.Grupe.KupciStariZakon, StringComparison.Ordinal);
+    }
+
+    private static bool JeKontoDobavljaca(Partner p)
+    {
+        string konto = p.KontoPartnera ?? p.SifraPartnera;
+        return konto.StartsWith(KontoPicker.Grupe.DobavljaciNoviZakon, StringComparison.Ordinal)
+            || konto.StartsWith(KontoPicker.Grupe.DobavljaciStariZakon, StringComparison.Ordinal);
     }
 
     private async void LstPartneri_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -83,6 +148,14 @@ public partial class PartneriView : UserControl
             CmbKontoKartice.SelectedIndex = konta.Count > 0 ? 0 : -1;
             _ucitavanjeKonta = false;
 
+            // Padajuća lista ima smisla samo kad partner vodi više konta (npr. i kupac i
+            // dobavljač). Za uobičajen slučaj tačno jednog konta prikazujemo običan tekst —
+            // dropdown strelica bez izbora samo zbunjuje.
+            bool viseKonta = konta.Count > 1;
+            CmbKontoKartice.Visibility = viseKonta ? Visibility.Visible : Visibility.Collapsed;
+            TxtKontoJedini.Visibility = viseKonta ? Visibility.Collapsed : Visibility.Visible;
+            TxtKontoJedini.Text = konta.Count == 1 ? konta[0].Prikaz : "—";
+
             if (konta.Count > 0)
             {
                 await UcitajKarticuZaKontoAsync(partner, konta[0].BrojKonta);
@@ -92,6 +165,8 @@ public partial class PartneriView : UserControl
                 DgOtvoreneStavke.ItemsSource = null;
                 TxtSaldoPartnera.Text = 0m.ToString("N2");
             }
+
+            AzurirajStanjeObracunaKamate();
         }
         catch (Exception ex)
         {
@@ -110,6 +185,21 @@ public partial class PartneriView : UserControl
         if (CmbKontoKartice.SelectedItem is not PartnerKontoInfo konto) return;
 
         await UcitajKarticuZaKontoAsync(_izabraniPartner, konto.BrojKonta);
+        AzurirajStanjeObracunaKamate();
+    }
+
+    /// <summary>Obračun kamate ima smisla samo na kontu kupca (204/120) — isto pravilo kao KamataService.IsKupacKonto.</summary>
+    private void AzurirajStanjeObracunaKamate()
+    {
+        string? brojKonta = (CmbKontoKartice.SelectedItem as PartnerKontoInfo)?.BrojKonta;
+        bool jeKupac = !string.IsNullOrWhiteSpace(brojKonta) &&
+            (brojKonta.StartsWith(KontoPicker.Grupe.KupciNoviZakon, StringComparison.Ordinal) ||
+             brojKonta.StartsWith(KontoPicker.Grupe.KupciStariZakon, StringComparison.Ordinal));
+
+        BtnObracunKamate.IsEnabled = jeKupac;
+        BtnObracunKamate.ToolTip = jeKupac
+            ? "Kalkulacija i obračun zatezne kamate za dospela potraživanja"
+            : "Obračun kamate je moguć samo za konto kupca (204/120)";
     }
 
     private async Task UcitajKarticuZaKontoAsync(Partner partner, string brojKonta)

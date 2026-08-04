@@ -44,11 +44,16 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtNaslovPartnera" Text="Partner" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" Margin="0,0,20,0" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="Datum obračuna:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                        <DatePicker x:Name="DpDatumObracuna" Width="140" Height="32" VerticalAlignment="Center"/>
-                    </StackPanel>
+                    <Grid Grid.Column="0" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MinWidth="0"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="TxtNaslovPartnera" Grid.Column="0" Text="Partner" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" Margin="0,0,20,0" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="1" Text="Datum obračuna:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                        <DatePicker x:Name="DpDatumObracuna" Grid.Column="2" Width="140" Height="32" VerticalAlignment="Center"/>
+                    </Grid>
                     <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal">
                         <Button x:Name="BtnObracunaj" Content="🧮 Obračunaj" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,0" Click="BtnObracunaj_Click"/>
                         <Button x:Name="BtnStampajKamatu" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#7C3AED" Width="36" Padding="0" ToolTip="Izvezi PDF" Click="BtnStampajKamatu_Click"/>

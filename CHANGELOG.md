@@ -4,6 +4,23 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.4.7] - 2026-08-04
+
+### 🌍 Kursna lista NBS ponovo radi — stari izvor je ugašen (`NbsApiClient`)
+- **Preuzimanje je tiho vraćalo 0 valuta za bilo koji datum.** Uzrok nije bio nedostatak podataka nego mrtav endpoint: stari javni feed `www.nbs.rs/net/xmlrs/kursnaLista.xml` vraća `404 Page Not Found`, ne prazan XML — NBS ga je ugasio.
+- Zvaničan programski pristup postoji samo kroz registrovani "Sistem veb-servisa NBS" (`webservices.nbs.rs`, prijava pravnog lica). Dok se taj pristup ne obezbedi, `NbsApiClient` sada parsira HTML tabelu nove NBS web-app forme (`webappcenter.nbs.rs/ExchangeRateWebApp`) — `ExchangeRateListTypeID=3` za zvanični srednji kurs (jedina vrednost koju knjigovodstvo koristi za preračun), `=1` za kupovni/prodajni prikaz u Kalkulatoru, sa `sr-Latn` kolačićem da nazivi valuta ostanu na latinici.
+- Krhko po prirodi (HTML scraping) — ako NBS ponovo redizajnira formu, treba ažurirati parsiranje.
+
+### 👥 Partneri: sintetički (legacy) partneri se mogu "promovisati" u prave (`PartnerPromocijaService`, `PartnerEditWindow`)
+- **Većina partnera u šifarniku su "sintetički" zapisi** (`PartnerId=0`) izvedeni direktno iz kontnog plana — legacy DBF uvoz nikad nije kreirao pravi red u tabeli Partneri za njih. Zato su za njih bili blokirani zatvaranje otvorenih stavki, istorija zatvaranja i NBS verifikacija računa (nedostaju PIB/matični broj), bez ikakvog načina da se to popravi iz aplikacije.
+- Desni klik na partnera u listi → **"✏️ Izmeni podatke/konto"** otvara `PartnerEditWindow`. Za sintetičkog partnera, čuvanje kreira pravi red u Partneri (idempotentno — ne dupira ako je već promovisan) **i povezuje (backfill) sve dosadašnje stavke naloga tog konta** koje još nemaju `PartnerId`, tako da zatvaranje stavki, istorija i verifikacija odmah rade i za uvezenu istoriju. Menja se samo veza (`PartnerId`), nikad iznosi/datumi već proknjiženih stavki.
+
+### 🖥️ Sitnije popravke ekrana Partneri i Obračuna kamate
+- **Obračun kamate**: naslov partnera i "Datum obračuna" su preklapali dugmad kad je naziv partnera dug (`KamataWindow`) — `StackPanel` bez ograničenja širine je puštao sadržaj preko granice kolone. Zamenjen `Grid`-om sa pravim kolonama; elipsa na dugom nazivu sada stvarno radi.
+- Dugme **"💰 Obračun kamate"** je disable-ovano kad izabrani konto partnera nije konto kupca (204/120) — kamata na dobavljača nema smisla.
+- Dodata radio dugmad **Svi / Kupci / Dobavljači** za filtriranje liste partnera (uz postojeću pretragu).
+- Padajuća lista konta na "Analitičkoj kartici" se prikazuje kao običan tekst kad partner ima samo jedan konto — dropdown strelica bez izbora je samo zbunjivala; ostaje kao combo kad partner vodi više konta (npr. i kupac i dobavljač).
+
 ## [1.4.6] - 2026-08-04
 
 ### 🐛 Ispravka pada pri otvaranju baze bez istorije migracija (`AccountingDbContext`)
