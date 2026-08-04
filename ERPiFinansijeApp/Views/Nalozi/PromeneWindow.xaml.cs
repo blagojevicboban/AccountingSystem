@@ -105,6 +105,13 @@ public partial class PromeneWindow : Window
         BtnObrisi.IsEnabled = false;
     }
 
+    private void BtnNovaStavka_Click(object sender, RoutedEventArgs e)
+    {
+        DgPromene.SelectedItem = null;
+        OčistiFormu();
+        TxtOpis.Focus();
+    }
+
     private async void BtnSacuvaj_Click(object sender, RoutedEventArgs e)
     {
         if (!int.TryParse(TxtSifra.Text.Trim(), out var sifra) || sifra <= 0)

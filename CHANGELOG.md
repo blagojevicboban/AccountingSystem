@@ -4,6 +4,12 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.4.3] - 2026-08-04
+
+### ➕ Eksplicitno dugme za novu stavku u šifarniku opisa promena (`PromeneWindow`)
+- **Dodavanje nove šifre/opisa je već radilo, ali samo ako se red u gridu slučajno deselektuje** (klikom u prazan prostor ispod poslednjeg reda) — dugme „Sačuvaj" je inače uvek izgledalo kao izmena selektovane stavke.
+- Dodato dugme „➕ Nova stavka" pored pretrage: deselektuje grid, čisti formu (šifra se auto-popuni sledećim slobodnim brojem) i fokusira polje za opis, tako da je dodavanje nove stavke očigledna, nezavisna radnja.
+
 ## [1.4.2] - 2026-08-04
 
 > Nastavak na 1.4.0/1.4.1: popunjava rupe nađene pri proveri veze robno → finansijsko

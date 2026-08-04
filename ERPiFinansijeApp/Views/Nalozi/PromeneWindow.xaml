@@ -19,8 +19,16 @@
 
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
-                <TextBox x:Name="TxtPretraga" DockPanel.Dock="Top" Height="34" Margin="0,0,0,12" Padding="8,0"
-                         VerticalContentAlignment="Center" TextChanged="TxtPretraga_TextChanged"/>
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="TxtPretraga" Grid.Column="0" Height="34" Margin="0,0,8,0" Padding="8,0"
+                             VerticalContentAlignment="Center" TextChanged="TxtPretraga_TextChanged"/>
+                    <Button x:Name="BtnNovaStavka" Grid.Column="1" Content="➕ Nova stavka" Style="{StaticResource ActionButtonStyle}"
+                            Background="#3B82F6" Height="34" Click="BtnNovaStavka_Click"/>
+                </Grid>
 
                 <DataGrid x:Name="DgPromene" AutoGenerateColumns="False" CanUserAddRows="False"
                           IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column"
