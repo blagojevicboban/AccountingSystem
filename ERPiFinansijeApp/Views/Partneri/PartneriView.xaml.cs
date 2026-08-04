@@ -264,12 +264,6 @@ public partial class PartneriView : UserControl
             return;
         }
 
-        if (_izabraniPartner.PartnerId <= 0)
-        {
-            MessageBox.Show("Ručno zatvaranje stavki je za sada dostupno samo za partnere iz šifarnika, ne i za legacy analitičke konte (204xxx/435xxx bez matičnog partnera).", "Nije podržano", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
         var izabraniIds = DgPraveOtvoreneStavke.SelectedItems
             .OfType<OtvorenaStavkaRed>()
             .Select(s => s.StavkaNalogaId);
@@ -286,12 +280,6 @@ public partial class PartneriView : UserControl
         if (_izabraniPartner == null)
         {
             MessageBox.Show("Izaberite partnera.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
-        if (_izabraniPartner.PartnerId <= 0)
-        {
-            MessageBox.Show("Istorija zatvaranja je za sada dostupna samo za partnere iz šifarnika, ne i za legacy analitičke konte (204xxx/435xxx bez matičnog partnera).", "Nije podržano", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 

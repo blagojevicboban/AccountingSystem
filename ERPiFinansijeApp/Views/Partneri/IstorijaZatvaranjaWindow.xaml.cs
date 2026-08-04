@@ -30,7 +30,9 @@ public partial class IstorijaZatvaranjaWindow : Window
             using var db = new AccountingDbContext(options);
             var service = new ZatvaranjeStavkiService(db);
 
-            DgIstorija.ItemsSource = await service.GetIstorijaZatvaranjaAsync(_partner.PartnerId);
+            DgIstorija.ItemsSource = _partner.PartnerId > 0
+                ? await service.GetIstorijaZatvaranjaAsync(_partner.PartnerId)
+                : await service.GetIstorijaZatvaranjaZaKontoAsync(_partner.KontoPartnera ?? _partner.SifraPartnera);
         }
         catch (Exception ex)
         {

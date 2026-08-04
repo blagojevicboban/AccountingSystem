@@ -286,10 +286,29 @@ public class ZatvaranjeStavkiService
             .Select(s => s.StavkaNalogaId)
             .ToListAsync();
 
+        return await GetIstorijaZatvaranjaZaStavkeAsync(partnerStavkeIds);
+    }
+
+    /// <summary>
+    /// Istorija zatvaranja za "sintetičkog" partnera (legacy analitički konto bez PartnerId veze) —
+    /// ista logika kao GetIstorijaZatvaranjaAsync, samo se stavke pronalaze po tačnom broju konta.
+    /// </summary>
+    public async Task<List<ZatvaranjeStavke>> GetIstorijaZatvaranjaZaKontoAsync(string brojKonta)
+    {
+        var kontoStavkeIds = await _db.StavkeNaloga
+            .Where(s => s.PartnerId == null && s.BrojKonta == brojKonta)
+            .Select(s => s.StavkaNalogaId)
+            .ToListAsync();
+
+        return await GetIstorijaZatvaranjaZaStavkeAsync(kontoStavkeIds);
+    }
+
+    private async Task<List<ZatvaranjeStavke>> GetIstorijaZatvaranjaZaStavkeAsync(List<int> stavkaIds)
+    {
         return await _db.ZatvaranjaStavki
             .Include(z => z.StavkaDuguje)
             .Include(z => z.StavkaPotrazuje)
-            .Where(z => partnerStavkeIds.Contains(z.StavkaDugujeId) || partnerStavkeIds.Contains(z.StavkaPotrazujeId))
+            .Where(z => stavkaIds.Contains(z.StavkaDugujeId) || stavkaIds.Contains(z.StavkaPotrazujeId))
             .OrderByDescending(z => z.DatumZatvaranja)
             .ToListAsync();
     }

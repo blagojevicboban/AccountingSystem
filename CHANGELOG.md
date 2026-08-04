@@ -4,6 +4,12 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.4.8] - 2026-08-04
+
+### 👥 Zatvaranje stavki i istorija zatvaranja rade i za legacy konto bez promocije (`ZatvaranjeStavkiService`)
+- Ručno zatvaranje otvorenih stavki i istorija zatvaranja su i dalje bile blokirane za sintetičke (legacy) partnere (`PartnerId=0`), iako je [1.4.7](#147---2026-08-04) uvela mogućnost "promocije" u pravog partnera. Blokada je uklonjena bez uslova promocije — `ZatvaranjeStavkiWindow` sad učitava otvorene stavke preko `GetOtvoreneStavkeZaKontoAsync` kad partner nema `PartnerId`, a nova `GetIstorijaZatvaranjaZaKontoAsync` radi isto za istoriju. Samo zatvaranje (`ZatvoriGrupnoAsync`) je oduvek radilo na nivou stavki naloga, bez zavisnosti od partnera.
+- Promocija partnera ([1.4.7](#147---2026-08-04)) ostaje preporučen put za PIB/matični broj i NBS verifikaciju, ali ubuduće više nije preduslov za zatvaranje IOS stavki.
+
 ## [1.4.7] - 2026-08-04
 
 ### 🌍 Kursna lista NBS ponovo radi — stari izvor je ugašen (`NbsApiClient`)

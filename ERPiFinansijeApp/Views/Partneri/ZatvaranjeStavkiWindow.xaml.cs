@@ -77,7 +77,9 @@ public partial class ZatvaranjeStavkiWindow : Window
             using var db = new AccountingDbContext(options);
             var service = new ZatvaranjeStavkiService(db);
 
-            var otvorene = await service.GetOtvoreneStavkeZaPartneraAsync(_partner.PartnerId, samoOtvorene: true);
+            var otvorene = _partner.PartnerId > 0
+                ? await service.GetOtvoreneStavkeZaPartneraAsync(_partner.PartnerId, samoOtvorene: true)
+                : await service.GetOtvoreneStavkeZaKontoAsync(_partner.KontoPartnera ?? _partner.SifraPartnera, samoOtvorene: true);
 
             _dugujeRedovi = otvorene.Where(s => s.Strana == "Duguje")
                 .Select(s => ZatvaranjeIzborRed.IzOtvoreneStavke(s, preselektovaniIds.Contains(s.StavkaNalogaId)))
