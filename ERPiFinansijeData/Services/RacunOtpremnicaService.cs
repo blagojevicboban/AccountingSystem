@@ -119,6 +119,28 @@ public class RacunOtpremnicaService
         if (racun.TipDokumenta == TipRacunOtpremnice.Predracun) throw new InvalidOperationException("Predračun se ne može knjižiti — prvo ga pretvorite u račun.");
         if (racun.IsKnjizen) throw new InvalidOperationException("Račun je već proknjižen.");
 
+        // Razduženje robne kartice — po prosečnoj (nabavnoj) ceni, ne po prodajnoj sa
+        // fakture, jer se zaliha vrednuje po ponderisanoj nabavnoj ceni (isto načelo kao
+        // Trebovanje/Primopredaja preko MaterijalnaKarticaService). Magacin je obavezan
+        // čim račun ima stavke — bez njega ne znamo koju karticu razdužiti.
+        decimal nabavnaVrednostProdate = 0m;
+        if (racun.Stavke.Count > 0)
+        {
+            if (racun.Magacin == null)
+            {
+                throw new InvalidOperationException($"Račun {racun.BrojRacuna} nema izabran magacin — izaberite magacin pre knjiženja.");
+            }
+
+            var kartice = new MaterijalnaKarticaService(_db);
+            foreach (var s in racun.Stavke)
+            {
+                string sifraArtikla = s.Artikal?.SifraArtikla ?? s.SifraArtikla;
+                nabavnaVrednostProdate += await kartice.DodajIzlazRedAsync(
+                    racun.Magacin.SifraMagacina, sifraArtikla, racun.DatumRacuna,
+                    $"Račun {racun.BrojRacuna}", s.Kolicina);
+            }
+        }
+
         // Automatsko kreiranje naloga knjiženja u Glavnoj knjizi
         int sledeciBrojNaloga = (await _db.Nalozi.Select(n => (int?)n.BrojNaloga).MaxAsync() ?? 0) + 1;
         var nalog = new Nalog
@@ -131,11 +153,14 @@ public class RacunOtpremnicaService
             DatumKnjiženja = DateTime.Now
         };
 
-        // 1. Duguje Kupac (Konto 2040)
+        // 1. Duguje Kupac — analitika izabrana na dokumentu (konto iz kontnog plana, grupa 204/120).
+        // Sintetika 2040 ostaje samo za račune unete pre nego što se kupac birao iz kontnog plana.
+        string kontoKupca = string.IsNullOrWhiteSpace(racun.KontoKupca) ? "2040" : racun.KontoKupca.Trim();
+
         nalog.Stavke.Add(new StavkaNaloga
         {
             RedniBroj = 1,
-            BrojKonta = "2040",
+            BrojKonta = kontoKupca,
             BrojDokumenta = racun.BrojRacuna.ToString(),
             Opis = $"Faktura br. {racun.BrojRacuna}",
             Duguje = racun.UkupnoZaUplatu,
@@ -170,6 +195,34 @@ public class RacunOtpremnicaService
             });
         }
 
+        // 4/5. Razduženje robe: nabavna vrednost prodate robe (5010) duguje / roba na
+        // zalihama (1320 ili 1340, prema vrsti magacina) potražuje — istovremeno sa
+        // prihodom, tako da nalog ostane u ravnoteži i van dvostepenog obrasca po redu.
+        if (nabavnaVrednostProdate != 0)
+        {
+            string kontoRobe = RobnaKonta.RobaZaVrstuMagacina(racun.Magacin!.VrstaMagacina);
+
+            nalog.Stavke.Add(new StavkaNaloga
+            {
+                RedniBroj = 4,
+                BrojKonta = "5010",
+                BrojDokumenta = racun.BrojRacuna.ToString(),
+                Opis = $"Nabavna vrednost prodate robe po fakturi {racun.BrojRacuna}",
+                Duguje = nabavnaVrednostProdate,
+                Potrazuje = 0m
+            });
+
+            nalog.Stavke.Add(new StavkaNaloga
+            {
+                RedniBroj = 5,
+                BrojKonta = kontoRobe,
+                BrojDokumenta = racun.BrojRacuna.ToString(),
+                Opis = $"Razduženje robe po fakturi {racun.BrojRacuna}",
+                Duguje = 0m,
+                Potrazuje = nabavnaVrednostProdate
+            });
+        }
+
         nalog.UkupnoDuguje = nalog.Stavke.Sum(s => s.Duguje);
         nalog.UkupnoPotrazuje = nalog.Stavke.Sum(s => s.Potrazuje);
 
@@ -182,16 +235,30 @@ public class RacunOtpremnicaService
     }
 
     /// <summary>
-    /// Rasknjiži račun-otpremnicu — briše nalog knjiženja koji je automatski kreiran u
-    /// Glavnoj knjizi pri knjiženju (zajedno sa njegovim stavkama) i vraća račun u status
-    /// nacrta radi izmene. Račun-otpremnica ne dodiruje materijalnu karticu direktno
-    /// (samo generiše finansijski nalog), pa nema potrebe za proverom kasnijih knjiženja.
+    /// Rasknjiži račun-otpremnicu — uklanja redove materijalne kartice koje je ovaj
+    /// račun upisao pri razduženju (obrnutim redosledom od knjiženja) i briše nalog
+    /// knjiženja koji je automatski kreiran u Glavnoj knjizi, pa vraća račun u status
+    /// nacrta radi izmene. Baca grešku ako je za neki artikal u međuvremenu knjiženo
+    /// nešto kasnije (isti obrazac kao Kalkulacija/Trebovanje/Primopredaja).
     /// </summary>
     public async Task RasknjiziRacunAsync(int racunOtpremnicaId)
     {
-        var racun = await _db.RacuniOtpremnice.FirstOrDefaultAsync(r => r.RacunOtpremnicaId == racunOtpremnicaId);
+        var racun = await _db.RacuniOtpremnice
+            .Include(r => r.Magacin)
+            .Include(r => r.Stavke).ThenInclude(s => s.Artikal)
+            .FirstOrDefaultAsync(r => r.RacunOtpremnicaId == racunOtpremnicaId);
         if (racun == null) throw new InvalidOperationException("Račun nije pronađen.");
         if (!racun.IsKnjizen) throw new InvalidOperationException("Račun nije proknjižen.");
+
+        if (racun.Magacin != null && racun.Stavke.Count > 0)
+        {
+            var kartice = new MaterijalnaKarticaService(_db);
+            foreach (var s in racun.Stavke.AsEnumerable().Reverse())
+            {
+                string sifraArtikla = s.Artikal?.SifraArtikla ?? s.SifraArtikla;
+                await kartice.UkloniPoslednjiRedAsync(racun.Magacin.SifraMagacina, sifraArtikla, $"Račun {racun.BrojRacuna}");
+            }
+        }
 
         if (racun.NalogId.HasValue)
         {

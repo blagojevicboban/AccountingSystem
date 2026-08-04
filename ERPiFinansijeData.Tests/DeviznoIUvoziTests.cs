@@ -85,4 +85,46 @@ public class DeviznoIUvoziTests
         Assert.Equal(136200m, s1.UkupnaNabavnaVrednostRsd); // 117000 + 11700 + 7500
         Assert.Equal(1362m, s1.NabavnaCenaPoJediniciRsd);   // 136.200 / 100
     }
+
+    [Fact]
+    public async Task SacuvajIKnjiziUvozAsync_ShouldPostaviNalogId_IRasknjiziUvozAsync_ShouldGaUkloniti()
+    {
+        using var db = GetInMemoryDbContext();
+        var partner = new Partner { SifraPartnera = "INO1", Naziv = "Ino dobavljač" };
+        var magacin = new Magacin { SifraMagacina = "001", NazivMagacina = "Stovarište" };
+        var artikal = new Artikal { SifraArtikla = "A1", Naziv = "Artikal 1" };
+        db.Partneri.Add(partner);
+        db.Magacini.Add(magacin);
+        db.Artikli.Add(artikal);
+        await db.SaveChangesAsync();
+
+        var service = new UvoznaKalkulacijaService(db);
+        var kalkulacija = new UvoznaKalkulacija
+        {
+            BrojKalkulacije = "UV-1",
+            InoPartnerId = partner.PartnerId,
+            InoBrojFakture = "F-1",
+            Valuta = "EUR",
+            KursValute = 117.00m,
+            MagacinId = magacin.MagacinId,
+            Stavke = new List<UvoznaStavka>
+            {
+                new() { ArtikalId = artikal.ArtikalId, Kolicina = 10, InoCenaDevize = 10m, CarinaProcenat = 10m }
+            }
+        };
+
+        var (success, _, sacuvana) = await service.SacuvajIKnjiziUvozAsync(kalkulacija);
+
+        Assert.True(success);
+        Assert.NotNull(sacuvana!.NalogId);
+        int nalogId = sacuvana.NalogId!.Value;
+        Assert.True(await db.Nalozi.AnyAsync(n => n.NalogId == nalogId));
+
+        await service.RasknjiziUvozAsync(sacuvana.UvoznaKalkulacijaId);
+
+        var rasknjizena = await db.UvozneKalkulacije.FirstAsync(k => k.UvoznaKalkulacijaId == sacuvana.UvoznaKalkulacijaId);
+        Assert.False(rasknjizena.IsKnjizeno);
+        Assert.Null(rasknjizena.NalogId);
+        Assert.False(await db.Nalozi.AnyAsync(n => n.NalogId == nalogId));
+    }
 }

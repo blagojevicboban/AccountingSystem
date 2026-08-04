@@ -4,6 +4,37 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.4.2] - 2026-08-04
+
+> Nastavak na 1.4.0/1.4.1: popunjava rupe nađene pri proveri veze robno → finansijsko
+> knjigovodstvo — kupac na fakturi je bio slobodan tekst i konto mu je bio zakucan,
+> prodaja nije razduživala zalihu, a uvozna kalkulacija nije mogla da se rasknjiži.
+
+### 🧾 Kupac na računu-otpremnici je padajuća lista iz kontnog plana (`RacunOtpremnicaEditWindow`, `KontoPicker`)
+- **Polje „Kupac / Konto" je bilo slobodan tekst.** Sada je pretraživa lista konta grupe kupaca (**204**, odnosno **120** kod firmi prenetih sa starog zakona) preko istog `KontoPicker`-a koji već bira konto dobavljača na kalkulaciji — traži se i po broju i po nazivu, a konto van grupe se i dalje može uneti rukom.
+- **Nalog knjiženja je duguio zakucan konto `2040`** bez obzira šta je uneto u polje kupca. Sada duguje izabrani konto sa dokumenta; `2040` ostaje samo kao podrazumevana vrednost za račune snimljene pre ove izmene (prazno `KontoKupca`).
+
+### 📤 Račun-otpremnica razdužuje robnu karticu i knjiži nabavnu vrednost prodate robe (`RacunOtpremnicaService`, `RacunOtpremnicaEditWindow`)
+- **Prodaja nije diralа zalihu.** Račun-otpremnica je knjižio samo prihod (`6120`) i PDV (`4700`) — roba je ostajala na stanju iako je prodata, a pomoć u prozoru je i dalje obećavala „automatsko razduženje zaliha".
+- **Dodat je konto Magacin (obavezan) na formu računa.** Pri knjiženju se za svaku stavku upisuje izlazni red u materijalnu karticu, po **prosečnoj (nabavnoj) ceni** — isto načelo kao Trebovanje/Primopredaja preko `MaterijalnaKarticaService`, ne po prodajnoj ceni sa fakture.
+- **Nalog dobija dve nove stavke**: `5010` (nabavna vrednost prodate robe) duguje, konto robe potražuje — `1320` za veleprodajni magacin, `1340` za maloprodajni (`RobnaKonta.RobaZaVrstuMagacina`).
+- **Rasknjižavanje uklanja i redove kartice**, obrnutim redosledom od knjiženja, uz istu proveru kao kod ostalih dokumenata — baca grešku ako je za neki artikal u međuvremenu knjiženo nešto kasnije, da se ne bi pokvarilo stanje/prosečna cena za naloge posle njega.
+
+### 🌍 Uvozna kalkulacija se može rasknjižiti (`UvoznaKalkulacijaService`, `UvoznaKalkulacija`)
+- **Nalog knjižen pri uvozu se nije mogao ukloniti.** Za razliku od (maloprodajne) kalkulacije, nivelacije i računa-otpremnice, `UvoznaKalkulacija` nije čuvala `NalogId` — jednom proknjižen nalog na `1300`/`4350`/`4330` ostajao je trajno, bez načina da se ispravi greška u unosu.
+- `UvoznaKalkulacija.NalogId` (nova kolona, migracija `DodajNalogIdUvoznaKalkulacija`) i `UvoznaKalkulacijaService.RasknjiziUvozAsync` prate isti obrazac kao ostala robna dokumenta. **Za sada samo na nivou servisa** — `UvoznaKalkulacijaWindow` je i dalje unos-samo-za-knjiženje prozor bez liste postojećih uvoza, pa dugme za rasknjižavanje u interfejsu nije dodato u ovom koraku.
+
+### 📖 Pregled: konta robno → finansijsko i veza dokumenta sa nalogom
+Vidi `ANALIZA_I_PLAN.md` §9 za tabelu svih konta po tipu robnog dokumenta i objašnjenje kako se čuva veza sa nalogom (`NalogId`) — uključujući i dalje otvorene stavke (obračun razlike u ceni, dnevni pazar, primopredaja VP→MP, uvozna kalkulacija bez kartice).
+
+## [1.4.1] - 2026-08-04
+
+> Ispravke na knjiženju kalkulacija uvedenom u 1.4.0.
+
+### 🧾 Ukalkulisani PDV prati poresku stopu kalkulacije (`RobnaKonta`, `MaloprodajnaKalkulacijaService`)
+- **Maloprodajna kalkulacija po stopi 10% završavala je na kontu opšte stope.** Kontni plan drži dve analitike ukalkulisanog PDV — `1344` (20%) i `13441` (10%) — a knjiženje je uvek išlo na `1344`, bez obzira na `PoreskaStopaProcenat` dokumenta. Saldo oba konta bi bio pogrešan, a nalog i dalje u ravnoteži, pa se greška ne bi sama primetila.
+- Konto se sada bira preko `RobnaKonta.UkalkulisaniPdvZaStopu(stopa)`, sa istim pragom kao u `PdvService` (≥18% je opšta stopa) — tako i istorijske stope 18%/8% iz uvezenih baza padaju na ista konta kao današnje 20%/10%.
+
 ## [1.4.0] - 2026-08-04
 
 > Kalkulacije. Uvoz iz DOS-a čitao je samo deo kolona iz `KAL_NAL.DBF` — razlika u ceni, porez,

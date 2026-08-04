@@ -128,6 +128,7 @@ public class UvoznaKalkulacijaService
                 }
 
                 kalkulacija.IsKnjizeno = true;
+                kalkulacija.NalogId = nalog.NalogId;
                 await _db.SaveChangesAsync();
             }
 
@@ -137,5 +138,39 @@ public class UvoznaKalkulacijaService
         {
             return (false, $"Greška pri knjiženju uvozne kalkulacije: {ex.Message}", null);
         }
+    }
+
+    /// <summary>
+    /// Rasknjiži uvoznu kalkulaciju — uklanja nalog kojim je proknjižena u glavnu knjigu
+    /// (zajedno sa njegovim stavkama) i vraća kalkulaciju u status nacrta radi izmene.
+    /// Isti obrazac kao rasknjižavanje veleprodajne/maloprodajne kalkulacije, samo bez
+    /// materijalne kartice — uvozna kalkulacija za sada knjiži samo u glavnu knjigu, ne
+    /// dodiruje robnu karticu.
+    /// </summary>
+    public async Task RasknjiziUvozAsync(int uvoznaKalkulacijaId)
+    {
+        var kalkulacija = await _db.UvozneKalkulacije.FirstOrDefaultAsync(k => k.UvoznaKalkulacijaId == uvoznaKalkulacijaId);
+        if (kalkulacija == null)
+        {
+            throw new InvalidOperationException("Uvozna kalkulacija nije pronađena.");
+        }
+        if (!kalkulacija.IsKnjizeno)
+        {
+            throw new InvalidOperationException($"Uvozna kalkulacija #{kalkulacija.BrojKalkulacije} nije proknjižena.");
+        }
+
+        if (kalkulacija.NalogId.HasValue)
+        {
+            var nalog = await _db.Nalozi.Include(n => n.Stavke).FirstOrDefaultAsync(n => n.NalogId == kalkulacija.NalogId.Value);
+            if (nalog != null)
+            {
+                _db.StavkeNaloga.RemoveRange(nalog.Stavke);
+                _db.Nalozi.Remove(nalog);
+            }
+        }
+
+        kalkulacija.IsKnjizeno = false;
+        kalkulacija.NalogId = null;
+        await _db.SaveChangesAsync();
     }
 }

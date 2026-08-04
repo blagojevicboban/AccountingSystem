@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ERPiFinansijeApp.Services;
 using ERPiFinansijeApp.Views.Pomoc;
 using ERPiFinansijeData;
 using ERPiFinansijeData.Models;
@@ -35,6 +36,16 @@ public partial class RacunOtpremnicaEditWindow : Window
 
             _artikli = await db.Artikli.OrderBy(a => a.SifraArtikla).ToListAsync();
 
+            // Kupac se bira iz kontnog plana (grupa 204 / 120), isto kao konto dobavljača
+            // na kalkulaciji — legacy daj_konto(1), FIN2.PRG:1223-1228.
+            KontoPicker.PoveziKupce(CmbKontoKupca, await db.Konta.ToListAsync());
+
+            // Magacin je obavezan da bi se pri knjiženju robna kartica mogla razdužiti
+            // (KnjiziRacunAsync — vidi RacunOtpremnicaService).
+            var magacini = await db.Magacini.OrderBy(m => m.SifraMagacina).ToListAsync();
+            CmbMagacin.ItemsSource = magacini;
+            if (magacini.Count == 1) CmbMagacin.SelectedIndex = 0;
+
             ColArtikal.ItemsSource = _artikli;
             ColArtikal.DisplayMemberPath = "Naziv";
             ColArtikal.SelectedValuePath = "SifraArtikla";
@@ -48,9 +59,12 @@ public partial class RacunOtpremnicaEditWindow : Window
                 TxtBrojRacuna.IsReadOnly = true;
                 TxtBrojOtpremnice.Text = _existingRacun.BrojOtpremnice ?? _existingRacun.BrojRacuna.ToString();
                 DpDatum.SelectedDate = _existingRacun.DatumRacuna;
-                TxtKontoKupca.Text = _existingRacun.Partner?.SifraPartnera ?? _existingRacun.KontoKupca;
+                KontoPicker.PostaviKonto(CmbKontoKupca,
+                    string.IsNullOrWhiteSpace(_existingRacun.KontoKupca) ? _existingRacun.Partner?.SifraPartnera : _existingRacun.KontoKupca);
                 TxtRokPlacanja.Text = _existingRacun.RokPlacanjaDana.ToString();
                 CmbNacinPlacanja.Text = _existingRacun.NacinPlacanja ?? "Virman (račun)";
+                CmbMagacin.SelectedItem = magacini.FirstOrDefault(m => m.MagacinId == _existingRacun.MagacinId)
+                    ?? magacini.FirstOrDefault(m => m.SifraMagacina == _existingRacun.Magacin?.SifraMagacina);
 
                 int rbr = 1;
                 foreach (var st in _existingRacun.Stavke)
@@ -120,7 +134,7 @@ public partial class RacunOtpremnicaEditWindow : Window
 
     private async void BtnSacuvaj_Click(object sender, RoutedEventArgs e)
     {
-        string kontoKupca = TxtKontoKupca.Text.Trim();
+        string kontoKupca = KontoPicker.IzabraniKonto(CmbKontoKupca) ?? "";
 
         if (!int.TryParse(TxtBrojRacuna.Text.Trim(), out int brRacuna))
         {
@@ -149,7 +163,10 @@ public partial class RacunOtpremnicaEditWindow : Window
             using var db = new AccountingDbContext(options);
             var service = new RacunOtpremnicaService(db);
 
-            var partner = await db.Partneri.FirstOrDefaultAsync(p => p.SifraPartnera == kontoKupca || p.Naziv == kontoKupca);
+            // Kupac je sada konto iz kontnog plana, pa se partner traži i po KontoPartnera —
+            // po šifri/nazivu i dalje, zbog računa unetih pre padajuće liste.
+            var partner = await db.Partneri.FirstOrDefaultAsync(p =>
+                p.KontoPartnera == kontoKupca || p.SifraPartnera == kontoKupca || p.Naziv == kontoKupca);
 
             var racun = _existingRacun ?? new RacunOtpremnica();
             racun.TipDokumenta = ChkPredracun.IsChecked == true ? TipRacunOtpremnice.Predracun : TipRacunOtpremnice.Racun;
@@ -162,6 +179,7 @@ public partial class RacunOtpremnicaEditWindow : Window
             racun.KontoKupca = kontoKupca;
             racun.RokPlacanjaDana = rokDana;
             racun.NacinPlacanja = CmbNacinPlacanja.Text.Trim();
+            racun.MagacinId = (CmbMagacin.SelectedItem as ERPiFinansijeData.Models.Magacin)?.MagacinId;
 
             racun.Stavke = validneStavke.Select((s, idx) =>
             {

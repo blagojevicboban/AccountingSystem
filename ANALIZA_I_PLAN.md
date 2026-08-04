@@ -2,7 +2,8 @@
 
 > Nastalo iz analize `.PRG` modula u `C:\KNJIGE\Radni` (FIN.CLP, ANAL.CLP, ROB.CLP, MAT.CLP)
 > i struktura `.DBF` baza u `C:\KNJIGE\Radni\KOR01`.
-> Verzija dokumenta: 2026-07-25.
+> Verzija dokumenta: 2026-07-25, poslednje ažurirano 2026-08-04 (§3 status tabela usklađena sa §5, dodato §9).
+> §4 (Gap analiza) je zamrznut istorijski snimak stanja pre Faze 0/1 — tekuće stanje prati §5 (checkbox po fazi).
 
 ---
 
@@ -80,21 +81,22 @@ Trenutni skeleton (`ERPiFinansijeData/Models`) već pokriva jezgro FIN modula. P
 | KORISNIC/KOR | `Firma` + `FirmaSettings` | ⚠️ `Firma` postoji, fale config flegovi |
 | — | `Korisnik` | ✅ postoji (dodati hash) |
 | NALOG | `Nalog` + `StavkaNaloga` | ✅ postoji |
-| KARTICA | `KarticaStavka` (ili računato) | ❌ |
-| BRUTO_B | računato / `BrutoBilansRed` | ❌ |
-| KAM_STOP / KAMATA | `KamatnaStopa`, `ObracunKamate` | ❌ |
-| ANKONT/ANNAL/ANKART | `AnalitickiKonto`, `AnalitickiNalog`... | ❌ (modul ANAL) |
-| ARAC | `AnalitickiRacun` | ❌ |
+| KARTICA | računato preko `KarticaService.GetKarticaKontaAsync` | ✅ (nije poseban model — hronološka kartica se izvodi iz `StavkaNaloga` u letu) |
+| BRUTO_B | računato preko `BrutoBilansService` | ✅ (agregacija po kontu iz proknjiženih naloga, nije poseban model) |
+| KAM_STOP / KAMATA | `KamatnaStopa` + `KamataService.ObracunajKamatuAsync` | ✅ postoji |
+| ANKONT/ANNAL/ANKART | — | ❌ **namerno nije portovano** — §3 Faza 3 arhitektonski nalaz: legacy ANAL modul nikad nije stvarno korišćen (prazni placeholder slogovi), pokriveno preko `Partner` + `StavkaNaloga.PartnerId` |
+| ARAC | — | ❌ **namerno nije portovano**, isti razlog kao ANKONT/ANNAL/ANKART (0 stvarnih podataka za KOR01) |
 | MAGACIN | `Magacin` (SIFRA, RACUNOPOL) | ✅ postoji |
 | ARTIKLI / M_SIFR | `Artikal` | ✅ postoji (razdvojiti robni vs materijalni šifarnik) |
-| MAT_NAL / MAT_KART | `RobniNalog`, `RobnaKartica` | ❌ (modul ROB) |
+| MAT_NAL / MAT_KART | `Kalkulacija`/`MaloprodajnaKalkulacija`/`NivelacijaCena`/`RacunOtpremnica` + `MaterijalnaKartica` | ✅ postoji — realizovano kao odvojeni modeli po tipu dokumenta, ne kao jedan generički `RobniNalog`/`RobnaKartica` |
 | KALKULAC / KAL_NAL | `Kalkulacija` + `KalkulacijaStavka` | ✅ sve kolone uvezene, knjiži se u GK (1320/1329/dobavljač) |
 | MALKULAC / MAL_NAL | `MaloprodajnaKalkulacija` + stavke | ✅ sve kolone uvezene, knjiži se u GK (1340/1344/1348/dobavljač) |
-| NIV_NAL | `Nivelacija` | ❌ |
-| RAC_OTP | `RacunOtpremnica` | ❌ |
-| TARIFE / CENOVNIK | `Tarifa`, `Cena` | ❌ |
-| ULAZ / TREBOV / M_PRIMO | `Ulaz`, `Trebovanje`, `Primopredaja` | ❌ (modul MAT) |
-| M_KART | `MaterijalnaKartica` | ❌ |
+| NIV_NAL | `NivelacijaCena` + stavke | ✅ postoji, knjiži se u GK (1320/1340 ↔ 1329/1348 prema vrsti magacina) |
+| RAC_OTP | `RacunOtpremnica` + stavke | ✅ postoji, knjiži se u GK (konto kupca/6120/4700/5010/1320-1340), razdužuje materijalnu karticu |
+| TARIFE | `PoreskaTarifa` | ✅ postoji, samostalan šifarnik (stopa, poseban porez) |
+| CENOVNIK | — | ❌ nema posebnog modela; cena se drži samo na `Artikal.NabavnaCena`/`ProdajnaCena`, bez istorije cenovnika kroz vreme |
+| ULAZ / TREBOV / M_PRIMO | `UlazNalog`, `TrebovanjeNalog`, `PrimopredajaNalog` | ✅ postoje, sve tri knjiže materijalnu karticu (modul MAT) |
+| M_KART | `MaterijalnaKartica` | ✅ postoji, prosečna (ponderisana) cena — `MaterijalnaKarticaService` |
 
 **Napomena o poljima** — legacy koristi `N19.2` (decimal 18,2 je ok), datumi `D8` (yyyymmdd),
 `KNJIZEN N1` (bool 0/1). Migracioni alat (`ERPiFinansijeMigration/Program.cs`) već čita DBF binarno;
@@ -219,8 +221,65 @@ netestirani na realnim brojevima.
 
 ---
 
-## 7. Preporučeni sledeći korak
+## 8. Preporučeni sledeći korak
 
 Krenuti od **Faze 0 (Temelji)** — migracije + login/sesija/firma + hash — jer sve ostale
 faze zavise od šeme i sesije. Odmah potom **Faza 1 (unos naloga + kartica + bruto bilans)**
 kao prva upotrebljiva verzija koja zamenjuje FIN modul DOS-a.
+
+---
+
+## 9. Robno → finansijsko: konta po dokumentu i veza sa nalogom
+
+> Nastalo iz provere (2026-08-04) da li se u robnim nalozima čuva veza sa finansijskim
+> nalogom — kod nas i uporedno kod drugih programa za robno/finansijsko knjigovodstvo.
+
+### 9.1 Konta po tipu robnog dokumenta
+
+Sva konta su čitana iz stvarnih naloga zatečenih baza (`RobnaKonta`), ne izvedena iz
+kontnog okvira — analitika (naročito razlika u ceni i ukalkulisani PDV) razlikuje se od
+firme do firme. Videti §7, stavka 4 (Kalkulacija) gore za formulu obračuna.
+
+| Robni dokument | Servis | Nalog u glavnoj knjizi |
+| --- | --- | --- |
+| Veleprodajna kalkulacija | `KalkulacijaService.KnjiziUGlavnuKnjiguAsync` | `1320` D (nabavno+razlika) / `1329` P (razlika) / konto dobavljača P (svega nabavno) |
+| Maloprodajna kalkulacija | `MaloprodajnaKalkulacijaService.KnjiziUGlavnuKnjiguAsync` | `1340` D (prodajna sa PDV) / `1344`\|`13441` P (ukalkulisani PDV, po stopi) / `1348` P (razlika) / konto dobavljača P |
+| Nivelacija cena | `NivelacijaService.KnjiziNivelacijuAsync` | `1320`/`1340` ↔ `1329`/`1348`, prema vrsti magacina (`RobnaKonta.RobaZaVrstuMagacina`/`RazlikaZaVrstuMagacina`) |
+| Račun-otpremnica (prodaja) | `RacunOtpremnicaService.KnjiziRacunAsync` | konto kupca (iz kontnog plana, grupa 204/120) D (bruto) / `6120` P (prihod, osnovica) / `4700` P (PDV) / `5010` D (nabavna vrednost prodate robe) / `1320`\|`1340` P (razduženje, prema vrsti magacina) |
+| Uvozna kalkulacija | `UvoznaKalkulacijaService.SacuvajIKnjiziUvozAsync` | `1300` D (nabavna vrednost) / `4350` P (ino dobavljač) / `4330` P (carina i zavisni troškovi) |
+| Ulaz, Trebovanje, Primopredaja | `UlazService`, `TrebovanjeService`, `PrimopredajaService` | — samo materijalna kartica, bez naloga u GK |
+
+**Otvoreno** (nije implementirano, nađeno pri istoj proveri):
+- **Obračun razlike u ceni** — periodični prenos sa `5010` na `1348`/`1349`, standardan korak
+  kod svih uporednih programa (mesečno ili pri zatvaranju perioda); kod nas ne postoji.
+- **Dnevni pazar** (ESIR/fiskalizacija) — `EsirFiskalizacijaService` evidentira fiskalne
+  podatke, ali ne pravi nalog (`1340` P / `1344` D / `1348` D / `6140` P / `4700` P / blagajna D).
+- **Primopredaja veleprodaja → maloprodaja** ne pravi finansijski nalog — prenos menja i
+  `1320`/`1340` i ukalkulisani PDV, ali `PrimopredajaService` diže samo materijalnu karticu.
+- **Uvozna kalkulacija ne dodiruje materijalnu karticu** — knjiži samo u GK; roba iz uvoza
+  ne ulazi u robnu karticu magacina, za razliku od svih ostalih ulaznih dokumenata.
+
+### 9.2 Kako se čuva veza dokument ↔ nalog
+
+**Na nivou zaglavlja dokumenta** veza je FK `NalogId → Nalog.NalogId` (nullable, postavlja se
+pri knjiženju, briše pri rasknjiženju): `Kalkulacija`, `MaloprodajnaKalkulacija`,
+`NivelacijaCena`, `RacunOtpremnica`, `UvoznaKalkulacija` (dodato 1.4.2 — vidi CHANGELOG). Van
+robnog toka isti obrazac koriste i `BlagajnickiNalog`, `KompenzacijaModels`, `PutniNalog`.
+Rasknjiženje (`Rasknjizi*Async`) je simetrično knjiženju: ukloni redove materijalne kartice
+obrnutim redosledom (uz proveru da nije knjiženo nešto kasnije za isti artikal/magacin —
+`MaterijalnaKarticaService.UkloniPoslednjiRedAsync`), pa ukloni nalog i njegove stavke, pa
+vrati `IsKnjizen = false` i `NalogId = null`.
+
+**Na nivou reda materijalne kartice veze nema.** `MaterijalnaKartica` nema FK ka izvornom
+dokumentu ni ka nalogu — izvorni dokument se u UI-ju (`TrgovinaView.DgRobnaKartica_MouseDoubleClick`)
+pogađa **parsiranjem teksta `OpisPromene`** regexom (`^Kalkulacija (\d+)$`,
+`^Primopredaja br\. (\d+)`). Format opisa je pisan u dva oblika kroz verzije („Kalkulacija 7"
+i „Kalkulacija7"), pa je ovo mesto krhko — pravo rešenje bi bilo `IzvorTip`/`IzvorId` kolone
+na `MaterijalnaKartica`, ali menjanje formata reda kartice je veći zahvat (dotiče uvoz, sve
+servise koji pišu redove i istoriju postojećih baza), pa nije rađeno uz ovu proveru.
+
+**Uporedno kod drugih programa** (BizniSoft, 4D Wand, Minimax) veza je istog oblika — robni/
+izlazni dokument nosi pokazivač na nalog, ne obrnuto; nalog kreiran automatski iz dokumenta se
+ne menja ručno, samo kroz storno/rasknjiženje izvornog dokumenta (BizniSoft: „Storniraj
+knjiženja i vrati u obradu" — stornira nalog i vraća dokument u obradu; Minimax: automatski
+nalog je zaključan za ručnu izmenu).

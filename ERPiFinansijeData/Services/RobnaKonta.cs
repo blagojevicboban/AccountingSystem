@@ -35,8 +35,15 @@ public static class RobnaKonta
     /// <summary>Roba u maloprodaji / prodavnici (vodi se po prodajnoj vrednosti sa PDV).</summary>
     public const string RobaMaloprodaja = "1340";
 
-    /// <summary>Ukalkulisani PDV u prometu na malo.</summary>
+    /// <summary>Ukalkulisani PDV u prometu na malo — opšta stopa (20%).</summary>
     public const string UkalkulisaniPdvMaloprodaja = "1344";
+
+    /// <summary>
+    /// Ukalkulisani PDV u prometu na malo — posebna stopa (10%). Zatečeni kontni plan drži
+    /// dve analitike (1344 za opštu, 13441 za posebnu stopu), a knjiženje je do sada uvek išlo
+    /// na 1344, pa je kalkulacija po nižoj stopi završavala na kontu opšte stope.
+    /// </summary>
+    public const string UkalkulisaniPdvMaloprodajaPosebnaStopa = "13441";
 
     /// <summary>
     /// Ukalkulisana razlika u ceni u maloprodaji. Namerno 1348, a ne 1349: u kontnom planu
@@ -52,4 +59,12 @@ public static class RobnaKonta
     /// <summary>Konto razlike u ceni prema vrsti magacina.</summary>
     public static string RazlikaZaVrstuMagacina(string? vrstaMagacina)
         => vrstaMagacina == "Maloprodaja" ? RazlikaUCeniMaloprodaja : RazlikaUCeniVeleprodaja;
+
+    /// <summary>
+    /// Konto ukalkulisanog PDV prema poreskoj stopi dokumenta. Prag je isti kao u
+    /// <see cref="PdvService"/> (≥18% je opšta stopa), da bi i istorijske stope 18%/8% iz
+    /// uvezenih baza pale na isti konto kao današnje 20%/10%.
+    /// </summary>
+    public static string UkalkulisaniPdvZaStopu(decimal poreskaStopaProcenat)
+        => poreskaStopaProcenat >= 18m ? UkalkulisaniPdvMaloprodaja : UkalkulisaniPdvMaloprodajaPosebnaStopa;
 }

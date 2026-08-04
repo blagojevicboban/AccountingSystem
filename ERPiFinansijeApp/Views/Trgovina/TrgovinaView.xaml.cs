@@ -478,7 +478,9 @@ public partial class TrgovinaView : UserControl
             _sviRacuni = await service.GetRacuneAsync();
             foreach (var r in _sviRacuni)
             {
-                if (r.Partner != null) r.KontoKupca = r.Partner.SifraPartnera;
+                // Konto sa dokumenta ima prednost — od kad se kupac bira iz kontnog plana,
+                // prepisivanje šifrom partnera bi u koloni prikazalo nešto drugo nego što je uneto.
+                if (r.Partner != null && string.IsNullOrWhiteSpace(r.KontoKupca)) r.KontoKupca = r.Partner.SifraPartnera;
             }
             FiltrirajRacune();
         }
@@ -743,7 +745,7 @@ public partial class TrgovinaView : UserControl
                     st.NazivArtikla = st.Artikal.Naziv;
                 }
             }
-            if (racunFull.Partner != null) racunFull.KontoKupca = racunFull.Partner.SifraPartnera;
+            if (racunFull.Partner != null && string.IsNullOrWhiteSpace(racunFull.KontoKupca)) racunFull.KontoKupca = racunFull.Partner.SifraPartnera;
 
             var firma = await db.Firme.FirstOrDefaultAsync() ?? new Firma { Naziv = "ARHIBEL DOO", Pib = "100000000" };
 
