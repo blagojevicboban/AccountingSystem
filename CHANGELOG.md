@@ -4,6 +4,15 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.4.9] - 2026-08-04
+
+### 🔄 Primopredaja veleprodaja↔maloprodaja pravi nalog u Glavnoj knjizi (`PrimopredajaService`, `PrimopredajaNalog`)
+- **Zaduženje/Razduženje prodavnice** (Trgovina, dokumenti nad istom `PrimopredajaNalog` tabelom kao obična Primopredaja — vidi `ANALIZA_I_PLAN.md` §9.1) je do sada dizalo samo materijalnu karticu. Kad magacin koji daje i magacin koji prima nisu iste vrste (veleprodaja vodi robu bez PDV na `1320`, maloprodaja sa PDV na `1340`), prenos je menjao zalihu bez ijednog traga u knjigovodstvu.
+- Novo polje **`PrimopredajaNalog.StopaPdv`** (podrazumevano 20%, uneseno na nalogu — analogno jedinstvenoj stopi po dokumentu kod `MaloprodajnaKalkulacija`) — polje i napomena se u `PrimopredajaEditWindow` prikazuju samo kad izabrani magacini prelaze VP↔MP granicu.
+- Pri knjiženju: osnovna vrednost ide sa konta magacina koji daje na konto magacina koji prima (`1320`↔`1340`), a razlika ide na ukalkulisani PDV (`1344`/`13441`, po stopi) — bez konta dobavljača, jer je ovo interni prenos robe, ne nabavka. Rasknjiženje uklanja i redove kartice i ovaj nalog, simetrično ostalim robnim dokumentima.
+- **Namerno ne dira** ukalkulisanu razliku u ceni (`1329`/`1348`) — ta rekvalifikacija je zaseban, još neurađen korak (periodični obračun razlike, `ANALIZA_I_PLAN.md` §9.1 "Otvoreno").
+- Pokriveno sa 3 nova testa u `PrimopredajaServiceTests` (ista vrsta magacina ne pravi nalog; VP→MP dodaje PDV i pravi uravnotežen nalog; rasknjiženje uklanja i karticu i nalog).
+
 ## [1.4.8] - 2026-08-04
 
 ### 👥 Zatvaranje stavki i istorija zatvaranja rade i za legacy konto bez promocije (`ZatvaranjeStavkiService`)

@@ -54,6 +54,7 @@ public partial class PrimopredajaEditWindow : Window
 
                 CmbMagacinDaje.SelectedItem = _magacini.FirstOrDefault(m => m.SifraMagacina == _existingNalog.SifraMagacinaDaje);
                 CmbMagacinPrima.SelectedItem = _magacini.FirstOrDefault(m => m.SifraMagacina == _existingNalog.SifraMagacinaPrima);
+                CmbStopaPdv.Text = _existingNalog.StopaPdv.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
                 int rbr = 1;
                 foreach (var st in _existingNalog.Stavke)
@@ -84,16 +85,38 @@ public partial class PrimopredajaEditWindow : Window
                 if (_magacini.Count > 1) CmbMagacinPrima.SelectedIndex = 1;
                 else if (_magacini.Count > 0) CmbMagacinPrima.SelectedIndex = 0;
 
+                CmbStopaPdv.Text = "20";
+
                 StavkeModels.Add(new PrimopredajaStavkaModel { RedniBroj = 1 });
             }
 
             DgStavke.ItemsSource = StavkeModels;
+            AzurirajUpozorenjePrelaza();
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Greška pri učitavanju podataka: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    /// <summary>
+    /// Prikazuje polje za stopu PDV i napomenu samo kad magacin koji daje i magacin koji prima
+    /// nisu iste vrste (Veleprodaja/Maloprodaja) — samo tada <see cref="PrimopredajaService"/>
+    /// pravi nalog u Glavnoj knjizi.
+    /// </summary>
+    private void AzurirajUpozorenjePrelaza()
+    {
+        bool prelaziVpMp = CmbMagacinDaje.SelectedItem is ERPiFinansijeData.Models.Magacin md
+            && CmbMagacinPrima.SelectedItem is ERPiFinansijeData.Models.Magacin mp
+            && md.VrstaMagacina != mp.VrstaMagacina;
+
+        var vidljivost = prelaziVpMp ? Visibility.Visible : Visibility.Collapsed;
+        TxtLabelStopaPdv.Visibility = vidljivost;
+        CmbStopaPdv.Visibility = vidljivost;
+        TxtInfoPrelaz.Visibility = vidljivost;
+    }
+
+    private void CmbMagacin_SelectionChanged(object sender, SelectionChangedEventArgs e) => AzurirajUpozorenjePrelaza();
 
     private void BtnDodajStavku_Click(object sender, RoutedEventArgs e)
     {
@@ -131,6 +154,14 @@ public partial class PrimopredajaEditWindow : Window
             return;
         }
 
+        bool prelaziVpMp = magDaje.VrstaMagacina != magPrima.VrstaMagacina;
+        decimal stopaPdv = 20m;
+        if (prelaziVpMp && !decimal.TryParse(CmbStopaPdv.Text.Trim(), out stopaPdv))
+        {
+            MessageBox.Show("Unesite ispravnu stopu PDV (%) — prelaz veleprodaja↔maloprodaja pravi nalog u Glavnoj knjizi i mora znati po kojoj stopi da obračuna porez.", "Upozorenje", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         var validneStavke = StavkeModels.Where(s => !string.IsNullOrWhiteSpace(s.SifraArtikla) && s.Kolicina > 0).ToList();
         if (validneStavke.Count == 0)
         {
@@ -149,6 +180,7 @@ public partial class PrimopredajaEditWindow : Window
             nalog.Datum = DpDatum.SelectedDate ?? DateTime.Now;
             nalog.SifraMagacinaDaje = magDaje.SifraMagacina;
             nalog.SifraMagacinaPrima = magPrima.SifraMagacina;
+            nalog.StopaPdv = stopaPdv;
             nalog.Stavke = validneStavke.Select((s, idx) => new PrimopredajaStavka
             {
                 RedniBroj = idx + 1,
@@ -198,7 +230,7 @@ public partial class PrimopredajaEditWindow : Window
                 ("➕ Dodaj stavku", "Dodaje artikal u nalog za primopredaju."),
                 ("🗑️", "Uklanja stavku iz reda u tabeli."),
             },
-            "Obavezno izabrati različite magacine 'daje' i 'prima'. Primopredaja se knjiži kao izlaz iz jednog i ulaz u drugi magacin po istoj vrednosti."
+            "Obavezno izabrati različite magacine 'daje' i 'prima'. Primopredaja se knjiži kao izlaz iz jednog i ulaz u drugi magacin po istoj vrednosti. Kod prelaska veleprodaja↔maloprodaja se dodatno traži stopa PDV i pravi se nalog u Glavnoj knjizi (1320/1340 + ukalkulisani PDV)."
         ) { Owner = this }.ShowDialog();
     }
 }

@@ -26,6 +26,20 @@ public class PrimopredajaNalog
 
     public bool IsKnjizen { get; set; }
 
+    /// <summary>
+    /// Poreska stopa (%) za obračun ukalkulisanog PDV kad primopredaja prelazi između
+    /// veleprodajnog i maloprodajnog magacina (npr. Zaduženje/Razduženje prodavnice) —
+    /// analogno jedinstvenoj stopi po dokumentu iz <see cref="MaloprodajnaKalkulacija"/>.
+    /// Bez uticaja kad su magacin koji daje i magacin koji prima iste vrste (ne pravi se nalog).
+    /// </summary>
+    [Column(TypeName = "decimal(5, 2)")]
+    public decimal StopaPdv { get; set; } = 20m;
+
+    /// <summary>Nalog u Glavnoj knjizi kreiran pri prelazu robe između veleprodaje i maloprodaje (ako ga je bilo).</summary>
+    public int? NalogId { get; set; }
+    [ForeignKey(nameof(NalogId))]
+    public Nalog? Nalog { get; set; }
+
     public List<PrimopredajaStavka> Stavke { get; set; } = new();
 }
 

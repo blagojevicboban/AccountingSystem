@@ -29,6 +29,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="10"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Text="Broj naloga *" VerticalAlignment="Center" FontWeight="SemiBold"/>
@@ -38,10 +40,19 @@
                 <DatePicker x:Name="DpDatum" Grid.Column="4" Height="34" VerticalContentAlignment="Center"/>
 
                 <TextBlock Text="Magacin koji dajе *" Grid.Row="2" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                <ComboBox x:Name="CmbMagacinDaje" Grid.Row="2" Grid.Column="1" Height="34" DisplayMemberPath="Prikaz" VerticalContentAlignment="Center"/>
+                <ComboBox x:Name="CmbMagacinDaje" Grid.Row="2" Grid.Column="1" Height="34" DisplayMemberPath="Prikaz" VerticalContentAlignment="Center" SelectionChanged="CmbMagacin_SelectionChanged"/>
 
                 <TextBlock Text="Magacin koji prima *" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                <ComboBox x:Name="CmbMagacinPrima" Grid.Row="2" Grid.Column="4" Height="34" DisplayMemberPath="Prikaz" VerticalContentAlignment="Center"/>
+                <ComboBox x:Name="CmbMagacinPrima" Grid.Row="2" Grid.Column="4" Height="34" DisplayMemberPath="Prikaz" VerticalContentAlignment="Center" SelectionChanged="CmbMagacin_SelectionChanged"/>
+
+                <TextBlock x:Name="TxtLabelStopaPdv" Text="Stopa PDV (%) *" Grid.Row="4" VerticalAlignment="Center" FontWeight="SemiBold" Visibility="Collapsed"/>
+                <ComboBox x:Name="CmbStopaPdv" Grid.Row="4" Grid.Column="1" Height="34" VerticalContentAlignment="Center" IsEditable="True" Visibility="Collapsed">
+                    <ComboBoxItem Content="20"/>
+                    <ComboBoxItem Content="10"/>
+                    <ComboBoxItem Content="0"/>
+                </ComboBox>
+                <TextBlock x:Name="TxtInfoPrelaz" Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2" VerticalAlignment="Center" FontStyle="Italic" Foreground="#6B7280" TextWrapping="Wrap"
+                           Text="ℹ️ Prelaz veleprodaja↔maloprodaja pravi nalog u Glavnoj knjizi (1320/1340 + ukalkulisani PDV)." Visibility="Collapsed"/>
             </Grid>
         </Border>
 

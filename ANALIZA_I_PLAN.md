@@ -2,7 +2,8 @@
 
 > Nastalo iz analize `.PRG` modula u `C:\KNJIGE\Radni` (FIN.CLP, ANAL.CLP, ROB.CLP, MAT.CLP)
 > i struktura `.DBF` baza u `C:\KNJIGE\Radni\KOR01`.
-> Verzija dokumenta: 2026-07-25, poslednje ažurirano 2026-08-04 (§3 status tabela usklađena sa §5, dodato §9).
+> Verzija dokumenta: 2026-07-25, poslednje ažurirano 2026-08-04 (§3 status tabela usklađena sa §5, dodato §9,
+> ispravljen zastareo checkbox u §5 Faza 1, zatvorena stavka Primopredaja VP↔MP iz §9.1).
 > §4 (Gap analiza) je zamrznut istorijski snimak stanja pre Faze 0/1 — tekuće stanje prati §5 (checkbox po fazi).
 
 ---
@@ -130,7 +131,7 @@ DBF migracija (KONTPLAN, ANKONT, M_SIFR, MAGACIN, NALOG), Velopack pakovanje.
 
 ### Faza 1 — FIN jezgro (najveća vrednost)
 - [x] **Unos/izmena naloga**: `NalogEditWindow` — dodavanje/brisanje stavki, live provera Duguje==Potražuje (zeleno/žuto/crveno), snimanje preko `NaloziService.SaveNalogAsync`; izmena dozvoljena samo za neproknjižene naloge. „Proknjiži" dugme već je postojalo i i dalje radi.
-- [ ] Šifarnik **opisa promena** (`PROMENA` kod → tabela) — odloženo, nije blokiralo ostatak Faze 1
+- [x] Šifarnik **opisa promena** (`PROMENA` kod → tabela) — `PromeneWindow` (dugme „➕ Nova stavka", CHANGELOG 1.4.3); ranije upisano kao odloženo, u međuvremenu urađeno
 - [x] **Kartica konta** — `KarticeView` (izbor konta + pretraga) + `KarticaService.GetKarticaKontaAsync`, hronološka sa kumulativnim saldom, testirano na kontu 470 (93 stavke, saldo se poklapa sa bruto bilansom)
 - [x] **Bruto bilans** — `BrutoBilansService.GetBrutoBilansAsync` (agregacija po kontu iz proknjiženih naloga), pravi PDF izvoz u Izveštajima
 - [x] `PdfReportService`: `GenerisiKarticuPdf`, `GenerisiBrutoBilansPdf` (uz postojeći `GenerisiDnevnikPdf`)
@@ -247,15 +248,25 @@ firme do firme. Videti §7, stavka 4 (Kalkulacija) gore za formulu obračuna.
 | Nivelacija cena | `NivelacijaService.KnjiziNivelacijuAsync` | `1320`/`1340` ↔ `1329`/`1348`, prema vrsti magacina (`RobnaKonta.RobaZaVrstuMagacina`/`RazlikaZaVrstuMagacina`) |
 | Račun-otpremnica (prodaja) | `RacunOtpremnicaService.KnjiziRacunAsync` | konto kupca (iz kontnog plana, grupa 204/120) D (bruto) / `6120` P (prihod, osnovica) / `4700` P (PDV) / `5010` D (nabavna vrednost prodate robe) / `1320`\|`1340` P (razduženje, prema vrsti magacina) |
 | Uvozna kalkulacija | `UvoznaKalkulacijaService.SacuvajIKnjiziUvozAsync` | `1300` D (nabavna vrednost) / `4350` P (ino dobavljač) / `4330` P (carina i zavisni troškovi) |
-| Ulaz, Trebovanje, Primopredaja | `UlazService`, `TrebovanjeService`, `PrimopredajaService` | — samo materijalna kartica, bez naloga u GK |
+| Ulaz, Trebovanje, Primopredaja (ista vrsta magacina) | `UlazService`, `TrebovanjeService`, `PrimopredajaService` | — samo materijalna kartica, bez naloga u GK |
+| Primopredaja veleprodaja↔maloprodaja (Zaduženje/Razduženje) | `PrimopredajaService.KnjiziPrimopredajuAsync` | `1320`/`1340` P/D (osnovna vrednost) + `1344`\|`13441` D/P (ukalkulisani PDV po unetoj stopi), bez konta dobavljača (interni prenos) |
+
+**Rešeno (2026-08-04, nakon iste provere):**
+- **Primopredaja veleprodaja↔maloprodaja** (Zaduženje/Razduženje prodavnice, `TrgovinaView`) sada
+  pravi nalog u GK kad magacin koji daje i magacin koji prima nisu iste vrste — prenosi osnovnu
+  vrednost sa `1320`↔`1340` i dodaje/oduzima ukalkulisani PDV po stopi unetoj na nalogu
+  (`PrimopredajaNalog.StopaPdv`, podrazumevano 20%, polje se prikazuje samo kad je relevantno).
+  Bez konta dobavljača — ovo je interni prenos, ne nabavka. **Namerno ne dira** ukalkulisanu
+  razliku u ceni (`1329`/`1348`) — ostaje kako je uneta pri prvobitnoj kalkulaciji, vidi tačku
+  ispod. Pokriveno testovima u `PrimopredajaServiceTests` (ista vrsta magacina → bez naloga;
+  VP→MP → PDV se dodaje i nalog je u ravnoteži; rasknjiženje uklanja i karticu i nalog).
 
 **Otvoreno** (nije implementirano, nađeno pri istoj proveri):
 - **Obračun razlike u ceni** — periodični prenos sa `5010` na `1348`/`1349`, standardan korak
-  kod svih uporednih programa (mesečno ili pri zatvaranju perioda); kod nas ne postoji.
+  kod svih uporednih programa (mesečno ili pri zatvaranju perioda); kod nas ne postoji. Ovo
+  važi i za novododat GK nalog za Primopredaju VP↔MP iznad — on ne prekvalifikuje `1329`/`1348`.
 - **Dnevni pazar** (ESIR/fiskalizacija) — `EsirFiskalizacijaService` evidentira fiskalne
   podatke, ali ne pravi nalog (`1340` P / `1344` D / `1348` D / `6140` P / `4700` P / blagajna D).
-- **Primopredaja veleprodaja → maloprodaja** ne pravi finansijski nalog — prenos menja i
-  `1320`/`1340` i ukalkulisani PDV, ali `PrimopredajaService` diže samo materijalnu karticu.
 - **Uvozna kalkulacija ne dodiruje materijalnu karticu** — knjiži samo u GK; roba iz uvoza
   ne ulazi u robnu karticu magacina, za razliku od svih ostalih ulaznih dokumenata.
 
