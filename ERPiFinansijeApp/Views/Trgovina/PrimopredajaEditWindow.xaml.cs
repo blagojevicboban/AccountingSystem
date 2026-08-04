@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -55,6 +57,7 @@ public partial class PrimopredajaEditWindow : Window
             CmbMagacinPrima.ItemsSource = _magacini;
 
             var artikliDict = _artikli.ToDictionary(a => a.SifraArtikla, a => a.Naziv, StringComparer.OrdinalIgnoreCase);
+            TxtNaslovStavke.Text = $"📋 Stavke {GenitivVrste(_existingNalog?.VrstaDokumenta ?? _vrstaZaNovu)}";
 
             if (_existingNalog != null)
             {
@@ -111,6 +114,14 @@ public partial class PrimopredajaEditWindow : Window
             MessageBox.Show($"Greška pri učitavanju podataka: {ex.Message}", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    /// <summary>Genitiv vrste dokumenta za naslov "Stavke ..." (Zaduženje→zaduženja, Razduženje→razduženja, inače primopredaje).</summary>
+    private static string GenitivVrste(string vrsta) => vrsta switch
+    {
+        "Zaduženje" => "zaduženja",
+        "Razduženje" => "razduženja",
+        _ => "primopredaje"
+    };
 
     /// <summary>
     /// Prikazuje polje za stopu PDV i napomenu samo kad magacin koji daje i magacin koji prima
@@ -600,17 +611,63 @@ public partial class PrimopredajaEditWindow : Window
     }
 }
 
-public class PrimopredajaStavkaModel
+public class PrimopredajaStavkaModel : INotifyPropertyChanged
 {
+    private string _sifraArtikla = string.Empty;
+    private string? _nazivArtikla;
+    private decimal _kolicina;
+    private decimal _cena;
+    private decimal _iznos;
+
     public int RedniBroj { get; set; }
-    public string SifraArtikla { get; set; } = string.Empty;
-    public string? NazivArtikla { get; set; }
-    public decimal Kolicina { get; set; }
-    public decimal Cena { get; set; }
-    public decimal Iznos { get; set; }
+
+    public string SifraArtikla
+    {
+        get => _sifraArtikla;
+        set { _sifraArtikla = value; OnPropertyChanged(); OnPropertyChanged(nameof(PrikazArtikla)); }
+    }
+
+    public string? NazivArtikla
+    {
+        get => _nazivArtikla;
+        set { _nazivArtikla = value; OnPropertyChanged(); OnPropertyChanged(nameof(PrikazArtikla)); }
+    }
+
+    /// <summary>Menja Iznos (Količina × Cena) čim se količina promeni — vidi <see cref="PrekomponujIznos"/>.</summary>
+    public decimal Kolicina
+    {
+        get => _kolicina;
+        set { _kolicina = value; OnPropertyChanged(); PrekomponujIznos(); }
+    }
+
+    /// <summary>Menja Iznos (Količina × Cena) čim se cena promeni — vidi <see cref="PrekomponujIznos"/>.</summary>
+    public decimal Cena
+    {
+        get => _cena;
+        set { _cena = value; OnPropertyChanged(); PrekomponujIznos(); }
+    }
+
+    /// <summary>
+    /// Uvek Količina × Cena — kolona je read-only u gridu, korisnik je ne unosi ručno. Setter je
+    /// i dalje javan da bi učitavanje postojećeg naloga moglo da postavi tačan sačuvani iznos
+    /// (ako se razlikuje od Količina×Cena za koji novčić usled zaokruživanja) posle Kolicina/Cena
+    /// u inicijalizatoru objekta.
+    /// </summary>
+    public decimal Iznos
+    {
+        get => _iznos;
+        set { _iznos = value; OnPropertyChanged(); }
+    }
+
+    private void PrekomponujIznos() => Iznos = Kolicina * Cena;
 
     /// <summary>"šifra - naziv" za prikaz u ćeliji van režima izmene.</summary>
     public string PrikazArtikla => string.IsNullOrWhiteSpace(SifraArtikla)
         ? string.Empty
         : string.IsNullOrWhiteSpace(NazivArtikla) ? SifraArtikla : $"{SifraArtikla} - {NazivArtikla}";
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

@@ -4,6 +4,14 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.5.1] - 2026-08-05
+
+### 🧮 Iznos se sad računa uživo u stavci primopredaje (`PrimopredajaEditWindow`)
+- **Količina × Cena je ostajalo 0,00 u koloni Iznos** dok se ne sačuva nalog — `PrimopredajaStavkaModel` je dobio `INotifyPropertyChanged` sa preračunom Iznosa pri svakoj promeni Količine/Cene, ali kolone Količina/Cena nisu imale `UpdateSourceTrigger=PropertyChanged`, pa je podrazumevani `LostFocus` trigger tiho gubio commit u DataGrid-u (isti obrazac koji `NalogEditWindow` već koristi za svoje brojčane kolone — ovde je bio propušten). Iznos sad odmah prikazuje tačan proizvod dok se unosi.
+- **Naslov „Stavke primopredaje" je pisao isto za sva tri taba** (Primopredaje/Zaduženja/Razduženja), iako dijalog ispravno menja naslov prozora prema vrsti dokumenta. Dodat `TxtNaslovStavke` koji prati istu vrstu dokumenta („Stavke zaduženja" / „Stavke razduženja" / „Stavke primopredaje").
+- **Količina/Cena/Iznos poravnati uz desnu ivicu** (`NumericColumnElementStyle`/`NumericColumnEditingStyle`, isti stil kao u `NalogEditWindow`) — ranije levo poravnati kao obični tekst.
+- Verifikovano UI automatizacijom kroz automation tree (ne samo screenshot, da se isključi lažni pozitivan rezultat od renderovanja): 5 × 100 → Iznos 500,00.
+
 ## [1.5.0] - 2026-08-05
 
 ### 🔍 Pretraga po šifri i nazivu u ćeliji artikla (Primopredaje/Zaduženja/Razduženja) i polju kupca (Ponude)

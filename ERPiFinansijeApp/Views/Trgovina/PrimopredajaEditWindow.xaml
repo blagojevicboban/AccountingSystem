@@ -59,7 +59,7 @@
         <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="16" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-                    <TextBlock Text="📋 Stavke primopredaje" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                    <TextBlock x:Name="TxtNaslovStavke" Text="📋 Stavke primopredaje" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
                     <Button x:Name="BtnDodajStavku" Content="➕ Dodaj stavku" Style="{StaticResource ActionButtonStyle}" Click="BtnDodajStavku_Click"/>
                 </StackPanel>
 
@@ -89,9 +89,9 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellEditingTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Količina *" Binding="{Binding Kolicina, StringFormat=\{0:N2\}}" Width="100"/>
-                        <DataGridTextColumn Header="Cena" Binding="{Binding Cena, StringFormat=\{0:N2\}}" Width="110"/>
-                        <DataGridTextColumn Header="Iznos" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="120" IsReadOnly="True"/>
+                        <DataGridTextColumn x:Name="ColKolicina" Header="Količina *" Binding="{Binding Kolicina, UpdateSourceTrigger=PropertyChanged, StringFormat=\{0:N2\}}" Width="100" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
+                        <DataGridTextColumn x:Name="ColCena" Header="Cena" Binding="{Binding Cena, UpdateSourceTrigger=PropertyChanged, StringFormat=\{0:N2\}}" Width="110" ElementStyle="{StaticResource NumericColumnElementStyle}" EditingElementStyle="{StaticResource NumericColumnEditingStyle}"/>
+                        <DataGridTextColumn Header="Iznos" Binding="{Binding Iznos, StringFormat=\{0:N2\}}" Width="120" IsReadOnly="True" ElementStyle="{StaticResource NumericColumnElementStyle}"/>
                         <DataGridTemplateColumn Width="70">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
