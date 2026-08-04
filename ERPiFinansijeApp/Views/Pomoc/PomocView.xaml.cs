@@ -187,7 +187,12 @@ public partial class PomocView : UserControl
                 "Meni '📦 Kalkulacije i Nivelacije' pokriva robno poslovanje (Clipper MAT1–MAT7):\n\n" +
                 "1. KALKULACIJE NABAVKE (MAT3 / MAT6):\n" +
                 "• Veleprodajna kalkulacija: Ulaz po dobavljačkoj ceni, zavisni troškovi, marža i formiranje veleprodajne cene.\n" +
-                "• Maloprodajna kalkulacija: Obračun ukalkulisane marže i PDV-a za prodaju fizičkim licima.\n\n" +
+                "• Maloprodajna kalkulacija: Obračun ukalkulisane marže i PDV-a za prodaju fizičkim licima.\n" +
+                "• Artikal se bira iz šifarnika (lista 'šifra - naziv'), a konto dobavljača iz kontnog plana — traži se i po broju i po nazivu. Unose se tri datuma: kalkulacije, otpremnice i računa.\n" +
+                "• Knjiženje pravi i nalog u Glavnoj knjizi. Veleprodaja: roba (1320) duguje po prodajnoj vrednosti BEZ PDV, razlika u ceni (1329) i dobavljač potražuju. Maloprodaja ima 'korak više' — roba (1340) duguje po ceni SA PDV, a potražuju ukalkulisani PDV (1344), ukalkulisana razlika u ceni (1348) i dobavljač.\n" +
+                "• Nalog pokriva robnu stranu i obavezu prema dobavljaču u neto iznosu. Pretporez i bruto obaveza po ulaznom računu knjiže se zasebno.\n" +
+                "• Kalkulacija bez konta dobavljača se knjiži u magacin, ali bez naloga — bez protivstavke nalog ne bi bio u ravnoteži.\n" +
+                "• Rasknjižavanje uklanja i taj nalog.\n\n" +
                 "2. IZLAZNE FAKTURE I OTPREMNICE (MAT5):\n" +
                 "• Izdavanje faktura kupcima sa automatskim proračunom PDV-a, rabata %, rokom dospelosti i štampom u PDF.\n" +
                 "• Automatsko razduživanje zaliha i mogućnost generisanja naloga za knjiženje u Glavnoj knjizi.\n\n" +

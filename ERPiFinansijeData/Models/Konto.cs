@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERPiFinansijeData.Models;
 
@@ -35,4 +36,8 @@ public class Konto
 
     [MaxLength(50)]
     public string? Telefon { get; set; }
+
+    /// <summary>"broj - naziv" za padajuće liste i pretragu konta.</summary>
+    [NotMapped]
+    public string Prikaz => $"{BrojKonta} - {NazivKonta}";
 }

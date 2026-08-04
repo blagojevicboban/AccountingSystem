@@ -124,8 +124,21 @@ public static class DbfImportService
             SifraMagacina = sifra,
             NazivMagacina = naziv,
             OdgovornoLice = NullIfEmpty(odgLice),
-            VrstaMagacina = "Veleprodaja"
+            VrstaMagacina = VrstaIzNaziva(naziv)
         };
+    }
+
+    /// <summary>
+    /// MAGACIN.DBF ima samo SIFRA i RACUNOPOL — nema polje za vrstu magacina, pa se ona čita
+    /// iz naziva („Magacin maloprodaje", „Prodavnica br.1"). Ranije je svaki uvezeni magacin
+    /// bio „Veleprodaja", zbog čega su maloprodajni dokumenti knjiženi na veleprodajna konta.
+    /// Kad naziv ništa ne kaže, ostaje veleprodaja — to je bilo dotadašnje ponašanje.
+    /// </summary>
+    public static string VrstaIzNaziva(string naziv)
+    {
+        string n = naziv.ToLowerInvariant();
+        bool maloprodaja = n.Contains("maloprodaj") || n.Contains("prodavnic") || n.Contains("malopr.");
+        return maloprodaja ? "Maloprodaja" : "Veleprodaja";
     }
 
     /// <summary>ARTIKLI.DBF → Artikal (Robno). Vraća null ako red nema šifru.</summary>
@@ -305,15 +318,19 @@ public static class DbfImportService
         string broj = Get(row, "BR_KALKUL", "BR_KAL", "BROJ", "BR_NALOGA").Trim();
         if (string.IsNullOrWhiteSpace(broj) || broj == "0" || broj.TrimStart('0') == "" || !int.TryParse(broj, out int brojKalk)) return null;
 
+        decimal svegaNab = ParseDecimal(Get(row, "SVEGA_NAB", "NABAVNA"));
+        decimal razlika = ParseDecimal(Get(row, "RAZLIKA", "RUC"));
+        decimal porez = ParseDecimal(Get(row, "POREZ", "PDV"));
+
         return new Kalkulacija
         {
             BrojKalkulacije = brojKalk,
             Datum = ParseDate(Get(row, "DATUM", "DAT_KAL")),
             SifraDobavljaca = NullIfEmpty(Get(row, "DOBAVLJAC", "KUPAC", "KONTO")),
             BrojOtpremnice = NullIfEmpty(Get(row, "OTPREM_BR", "BR_OTP", "OTPREMNICA")),
-            DatumOtpremnice = ParseDate(Get(row, "OTPREM_DAT", "DAT_OTP")),
+            DatumOtpremnice = ParseDateOrNull(Get(row, "OTPREM_DAT", "DAT_OTP")),
             BrojRacuna = NullIfEmpty(Get(row, "RACUN_BR", "BR_RAC", "RACUN")),
-            DatumRacuna = ParseDate(Get(row, "RACUN_DAT", "DAT_RAC")),
+            DatumRacuna = ParseDateOrNull(Get(row, "RACUN_DAT", "DAT_RAC")),
             NabavnaVrednost = ParseDecimal(Get(row, "NABAVNA", "NABAV_VRED", "NAB_VRED")),
             TransportniTroskovi = ParseDecimal(Get(row, "TRANS_TROS", "TRANSP_TRO", "TROSKOVI")),
             TroskoviUskladistenja = ParseDecimal(Get(row, "TROS_USKL")),
@@ -321,28 +338,61 @@ public static class DbfImportService
             TransportnoOsiguranje = ParseDecimal(Get(row, "TR_OSIGUR")),
             OstaliTroskovi = ParseDecimal(Get(row, "OSTALI")),
             SvegaTroskovi = ParseDecimal(Get(row, "TROSKOVI", "SVEGA_TROS")),
-            SvegaNabavno = ParseDecimal(Get(row, "SVEGA_NAB", "NABAVNA")),
-            Razlika = ParseDecimal(Get(row, "RAZLIKA", "RUC")),
-            Porez = ParseDecimal(Get(row, "POREZ", "PDV")),
+            SvegaNabavno = svegaNab,
+            Razlika = razlika,
+            // KALKULAC.DBF ne čuva procente — legacy ih drži samo po stavci (KAL_NAL.RAZLIKA_PR /
+            // POREZ_PR). Zbirni procenat se izvodi iz iznosa istim formulama kao MAT6.PRG:855/873.
+            MarzaProcenat = ProcenatOd(razlika, svegaNab),
+            Porez = porez,
+            PoreskaStopaProcenat = ProcenatOd(porez, svegaNab + razlika),
             ProdajnaVrednost = ParseDecimal(Get(row, "PRODAJNA", "PROD_VRED")),
             SifraMagacina = NullIfEmpty(Get(row, "MAG_PRIMA", "MAGACIN", "MAG")),
             IsKnjizen = Get(row, "KNJIZEN") == "1"
         };
     }
 
-    /// <summary>KAL_NAL.DBF → KalkulacijaStavka.</summary>
+    /// <summary>100 * deo / osnovica, zaokruženo na 4 decimale; 0 kad je osnovica nula.</summary>
+    private static decimal ProcenatOd(decimal deo, decimal osnovica)
+        => osnovica == 0 ? 0m : Math.Round(100m * deo / osnovica, 4);
+
+    /// <summary>
+    /// KAL_NAL.DBF → KalkulacijaStavka. Stvarna imena kolona (potvrđena na
+    /// C:\FIRME\ARHSTO\Radni\kor01\KAL_NAL.DBF): BR_KALKUL, DATUM, MAG_PRIMA, RED_BROJ, ARTIKAL,
+    /// KOLICINA, CENA, IZNOS, TROSKOVI, NABAVNA, RAZLIKA_PR, RAZLIKA_IZ, PROD_BEZ_P, POREZ_PR,
+    /// POREZ_IZ, POS_P_PR, POS_P_IZ, PREN_POR, PREN_P_POR, PROD_SA_P, PROD_PO_JM, KNJIZEN,
+    /// STARA_CENA, POR_ZA_UPL.
+    /// </summary>
     public static KalkulacijaStavka? MapKalkulacijaStavka(Dictionary<string, string> row, int defaultRedniBroj = 1)
     {
         string art = Get(row, "ARTIKAL", "SIFRA", "SIFRA_ART");
         if (string.IsNullOrWhiteSpace(art)) return null;
 
-        int.TryParse(Get(row, "RBR", "RED_BROJ", "R_BR"), out int rbr);
+        int.TryParse(Get(row, "RED_BROJ", "RBR", "R_BR"), out int rbr);
         if (rbr <= 0) rbr = defaultRedniBroj;
 
         decimal kol = ParseDecimal(Get(row, "KOLICINA", "KOL"));
         decimal cena = ParseDecimal(Get(row, "CENA", "NAB_CENA"));
         decimal iznos = ParseDecimal(Get(row, "IZNOS", "NAB_VRED"));
         if (iznos == 0 && kol != 0 && cena != 0) iznos = kol * cena;
+
+        decimal nabavna = ParseDecimal(Get(row, "NABAVNA", "NAB_VRED"));
+        if (nabavna == 0) nabavna = iznos + ParseDecimal(Get(row, "TROSKOVI", "TROS"));
+
+        decimal razlikaIz = ParseDecimal(Get(row, "RAZLIKA_IZ", "RAZLIKA", "RUC"));
+        decimal porezIz = ParseDecimal(Get(row, "POREZ_IZ", "POREZ", "PDV"));
+
+        // PROD_SA_P je prodajna vrednost sa porezom; PROD_BEZ_P je bez poreza.
+        decimal prodSaP = ParseDecimal(Get(row, "PROD_SA_P", "PROD_VRED", "PRODAJNA"));
+        decimal prodBezP = ParseDecimal(Get(row, "PROD_BEZ_P"));
+        if (prodBezP == 0) prodBezP = nabavna + razlikaIz;
+        if (prodSaP == 0) prodSaP = prodBezP + porezIz;
+
+        decimal prodPoJm = ParseDecimal(Get(row, "PROD_PO_JM", "PROD_CENA", "CENA_PROD"));
+        if (prodPoJm == 0 && kol != 0) prodPoJm = prodSaP / kol;
+
+        decimal prenPor = ParseDecimal(Get(row, "PREN_POR"));
+        decimal porZaUpl = ParseDecimal(Get(row, "POR_ZA_UPL"));
+        if (porZaUpl == 0) porZaUpl = porezIz - prenPor;
 
         return new KalkulacijaStavka
         {
@@ -352,22 +402,203 @@ public static class DbfImportService
             NabavnaCena = cena,
             Iznos = iznos,
             Troskovi = ParseDecimal(Get(row, "TROSKOVI", "TROS")),
-            NabavnaVrednost = ParseDecimal(Get(row, "NABAVNA", "NAB_VRED")),
-            RazlikaIznos = ParseDecimal(Get(row, "RAZLIKA", "RUC")),
-            PorezIznos = ParseDecimal(Get(row, "POREZ", "PDV")),
-            ProdajnaVrednost = ParseDecimal(Get(row, "PROD_VRED", "PRODAJNA")),
-            ProdajnaCena = ParseDecimal(Get(row, "PROD_CENA", "CENA_PROD"))
+            NabavnaVrednost = nabavna,
+            RazlikaProcenat = ParseDecimal(Get(row, "RAZLIKA_PR")),
+            RazlikaIznos = razlikaIz,
+            ProdajnaVrednostBezPoreza = prodBezP,
+            PorezProcenat = ParseDecimal(Get(row, "POREZ_PR")),
+            PorezIznos = porezIz,
+            PosebanPorezProcenat = ParseDecimal(Get(row, "POS_P_PR")),
+            PosebanPorezIznos = ParseDecimal(Get(row, "POS_P_IZ")),
+            PrenetiPorez = prenPor,
+            PrenetiPosebanPorez = ParseDecimal(Get(row, "PREN_P_POR")),
+            PorezZaUplatu = porZaUpl,
+            ProdajnaVrednost = prodSaP,
+            ProdajnaCena = prodPoJm,
+            StaraCena = ParseDecimal(Get(row, "STARA_CENA")),
+            IsKnjizen = Get(row, "KNJIZEN") is "1" or "T" or "TRUE" or "Y"
         };
     }
 
-    /// <summary>Grupiše KAL_NAL.DBF redove po broju kalkulacije.</summary>
+    /// <summary>Grupiše KAL_NAL.DBF / MAL_NAL.DBF redove po broju kalkulacije. Red 0 je legacy brojač zapisa, ne stavka.</summary>
     public static Dictionary<int, List<Dictionary<string, string>>> GroupKalkulacijaStavke(List<Dictionary<string, string>> rows)
     {
         return rows
             .Select(r => new { Row = r, Broj = Get(r, "BR_KALKUL", "BR_KAL", "BR_NALOGA", "BROJ") })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && int.TryParse(x.Broj, out _))
+            .Where(x => !string.IsNullOrWhiteSpace(x.Broj) && int.TryParse(x.Broj, out int b) && b > 0)
             .GroupBy(x => int.Parse(x.Broj, CultureInfo.InvariantCulture))
             .ToDictionary(g => g.Key, g => g.Select(x => x.Row).ToList());
+    }
+
+    /// <summary>
+    /// MALKULAC.DBF → MaloprodajnaKalkulacija. Kolone: PRODAVNICA, BR_KALKUL, DATUM, MAG_PRIMA,
+    /// MAG_DAJE, DOBAVLJAC, OTPREM_BR, OTPREM_DAT, RACUN_BR, RACUN_DAT, TRANS_TROS, TROS_USKL,
+    /// UTOV_ISTOV, TR_OSIGUR, OSTALI, KNJIZEN, T_KNJIZEN, SVEGA_TROS, RABAT_PR, NAB_VRED,
+    /// SVEGA_NAB, RAZLIKA, POREZ, PROD_VRED, RABAT_IZ.
+    /// </summary>
+    public static MaloprodajnaKalkulacija? MapMaloprodajnaKalkulacija(Dictionary<string, string> row)
+    {
+        string broj = Get(row, "BR_KALKUL", "BR_KAL", "BROJ", "BR_NALOGA").Trim();
+        if (string.IsNullOrWhiteSpace(broj) || broj == "0" || broj.TrimStart('0') == "" || !int.TryParse(broj, out int brojKalk)) return null;
+
+        int.TryParse(Get(row, "PRODAVNICA"), out int prodavnica);
+
+        decimal svegaNab = ParseDecimal(Get(row, "SVEGA_NAB"));
+        decimal razlika = ParseDecimal(Get(row, "RAZLIKA"));
+        decimal porez = ParseDecimal(Get(row, "POREZ"));
+
+        return new MaloprodajnaKalkulacija
+        {
+            SifraProdavnice = prodavnica,
+            BrojKalkulacije = brojKalk,
+            Datum = ParseDate(Get(row, "DATUM", "DAT_KAL")),
+            SifraMagacinaPrima = NullIfEmpty(Get(row, "MAG_PRIMA")),
+            SifraMagacinaDaje = NullIfEmpty(Get(row, "MAG_DAJE")),
+            SifraDobavljaca = NullIfEmpty(Get(row, "DOBAVLJAC", "KONTO")),
+            BrojOtpremnice = NullIfEmpty(Get(row, "OTPREM_BR")),
+            DatumOtpremnice = ParseDateOrNull(Get(row, "OTPREM_DAT")),
+            BrojRacuna = NullIfEmpty(Get(row, "RACUN_BR")),
+            DatumRacuna = ParseDateOrNull(Get(row, "RACUN_DAT")),
+            TransportniTroskovi = ParseDecimal(Get(row, "TRANS_TROS")),
+            TroskoviUskladistenja = ParseDecimal(Get(row, "TROS_USKL")),
+            UtovarIstovar = ParseDecimal(Get(row, "UTOV_ISTOV")),
+            TransportnoOsiguranje = ParseDecimal(Get(row, "TR_OSIGUR")),
+            OstaliTroskovi = ParseDecimal(Get(row, "OSTALI")),
+            SvegaTroskovi = ParseDecimal(Get(row, "SVEGA_TROS")),
+            RabatPri = ParseDecimal(Get(row, "RABAT_PR")),
+            NabavnaVrednost = ParseDecimal(Get(row, "NAB_VRED")),
+            SvegaNabavno = svegaNab,
+            Razlika = razlika,
+            // MALKULAC.DBF, kao i KALKULAC.DBF, ne čuva procente — izvode se iz iznosa.
+            MarzaProcenat = ProcenatOd(razlika, svegaNab),
+            Porez = porez,
+            PoreskaStopaProcenat = ProcenatOd(porez, svegaNab + razlika),
+            ProdajnaVrednost = ParseDecimal(Get(row, "PROD_VRED")),
+            RabatIznos = ParseDecimal(Get(row, "RABAT_IZ")),
+            IsKnjizen = Get(row, "KNJIZEN") is "1" or "T" or "TRUE" or "Y",
+            IsTrgovinskiKnjizen = Get(row, "T_KNJIZEN") is "1" or "T" or "TRUE" or "Y"
+        };
+    }
+
+    /// <summary>
+    /// Legacy zaglavlje ume da ostavi zbirove na nuli iako stavke postoje (u ARHSTO\kor03 to je
+    /// slučaj kod 22 od 409 maloprodajnih kalkulacija). Dopunjuje isključivo polja koja su nula,
+    /// da dokument u pregledu ne bi izgledao prazan; popunjena legacy zaglavlja ostaju netaknuta.
+    /// </summary>
+    public static void DopuniZbiroveIzStavki(Kalkulacija kalkulacija)
+    {
+        if (kalkulacija.Stavke.Count == 0) return;
+
+        if (kalkulacija.NabavnaVrednost == 0) kalkulacija.NabavnaVrednost = kalkulacija.Stavke.Sum(s => s.Iznos);
+        if (kalkulacija.SvegaTroskovi == 0) kalkulacija.SvegaTroskovi = kalkulacija.Stavke.Sum(s => s.Troskovi);
+        if (kalkulacija.SvegaNabavno == 0) kalkulacija.SvegaNabavno = kalkulacija.Stavke.Sum(s => s.NabavnaVrednost);
+        if (kalkulacija.Razlika == 0) kalkulacija.Razlika = kalkulacija.Stavke.Sum(s => s.RazlikaIznos);
+        if (kalkulacija.Porez == 0) kalkulacija.Porez = kalkulacija.Stavke.Sum(s => s.PorezIznos);
+        if (kalkulacija.ProdajnaVrednost == 0) kalkulacija.ProdajnaVrednost = kalkulacija.Stavke.Sum(s => s.ProdajnaVrednost);
+        if (kalkulacija.MarzaProcenat == 0) kalkulacija.MarzaProcenat = ProcenatOd(kalkulacija.Razlika, kalkulacija.SvegaNabavno);
+        if (kalkulacija.PoreskaStopaProcenat == 0) kalkulacija.PoreskaStopaProcenat = ProcenatOd(kalkulacija.Porez, kalkulacija.SvegaNabavno + kalkulacija.Razlika);
+    }
+
+    /// <inheritdoc cref="DopuniZbiroveIzStavki(Kalkulacija)"/>
+    public static void DopuniZbiroveIzStavki(MaloprodajnaKalkulacija kalkulacija)
+    {
+        if (kalkulacija.Stavke.Count == 0) return;
+
+        if (kalkulacija.NabavnaVrednost == 0) kalkulacija.NabavnaVrednost = kalkulacija.Stavke.Sum(s => s.Iznos);
+        if (kalkulacija.SvegaTroskovi == 0) kalkulacija.SvegaTroskovi = kalkulacija.Stavke.Sum(s => s.Troskovi);
+        if (kalkulacija.SvegaNabavno == 0) kalkulacija.SvegaNabavno = kalkulacija.Stavke.Sum(s => s.NabavnaVrednost);
+        if (kalkulacija.Razlika == 0) kalkulacija.Razlika = kalkulacija.Stavke.Sum(s => s.RazlikaIznos);
+        if (kalkulacija.Porez == 0) kalkulacija.Porez = kalkulacija.Stavke.Sum(s => s.PorezIznos);
+        if (kalkulacija.ProdajnaVrednost == 0) kalkulacija.ProdajnaVrednost = kalkulacija.Stavke.Sum(s => s.ProdajnaVrednost);
+        if (kalkulacija.MarzaProcenat == 0) kalkulacija.MarzaProcenat = ProcenatOd(kalkulacija.Razlika, kalkulacija.SvegaNabavno);
+        if (kalkulacija.PoreskaStopaProcenat == 0) kalkulacija.PoreskaStopaProcenat = ProcenatOd(kalkulacija.Porez, kalkulacija.SvegaNabavno + kalkulacija.Razlika);
+    }
+
+    /// <summary>
+    /// Grupiše MAL_NAL.DBF redove po (PRODAVNICA, BR_KALKUL). Za razliku od veleprodaje, broj
+    /// maloprodajne kalkulacije je jedinstven samo u okviru prodavnice, pa je ključ složen.
+    /// </summary>
+    public static Dictionary<(int Prodavnica, int Broj), List<Dictionary<string, string>>> GroupMaloprodajnaKalkulacijaStavke(List<Dictionary<string, string>> rows)
+    {
+        return rows
+            .Select(r =>
+            {
+                int.TryParse(Get(r, "PRODAVNICA"), out int prod);
+                bool ok = int.TryParse(Get(r, "BR_KALKUL", "BR_KAL", "BROJ", "BR_NALOGA"), out int broj);
+                return new { Row = r, Prodavnica = prod, Broj = broj, Ok = ok && broj > 0 };
+            })
+            .Where(x => x.Ok)
+            .GroupBy(x => (x.Prodavnica, x.Broj))
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Row).ToList());
+    }
+
+    /// <summary>
+    /// MAL_NAL.DBF → MaloprodajnaKalkulacijaStavka. Ista jezgra kolona kao KAL_NAL, uz maloprodajne
+    /// dodatke: POS_POR_PR (umesto PREN_P_POR), NAZ_ROBE, JED_MERE, TARIFNI, TAKSA, BR_RAZDUZ, T_KNJIZEN.
+    /// </summary>
+    public static MaloprodajnaKalkulacijaStavka? MapMaloprodajnaKalkulacijaStavka(Dictionary<string, string> row, int defaultRedniBroj = 1)
+    {
+        string art = Get(row, "ARTIKAL", "SIFRA", "SIFRA_ART");
+        if (string.IsNullOrWhiteSpace(art)) return null;
+
+        int.TryParse(Get(row, "RED_BROJ", "RBR", "R_BR"), out int rbr);
+        if (rbr <= 0) rbr = defaultRedniBroj;
+
+        decimal kol = ParseDecimal(Get(row, "KOLICINA", "KOL"));
+        decimal cena = ParseDecimal(Get(row, "CENA", "NAB_CENA"));
+        decimal iznos = ParseDecimal(Get(row, "IZNOS", "NAB_VRED"));
+        if (iznos == 0 && kol != 0 && cena != 0) iznos = kol * cena;
+
+        decimal nabavna = ParseDecimal(Get(row, "NABAVNA", "NAB_VRED"));
+        if (nabavna == 0) nabavna = iznos + ParseDecimal(Get(row, "TROSKOVI", "TROS"));
+
+        decimal razlikaIz = ParseDecimal(Get(row, "RAZLIKA_IZ", "RAZLIKA", "RUC"));
+        decimal porezIz = ParseDecimal(Get(row, "POREZ_IZ", "POREZ", "PDV"));
+
+        decimal prodSaP = ParseDecimal(Get(row, "PROD_SA_P", "PROD_VRED", "PRODAJNA"));
+        decimal prodBezP = ParseDecimal(Get(row, "PROD_BEZ_P"));
+        if (prodBezP == 0) prodBezP = nabavna + razlikaIz;
+        if (prodSaP == 0) prodSaP = prodBezP + porezIz;
+
+        decimal prodPoJm = ParseDecimal(Get(row, "PROD_PO_JM", "PROD_CENA", "CENA_PROD"));
+        if (prodPoJm == 0 && kol != 0) prodPoJm = prodSaP / kol;
+
+        decimal prenPor = ParseDecimal(Get(row, "PREN_POR"));
+        decimal porZaUpl = ParseDecimal(Get(row, "POR_ZA_UPL"));
+        if (porZaUpl == 0) porZaUpl = porezIz - prenPor;
+
+        int.TryParse(Get(row, "BR_RAZDUZ"), out int brRazduz);
+        string tarifni = Get(row, "TARIFNI");
+
+        return new MaloprodajnaKalkulacijaStavka
+        {
+            RedniBroj = rbr,
+            SifraArtikla = art,
+            Kolicina = kol,
+            NabavnaCena = cena,
+            Iznos = iznos,
+            Troskovi = ParseDecimal(Get(row, "TROSKOVI", "TROS")),
+            NabavnaVrednost = nabavna,
+            RazlikaProcenat = ParseDecimal(Get(row, "RAZLIKA_PR")),
+            RazlikaIznos = razlikaIz,
+            ProdajnaVrednostBezPoreza = prodBezP,
+            PorezProcenat = ParseDecimal(Get(row, "POREZ_PR")),
+            PorezIznos = porezIz,
+            PosebanPorezProcenat = ParseDecimal(Get(row, "POS_P_PR")),
+            PosebanPorezIznos = ParseDecimal(Get(row, "POS_P_IZ")),
+            PrenetiPorez = prenPor,
+            PrenetiPosebanPorez = ParseDecimal(Get(row, "POS_POR_PR", "PREN_P_POR")),
+            PorezZaUplatu = porZaUpl,
+            Taksa = ParseDecimal(Get(row, "TAKSA")),
+            ProdajnaVrednost = prodSaP,
+            ProdajnaCena = prodPoJm,
+            TarifniBroj = (!string.IsNullOrWhiteSpace(tarifni) && tarifni != "0") ? tarifni : null,
+            BrojRazduzenja = brRazduz > 0 ? brRazduz : null,
+            IsKnjizen = Get(row, "KNJIZEN") is "1" or "T" or "TRUE" or "Y",
+            IsTrgovinskiKnjizen = Get(row, "T_KNJIZEN") is "1" or "T" or "TRUE" or "Y",
+            NazivArtikla = NullIfEmpty(Get(row, "NAZ_ROBE")),
+            JedinicaMere = NullIfEmpty(Get(row, "JED_MERE"))
+        };
     }
 
     /// <summary>MAT_NAL.DBF / ZADUZ.DBF / RAZDUZ.DBF → PrimopredajaNalog i stavke.</summary>
@@ -765,6 +996,10 @@ public static class DbfImportService
         "d.M.yyyy H:mm:ss",
         "d.M.yyyy"
     };
+
+    /// <summary>Za opciona datumska polja (otpremnica, račun) — prazan legacy datum ostaje null umesto da postane danas.</summary>
+    private static DateTime? ParseDateOrNull(string str)
+        => string.IsNullOrWhiteSpace(str) ? null : ParseDate(str);
 
     private static DateTime ParseDate(string str)
     {

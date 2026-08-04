@@ -217,4 +217,110 @@ public class KalkulacijaServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.KnjiziKalkulacijuAsync(saved.KalkulacijaId));
     }
+
+    /// <summary>
+    /// Obrazac iz stvarnog naloga 410 / „KALK.3 OD 04.12.02" (ARHIBEL 2002):
+    /// 1320 duguje 78.170,00 / 1329 potražuje 7.475,75 / 432209 potražuje 70.694,25.
+    /// </summary>
+    [Fact]
+    public async Task KnjiziKalkulaciju_KnjiziRobuRazlikuIDobavljaca()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new KalkulacijaService(db);
+
+        var k = new Kalkulacija
+        {
+            BrojKalkulacije = 3,
+            Datum = new DateTime(2002, 12, 4),
+            SifraDobavljaca = "432209",
+            BrojRacuna = "RN-3",
+            NabavnaVrednost = 70694.25m,
+            MarzaProcenat = 10.5747m,
+            PoreskaStopaProcenat = 0m
+        };
+        var saved = await service.SaveKalkulacijuAsync(k);
+
+        await service.KnjiziKalkulacijuAsync(saved.KalkulacijaId);
+
+        var proknjizena = await db.Kalkulacije.SingleAsync(x => x.KalkulacijaId == saved.KalkulacijaId);
+        Assert.NotNull(proknjizena.NalogId);
+
+        var nalog = await db.Nalozi.Include(n => n.Stavke).SingleAsync(n => n.NalogId == proknjizena.NalogId);
+        Assert.Equal(nalog.UkupnoDuguje, nalog.UkupnoPotrazuje);
+
+        var roba = nalog.Stavke.Single(s => s.BrojKonta == "1320");
+        var razlika = nalog.Stavke.Single(s => s.BrojKonta == "1329");
+        var dobavljac = nalog.Stavke.Single(s => s.BrojKonta == "432209");
+
+        // Roba u veleprodaji ide po prodajnoj vrednosti BEZ poreza — nabavno + razlika.
+        Assert.Equal(saved.SvegaNabavno + saved.Razlika, roba.Duguje);
+        Assert.Equal(saved.Razlika, razlika.Potrazuje);
+        Assert.Equal(saved.SvegaNabavno, dobavljac.Potrazuje);
+        Assert.Equal("RN-3", dobavljac.BrojDokumenta);
+    }
+
+    [Fact]
+    public async Task KnjiziKalkulaciju_VeleprodajaNeKnjiziUkalkulisaniPdv()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new KalkulacijaService(db);
+
+        var k = new Kalkulacija
+        {
+            BrojKalkulacije = 7,
+            SifraDobavljaca = "435082",
+            NabavnaVrednost = 1000m,
+            MarzaProcenat = 20m,
+            PoreskaStopaProcenat = 20m
+        };
+        var saved = await service.SaveKalkulacijuAsync(k);
+        Assert.Equal(240m, saved.Porez);   // porez postoji na dokumentu...
+
+        await service.KnjiziKalkulacijuAsync(saved.KalkulacijaId);
+
+        var nalog = await db.Nalozi.Include(n => n.Stavke).SingleAsync();
+        // ...ali se ne ukalkuliše: veleprodaja nema 1344, a roba ide bez poreza.
+        Assert.DoesNotContain(nalog.Stavke, s => s.BrojKonta == RobnaKonta.UkalkulisaniPdvMaloprodaja);
+        Assert.Equal(1200m, nalog.Stavke.Single(s => s.BrojKonta == "1320").Duguje);
+        Assert.Equal(nalog.UkupnoDuguje, nalog.UkupnoPotrazuje);
+    }
+
+    [Fact]
+    public async Task RasknjiziKalkulaciju_UklanjaNalog()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new KalkulacijaService(db);
+
+        var k = new Kalkulacija { BrojKalkulacije = 9, SifraDobavljaca = "435082", NabavnaVrednost = 5000m, MarzaProcenat = 10m };
+        var saved = await service.SaveKalkulacijuAsync(k);
+        await service.KnjiziKalkulacijuAsync(saved.KalkulacijaId);
+        Assert.Equal(1, await db.Nalozi.CountAsync());
+
+        await service.RasknjiziKalkulacijuAsync(saved.KalkulacijaId);
+
+        Assert.Equal(0, await db.Nalozi.CountAsync());
+        Assert.Equal(0, await db.StavkeNaloga.CountAsync());
+        var vracena = await db.Kalkulacije.SingleAsync(x => x.KalkulacijaId == saved.KalkulacijaId);
+        Assert.Null(vracena.NalogId);
+        Assert.False(vracena.IsKnjizen);
+    }
+
+    [Fact]
+    public async Task KnjiziKalkulaciju_BezKontaDobavljaca_NePraviNalog()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new KalkulacijaService(db);
+
+        // Kalkulacije iz starijeg DBF uvoza ume da nemaju dobavljača — bez protivstavke
+        // nalog ne bi bio u ravnoteži, pa se knjiženje u GK preskače, a dokument se svejedno knjiži.
+        var k = new Kalkulacija { BrojKalkulacije = 11, SifraDobavljaca = null, NabavnaVrednost = 5000m, MarzaProcenat = 10m };
+        var saved = await service.SaveKalkulacijuAsync(k);
+
+        await service.KnjiziKalkulacijuAsync(saved.KalkulacijaId);
+
+        Assert.Equal(0, await db.Nalozi.CountAsync());
+        var proknjizena = await db.Kalkulacije.SingleAsync(x => x.KalkulacijaId == saved.KalkulacijaId);
+        Assert.True(proknjizena.IsKnjizen);
+        Assert.Null(proknjizena.NalogId);
+    }
 }

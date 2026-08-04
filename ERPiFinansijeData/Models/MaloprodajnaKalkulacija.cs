@@ -81,5 +81,10 @@ public class MaloprodajnaKalkulacija
     [Column(TypeName = "decimal(18, 2)")]
     public decimal RabatIznos { get; set; }
 
+    /// <summary>Nalog kojim je kalkulacija proknjižena u glavnu knjigu; rasknjižavanje ga uklanja.</summary>
+    public int? NalogId { get; set; }
+    [ForeignKey(nameof(NalogId))]
+    public Nalog? Nalog { get; set; }
+
     public List<MaloprodajnaKalkulacijaStavka> Stavke { get; set; } = new();
 }

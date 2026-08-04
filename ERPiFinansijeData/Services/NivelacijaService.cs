@@ -130,8 +130,12 @@ public class NivelacijaService
         // Kreiranje naloga knjiženja za razliku u ceni
         if (niv.UkupnoRazlika != 0)
         {
-            string kontoMagacina = niv.Magacin?.VrstaMagacina == "Maloprodaja" ? "1340" : "1320";
-            string kontoRazlike = "1329";
+            // Konto razlike mora da prati vrstu magacina, kao i konto robe. Ranije je bio
+            // zakucan na 1329 („RAZLIKA U CENI ROBE U STOVARISTU") i za maloprodajne
+            // nivelacije, pa je razlika iz prodavnice završavala na veleprodajnom kontu —
+            // oba salda pogrešna, a nalog i dalje u ravnoteži, tako da se nije samo primetilo.
+            string kontoMagacina = RobnaKonta.RobaZaVrstuMagacina(niv.Magacin?.VrstaMagacina);
+            string kontoRazlike = RobnaKonta.RazlikaZaVrstuMagacina(niv.Magacin?.VrstaMagacina);
 
             int sledeciBrojNaloga = (await db.Nalozi.Select(n => (int?)n.BrojNaloga).MaxAsync() ?? 0) + 1;
             var nalog = new Nalog

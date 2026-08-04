@@ -4,6 +4,53 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.4.0] - 2026-08-04
+
+> Kalkulacije. Uvoz iz DOS-a čitao je samo deo kolona iz `KAL_NAL.DBF` — razlika u ceni, porez,
+> prodajna vrednost i prodajna cena po jedinici ostajali su na nuli na **svakoj** uvezenoj stavci.
+> Maloprodajne kalkulacije se nisu uvozile uopšte, a nijedna kalkulacija nije ulazila u Glavnu knjigu.
+
+### 📒 Kalkulacije se knjiže u glavnu knjigu (`KalkulacijaService`, `MaloprodajnaKalkulacijaService`, `RobnaKonta`)
+- **Kalkulacije su bile jedina robna dokumenta koja ne dodiruju glavnu knjigu.** Knjiženje je upisivalo red u robnu karticu i postavljalo `IsKnjizen`, ali nije pravilo nalog — pa nabavljena roba nije ulazila ni u jedan saldo, iako to rade nivelacije, računi-otpremnice, primopredaje, ulazi, trebovanja i uvozne kalkulacije.
+- **Konta nisu uzeta iz Kontnog okvira nego očitana iz zatečenih naloga ovih firmi**, jer se analitika razlikuje od firme do firme (`RobnaKonta`):
+  - **Veleprodaja** — `1320` duguje (nabavno + razlika, tj. prodajna vrednost **bez** PDV), `1329` potražuje (razlika u ceni), konto dobavljača potražuje (svega nabavno). Obrazac iz naloga 410 „KALK.3 OD 04.12.02".
+  - **Maloprodaja** — `1340` duguje (prodajna vrednost **sa** PDV), `1344` potražuje (ukalkulisani PDV), `1348` potražuje (ukalkulisana razlika u ceni), konto dobavljača potražuje. Obrazac iz 123 naloga sa opisom „KALKULACIJA NA MALO".
+  - Veleprodaja namerno **nema ukalkulisani PDV** — to je „korak više" koji ima samo maloprodaja, pa se roba u stovarištu vodi po ceni bez poreza.
+  - Razlika u maloprodaji ide na **1348**, ne na 1349: u kontnom planu postoje oba, ali svih 143 zatečenih knjiženja idu na 1348, a 1349 nema nijednu stavku.
+- **Rasknjižavanje uklanja nalog** — `Kalkulacija` i `MaloprodajnaKalkulacija` sada nose `NalogId`, kao što ga `NivelacijaCena` već ima.
+- **Kalkulacija bez konta dobavljača se i dalje knjiži, ali bez naloga** — bez protivstavke nalog ne bi bio u ravnoteži, a kalkulacije iz starijeg DBF uvoza umeju da nemaju dobavljača.
+- **Napomena:** nalog pokriva robnu stranu i obavezu prema dobavljaču u neto iznosu. **Pretporez (`270`) i bruto obaveza po ulaznom računu nisu deo ovog naloga** — u dosadašnjoj praksi firme to je zaseban blok stavki („racuni") u istom nalogu. `Kalkulacija` ne nosi iznos PDV-a sa ulaznog računa, pa se to ne može izvesti iz nje.
+
+### 🏪 Maloprodajne kalkulacije se prepoznaju i mogu se prebaciti iz veleprodajnih
+- **Legacy drži obe vrste u istom fajlu.** `KALKULAC.DBF` se koristi i za nabavku u stovarište i za nabavku pravo u prodavnicu — vrsta se vidi tek po magacinu, pa je uvoz sve svrstavao u veleprodajne. U ARHIBEL-u su tako sve 128 kalkulacija (magacin „Magacin maloprodaje") završile kao veleprodajne, a knjiže se na maloprodajna konta.
+- **Uvoz sada čita vrstu magacina iz naziva** (`DbfImportService.VrstaIzNaziva`). `MAGACIN.DBF` ima samo `SIFRA` i `RACUNOPOL` — nema polje za vrstu, pa je naziv jedini trag: „Magacin maloprodaje" / „Prodavnica" → maloprodaja. Ranije je **svaki** uvezeni magacin bio veleprodajni, zbog čega su i nivelacije i kalkulacije išle na veleprodajna konta.
+- **`KalkulacijaService.PrebaciUMaloprodajuAsync` / `PrebaciSveUMaloprodajuAsync`** prebacuju dokument sa svim stavkama iz veleprodajnih u maloprodajne kalkulacije. Bez dugmeta u programu — služi za jednokratnu ispravku zatečenih baza. Redovi robne kartice se ne diraju (roba je ušla u isti magacin), a kalkulacija proknjižena u glavnu knjigu se preskače dok se ne rasknjiži, da nalog na veleprodajnim kontima ne bi ostao iza nje. Kad zaglavlje nema magacin (baze uvezene pre nego što je `MAG_PRIMA` mapiran), magacin se očitava iz redova robne kartice.
+- **Nabavka pravo u prodavnicu se konačno može proknjižiti.** Maloprodajno knjiženje je pretpostavljalo prenos iz veleprodaje i tražilo „magacin (daje)", pa je kalkulacija bez njega bila odbijena. Sada, kad magacina koji daje nema a magacin koji prima postoji, roba **ulazi** u prodavnicu po maloprodajnoj ceni; rasknjižavanje uklanja isti red.
+
+### 🏷️ Nivelacija u maloprodaji više ne knjiži razliku na veleprodajni konto (`NivelacijaService`)
+- Konto robe se pravilno granao na maloprodaju (`1340`) i veleprodaju (`1320`), ali je **konto razlike bio zakucan na `1329` („RAZLIKA U CENI ROBE U STOVARISTU") i za maloprodajne nivelacije**. Razlika iz prodavnice je time završavala na veleprodajnom kontu — oba salda pogrešna, a nalog i dalje u ravnoteži, pa se greška nije sama otkrivala. Sada prati vrstu magacina (`1348` za maloprodaju).
+
+### 🧮 Uvoz kalkulacija iz DOS-a čita sve kolone (`DbfImportService`, `DosImportService`)
+- **Stavke veleprodajnih kalkulacija su se uvozile poluprazne.** Uvoznik je za `KAL_NAL.DBF` tražio kolone `RAZLIKA`, `POREZ`, `PROD_VRED` i `PROD_CENA`, kojih u tom fajlu nema — stvarna imena su `RAZLIKA_IZ`, `POREZ_IZ`, `PROD_SA_P` i `PROD_PO_JM`. Zbog toga su **razlika u ceni, porez, prodajna vrednost i prodajna cena po jedinici mere ostajali na nuli na svakoj uvezenoj stavci**, pa se prodajna cena nije mogla ni proknjižiti u robnu karticu.
+- **Dodate ranije nemapirane kolone** `RAZLIKA_PR` (procenat marže), `PROD_BEZ_P` (prodajna bez poreza), `POREZ_PR` (poreska stopa), `POS_P_PR`/`POS_P_IZ` (poseban porez), `PREN_POR`/`PREN_P_POR` (preneti porez), `POR_ZA_UPL` (porez za uplatu), `STARA_CENA` (cena pre kalkulacije) i `KNJIZEN` po stavci.
+- **Količina se više ne zaokružuje.** `KAL_NAL.KOLICINA` je `N(12,4)`, a kolona u bazi je bila `decimal(18,2)` — sada je `decimal(18,4)`.
+- **Izvedene vrednosti se dopunjuju po formulama iz `MAT6.PRG`** kad ih starija baza nema: `nabavna = iznos + troškovi`, `prod_bez_p = nabavna + razlika_iz`, `prod_sa_p = prod_bez_p + porez_iz`, `por_za_upl = porez_iz − pren_por`, `prod_po_jm = prod_sa_p / količina`.
+- **Zaglavlje dobija procente marže i PDV-a.** `KALKULAC.DBF` ih ne čuva (legacy ih drži po stavci), pa se izvode iz iznosa umesto da stoje na nuli.
+- **Prazni datumi otpremnice/računa ostaju prazni** umesto da se upišu kao današnji datum.
+
+### 🏪 Maloprodajne kalkulacije se uvoze iz DOS-a (`MALKULAC.DBF`, `MAL_NAL.DBF`)
+- Uvoz iz UI-ja ih **do sada uopšte nije obuhvatao** — u bazu su ulazile samo veleprodajne. Sada se uvoze zaglavlja i stavke, sa maloprodajnim dodacima: `RABAT_PR`/`RABAT_IZ`, `T_KNJIZEN` (trgovinsko knjiženje odvojeno od finansijskog), `TARIFNI`, `TAKSA`, `BR_RAZDUZ` i `NAZ_ROBE`/`JED_MERE`.
+- Stavke se vezuju po **(prodavnica, broj kalkulacije)** — broj maloprodajne kalkulacije je jedinstven samo unutar prodavnice.
+- **Zaostalo duplo zaglavlje više ne udvostručuje stavke**: stavke se vezuju samo za prvo zaglavlje sa datim brojem.
+- **Zaglavlje sa zbirovima na nuli se dopunjuje iz stavki** (u `ARHSTO\kor03` takvih je 22 od 409) da dokument u pregledu ne bi izgledao prazan; već popunjena legacy zaglavlja se ne diraju.
+- Provereno na stvarnim bazama: za `ARHSTO\kor01` zbir prodajne vrednosti stavki poklapa se sa zaglavljima u dinar (25.184.565,51), a svaki red `KAL_NAL`/`MAL_NAL` je ili uvezen ili objašnjen (legacy brojač, siroče bez zaglavlja).
+
+### 📦 Unos kalkulacije prati DOS ekran (`KalkulacijaEditWindow`, `MaloprodajnaKalkulacijaEditWindow`)
+- **Artikal se bira iz šifarnika.** Kolona „Šifra artikla" u stavkama bila je slobodan tekst — šifra se pamtila napamet i greška se videla tek posle snimanja. Sada je **padajuća lista artikala** (`šifra - naziv (JM)`) sa kucanjem šifre za pretragu, kao `osvezi_art()` u `MAT2.PRG`/`MAT3.PRG`.
+- **Konto dobavljača je pretraživa lista iz kontnog plana**, a ne slobodan tekst — ponuđena su konta grupe dobavljača (**435**, odnosno **220** kod firmi prenetih sa starog zakona; `FIN1.PRG:643-649`), a traži se **i po broju i po nazivu**. Odgovara `daj_konto(2)` iz `FIN2.PRG:1226`. Konto van grupe se i dalje može uneti rukom.
+- **Veleprodajna kalkulacija dobila je datum otpremnice i datum računa.** DOS ekran (`MAT6.PRG:65-68`) ima tri datuma — kalkulacije, otpremnice i računa — a prozor je nudio samo datum kalkulacije, pa su preostala dva pri ručnom unosu ostajala prazna iako `Kalkulacija` ima polja za njih.
+- **Šifra magacina se vidi u padajućim listama** (`001 - CENTRALNI MAGACIN` umesto samo naziva) — u dokumentima se magacin vodi po šifri (`MAG_PRIMA`/`MAG_DAJE`), pa je ona ta koja se poredi sa papirom. Promena važi za sve liste magacina u Robnom i Materijalnom.
+
 ## [1.3.0] - 2026-08-04
 
 > Prati **ERPiZarade 1.15.0**, koja od ove verzije knjiži refundaciju bolovanja na konta

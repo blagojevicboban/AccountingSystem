@@ -1,8 +1,9 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ERPiFinansijeApp.Services;
 using ERPiFinansijeApp.Views.Pomoc;
 using ERPiFinansijeData;
 using ERPiFinansijeData.Models;
@@ -38,6 +39,13 @@ public partial class MaloprodajnaKalkulacijaEditWindow : Window
             CmbMagacinDaje.ItemsSource = magacini;
             CmbMagacinPrima.ItemsSource = magacini;
 
+            // Šifarnik artikala za padajuću listu u stavkama — sortiran po šifri jer se
+            // artikal bira kucanjem šifre (legacy MAT3.PRG: osvezi_art).
+            ColArtikal.ItemsSource = await db.Artikli.OrderBy(a => a.SifraArtikla).ToListAsync();
+
+            // Konto dobavljača se bira iz kontnog plana (legacy daj_konto(2), FIN2.PRG:1226).
+            KontoPicker.PoveziDobavljace(CmbKontoDobavljaca, await db.Konta.ToListAsync());
+
             if (_existingKalkulacija != null)
             {
                 Title = $"Izmena kalkulacije (maloprodaja) #{_existingKalkulacija.BrojKalkulacije}";
@@ -46,7 +54,7 @@ public partial class MaloprodajnaKalkulacijaEditWindow : Window
                 TxtSifraProdavnice.Text = _existingKalkulacija.SifraProdavnice.ToString();
                 CmbMagacinDaje.SelectedItem = magacini.FirstOrDefault(m => m.SifraMagacina == _existingKalkulacija.SifraMagacinaDaje);
                 CmbMagacinPrima.SelectedItem = magacini.FirstOrDefault(m => m.SifraMagacina == _existingKalkulacija.SifraMagacinaPrima);
-                TxtSifraDobavljaca.Text = _existingKalkulacija.SifraDobavljaca;
+                KontoPicker.PostaviKonto(CmbKontoDobavljaca, _existingKalkulacija.SifraDobavljaca);
                 TxtBrojOtpremnice.Text = _existingKalkulacija.BrojOtpremnice;
                 DpDatumOtpremnice.SelectedDate = _existingKalkulacija.DatumOtpremnice;
                 TxtBrojRacuna.Text = _existingKalkulacija.BrojRacuna;
@@ -120,7 +128,7 @@ public partial class MaloprodajnaKalkulacijaEditWindow : Window
             SifraProdavnice = int.TryParse(TxtSifraProdavnice.Text.Trim(), out int sifraProd) ? sifraProd : 0,
             SifraMagacinaDaje = (CmbMagacinDaje.SelectedItem as ERPiFinansijeData.Models.Magacin)?.SifraMagacina,
             SifraMagacinaPrima = (CmbMagacinPrima.SelectedItem as ERPiFinansijeData.Models.Magacin)?.SifraMagacina,
-            SifraDobavljaca = TxtSifraDobavljaca.Text.Trim(),
+            SifraDobavljaca = KontoPicker.IzabraniKonto(CmbKontoDobavljaca),
             BrojOtpremnice = TxtBrojOtpremnice.Text.Trim(),
             DatumOtpremnice = DpDatumOtpremnice.SelectedDate,
             BrojRacuna = TxtBrojRacuna.Text.Trim(),
@@ -261,13 +269,20 @@ public partial class MaloprodajnaKalkulacijaEditWindow : Window
     {
         new EditHelpWindow(
             "📦 Pomoć — Kalkulacija (maloprodaja)",
-            "Obračun ukalkulisane marže i PDV-a pri prenosu robe iz veleprodajnog u maloprodajni magacin.",
+            "Obračun ukalkulisane marže i PDV-a za robu koja ide u prodavnicu.",
             new (string, string)[]
             {
                 ("Esc", "Odustaje od unosa bez čuvanja."),
-                ("➕ Dodaj stavku", "Dodaje artikal — ako se unesu stavke, prodajna cena se izračunava po artiklu."),
+                ("➕ Dodaj stavku", "Dodaje artikal — bira se iz šifarnika, kucanjem šifre ili naziva."),
+                ("Konto dobavljača", "Bira se iz kontnog plana (grupa dobavljača), pretraga i po broju i po nazivu."),
+                ("Magacin daje", "Ostavite prazno kad roba stiže od dobavljača pravo u prodavnicu — tada roba ULAZI u magacin koji prima. Popunite ga samo za prenos iz veleprodaje, kada se taj magacin razdužuje."),
             },
-            "Rabat dobavljača je informativni obračun i ne umanjuje prodajnu vrednost. Kalkulacija knjiži izlaz iz magacina 'daje' i ulaz u magacin 'prima'."
+            "Rabat dobavljača je informativni obračun i ne umanjuje prodajnu vrednost.\n\n" +
+            "Knjiženje pravi i nalog u Glavnoj knjizi: roba u prodavnici (1340) duguje po ceni SA PDV, a potražuju ukalkulisani PDV (1344), " +
+            "ukalkulisana razlika u ceni (1348) i konto dobavljača (neto, svega nabavno). To je 'korak više' koji veleprodaja nema — " +
+            "roba se u prodavnici vodi sa porezom, pa se porez izdvaja dok se ne ostvari promet.\n\n" +
+            "Pretporez i bruto obaveza po ulaznom računu nisu deo ovog naloga. Bez konta dobavljača nalog se ne pravi (ne bi bio u ravnoteži), " +
+            "ali se kalkulacija svejedno knjiži u magacin."
         ) { Owner = this }.ShowDialog();
     }
 }

@@ -3,6 +3,7 @@ using System;
 using ERPiFinansijeData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERPiFinansijeData.Migrations
 {
     [DbContext(typeof(AccountingDbContext))]
-    partial class AccountingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260804082904_DopuniKoloneKalkulacija")]
+    partial class DopuniKoloneKalkulacija
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
@@ -367,9 +370,6 @@ namespace ERPiFinansijeData.Migrations
                     b.Property<decimal>("NabavnaVrednost")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int?>("NalogId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<decimal>("OstaliTroskovi")
                         .HasColumnType("decimal(18, 2)");
 
@@ -414,8 +414,6 @@ namespace ERPiFinansijeData.Migrations
                     b.HasKey("KalkulacijaId");
 
                     b.HasIndex("BrojKalkulacije");
-
-                    b.HasIndex("NalogId");
 
                     b.ToTable("Kalkulacije");
                 });
@@ -895,9 +893,6 @@ namespace ERPiFinansijeData.Migrations
                     b.Property<decimal>("NabavnaVrednost")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int?>("NalogId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<decimal>("OstaliTroskovi")
                         .HasColumnType("decimal(18, 2)");
 
@@ -955,8 +950,6 @@ namespace ERPiFinansijeData.Migrations
                     b.HasKey("MaloprodajnaKalkulacijaId");
 
                     b.HasIndex("BrojKalkulacije");
-
-                    b.HasIndex("NalogId");
 
                     b.ToTable("MaloprodajneKalkulacije");
                 });
@@ -2371,15 +2364,6 @@ namespace ERPiFinansijeData.Migrations
                     b.Navigation("RacunOtpremnica");
                 });
 
-            modelBuilder.Entity("ERPiFinansijeData.Models.Kalkulacija", b =>
-                {
-                    b.HasOne("ERPiFinansijeData.Models.Nalog", "Nalog")
-                        .WithMany()
-                        .HasForeignKey("NalogId");
-
-                    b.Navigation("Nalog");
-                });
-
             modelBuilder.Entity("ERPiFinansijeData.Models.KalkulacijaStavka", b =>
                 {
                     b.HasOne("ERPiFinansijeData.Models.Kalkulacija", "Kalkulacija")
@@ -2400,15 +2384,6 @@ namespace ERPiFinansijeData.Migrations
                         .IsRequired();
 
                     b.Navigation("Kompenzacija");
-                });
-
-            modelBuilder.Entity("ERPiFinansijeData.Models.MaloprodajnaKalkulacija", b =>
-                {
-                    b.HasOne("ERPiFinansijeData.Models.Nalog", "Nalog")
-                        .WithMany()
-                        .HasForeignKey("NalogId");
-
-                    b.Navigation("Nalog");
                 });
 
             modelBuilder.Entity("ERPiFinansijeData.Models.MaloprodajnaKalkulacijaStavka", b =>

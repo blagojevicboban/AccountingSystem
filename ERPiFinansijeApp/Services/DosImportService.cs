@@ -452,6 +452,8 @@ public class DosImportService
                 // 8. Kalkulacije veleprodaje (KALKULAC.DBF i KAL_NAL.DBF)
                 var kalkulacFile = Path.Combine(firmaDto.FolderPath, "KALKULAC.DBF");
                 var kalNalFile = Path.Combine(firmaDto.FolderPath, "KAL_NAL.DBF");
+                var malkulacFile = Path.Combine(firmaDto.FolderPath, "MALKULAC.DBF");
+                var malNalFile = Path.Combine(firmaDto.FolderPath, "MAL_NAL.DBF");
                 if (File.Exists(kalkulacFile))
                 {
                     Report(progress, firmaDto.Naziv, "Kalkulacije", basePercent + 92, "🧮 Uvoz Kalkulacija (KALKULAC.DBF & KAL_NAL.DBF)...");
@@ -461,12 +463,16 @@ public class DosImportService
 
                     int kalkCount = 0;
                     int totalStavke = 0;
+                    // Legacy KALKULAC.DBF ume da sadrži i zaostalo duplo zaglavlje sa istim brojem;
+                    // stavke se smeju vezati samo za prvo, inače bi se udvostručile.
+                    var iskorisceneGrupe = new HashSet<int>();
                     foreach (var r in kalkRows)
                     {
                         var kalk = DbfImportService.MapKalkulacija(r);
                         if (kalk != null)
                         {
-                            if (stavkeGrouped.TryGetValue(kalk.BrojKalkulacije, out var redoviStavki))
+                            if (iskorisceneGrupe.Add(kalk.BrojKalkulacije)
+                                && stavkeGrouped.TryGetValue(kalk.BrojKalkulacije, out var redoviStavki))
                             {
                                 int rBr = 1;
                                 foreach (var sRow in redoviStavki)
@@ -479,12 +485,51 @@ public class DosImportService
                                     }
                                 }
                             }
+                            DbfImportService.DopuniZbiroveIzStavki(kalk);
                             firmDb.Kalkulacije.Add(kalk);
                             kalkCount++;
                         }
                     }
                     await firmDb.SaveChangesAsync();
                     Report(progress, firmaDto.Naziv, "Kalkulacije", basePercent + 97, $"   --> Uvezeno {kalkCount} kalkulacija sa {totalStavke} stavki!");
+                }
+
+                // 8b. Kalkulacije maloprodaje (MALKULAC.DBF i MAL_NAL.DBF)
+                if (File.Exists(malkulacFile))
+                {
+                    Report(progress, firmaDto.Naziv, "Kalkulacije MP", basePercent + 97, "🏪 Uvoz Maloprodajnih kalkulacija (MALKULAC.DBF & MAL_NAL.DBF)...");
+                    var malkRows = DbfImportService.ReadRows(malkulacFile);
+                    var malStavkeRows = File.Exists(malNalFile) ? DbfImportService.ReadRows(malNalFile) : new List<Dictionary<string, string>>();
+                    var malStavkeGrouped = DbfImportService.GroupMaloprodajnaKalkulacijaStavke(malStavkeRows);
+
+                    int malkCount = 0;
+                    int malTotalStavke = 0;
+                    var iskorisceneMalGrupe = new HashSet<(int, int)>();
+                    foreach (var r in malkRows)
+                    {
+                        var malk = DbfImportService.MapMaloprodajnaKalkulacija(r);
+                        if (malk == null) continue;
+
+                        var kljuc = (malk.SifraProdavnice, malk.BrojKalkulacije);
+                        if (iskorisceneMalGrupe.Add(kljuc) && malStavkeGrouped.TryGetValue(kljuc, out var redoviStavki))
+                        {
+                            int rBr = 1;
+                            foreach (var sRow in redoviStavki)
+                            {
+                                var st = DbfImportService.MapMaloprodajnaKalkulacijaStavka(sRow, rBr++);
+                                if (st != null)
+                                {
+                                    malk.Stavke.Add(st);
+                                    malTotalStavke++;
+                                }
+                            }
+                        }
+                        DbfImportService.DopuniZbiroveIzStavki(malk);
+                        firmDb.MaloprodajneKalkulacije.Add(malk);
+                        malkCount++;
+                    }
+                    await firmDb.SaveChangesAsync();
+                    Report(progress, firmaDto.Naziv, "Kalkulacije MP", basePercent + 98, $"   --> Uvezeno {malkCount} maloprodajnih kalkulacija sa {malTotalStavke} stavki!");
                 }
 
                 // 9. Uvoz Naloga za primopredaju, zaduženja i razduženja (MAT_NAL.DBF, ZADUZ.DBF, RAZDUZ.DBF)

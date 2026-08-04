@@ -88,7 +88,8 @@ Trenutni skeleton (`ERPiFinansijeData/Models`) već pokriva jezgro FIN modula. P
 | MAGACIN | `Magacin` (SIFRA, RACUNOPOL) | ✅ postoji |
 | ARTIKLI / M_SIFR | `Artikal` | ✅ postoji (razdvojiti robni vs materijalni šifarnik) |
 | MAT_NAL / MAT_KART | `RobniNalog`, `RobnaKartica` | ❌ (modul ROB) |
-| KALKULAC / MALKULAC | `Kalkulacija` (velepr./malopr.) | ❌ |
+| KALKULAC / KAL_NAL | `Kalkulacija` + `KalkulacijaStavka` | ✅ sve kolone uvezene, knjiži se u GK (1320/1329/dobavljač) |
+| MALKULAC / MAL_NAL | `MaloprodajnaKalkulacija` + stavke | ✅ sve kolone uvezene, knjiži se u GK (1340/1344/1348/dobavljač) |
 | NIV_NAL | `Nivelacija` | ❌ |
 | RAC_OTP | `RacunOtpremnica` | ❌ |
 | TARIFE / CENOVNIK | `Tarifa`, `Cena` | ❌ |

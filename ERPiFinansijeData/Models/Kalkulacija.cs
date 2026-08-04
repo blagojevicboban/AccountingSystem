@@ -69,5 +69,10 @@ public class Kalkulacija
 
     public bool IsKnjizen { get; set; }
 
+    /// <summary>Nalog kojim je kalkulacija proknjižena u glavnu knjigu; rasknjižavanje ga uklanja.</summary>
+    public int? NalogId { get; set; }
+    [ForeignKey(nameof(NalogId))]
+    public Nalog? Nalog { get; set; }
+
     public List<KalkulacijaStavka> Stavke { get; set; } = new();
 }

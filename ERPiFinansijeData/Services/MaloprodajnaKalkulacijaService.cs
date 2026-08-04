@@ -181,21 +181,138 @@ public class MaloprodajnaKalkulacijaService
 
         if (kalkulacija.Stavke.Count > 0)
         {
-            if (string.IsNullOrWhiteSpace(kalkulacija.SifraMagacinaDaje))
-            {
-                throw new InvalidOperationException($"Kalkulacija {kalkulacija.BrojKalkulacije} ima stavke — izaberite magacin (daje) pre knjiženja.");
-            }
-
             var kartice = new MaterijalnaKarticaService(_db);
-            foreach (var s in kalkulacija.Stavke)
+            string opisKartice = $"MP kalkulacija {kalkulacija.BrojKalkulacije}";
+
+            if (!string.IsNullOrWhiteSpace(kalkulacija.SifraMagacinaDaje))
             {
-                await kartice.DodajIzlazRedAsync(kalkulacija.SifraMagacinaDaje, s.SifraArtikla, kalkulacija.Datum,
-                    $"MP kalkulacija {kalkulacija.BrojKalkulacije}", s.Kolicina);
+                // Prenos iz veleprodajnog magacina u prodavnicu — razdužuje se magacin koji daje
+                // (legacy knjiz_malkul, MAT3.PRG:1044+, upisuje red u „razduz" iz mag_daje).
+                foreach (var s in kalkulacija.Stavke)
+                {
+                    await kartice.DodajIzlazRedAsync(kalkulacija.SifraMagacinaDaje, s.SifraArtikla, kalkulacija.Datum,
+                        opisKartice, s.Kolicina);
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(kalkulacija.SifraMagacinaPrima))
+            {
+                // Nabavka od dobavljača pravo u prodavnicu — nema magacina koji daje, roba ULAZI
+                // u prodavnicu po maloprodajnoj ceni (ekran „Konto dobavljaca" + „Sifra
+                // racunopolagaca" u MAT6.PRG:60-64). Ranije je ovakva kalkulacija odbijana.
+                foreach (var s in kalkulacija.Stavke)
+                {
+                    await kartice.DodajUlazRedAsync(kalkulacija.SifraMagacinaPrima, s.SifraArtikla, kalkulacija.Datum,
+                        opisKartice, s.Kolicina, s.ProdajnaCena);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException($"Kalkulacija {kalkulacija.BrojKalkulacije} ima stavke — izaberite magacin pre knjiženja.");
             }
         }
 
+        await KnjiziUGlavnuKnjiguAsync(kalkulacija);
+
         kalkulacija.IsKnjizen = true;
         await _db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Nalog za glavnu knjigu, po obrascu zatečenom u 123 knjiženja ovih firmi
+    /// (vidi <see cref="RobnaKonta"/>, opis stavke „KALKULACIJA NA MALO"):
+    /// <code>
+    ///   1340   duguje     prodajna vrednost SA PDV
+    ///   1344   potražuje  ukalkulisani PDV
+    ///   1348   potražuje  ukalkulisana razlika u ceni
+    ///   43xxx  potražuje  svega nabavno              (obaveza prema dobavljaču)
+    /// </code>
+    /// Ovo je „korak više" u odnosu na veleprodaju: roba u prodavnici se vodi po ceni SA
+    /// porezom, pa se porez mora izdvojiti na zaseban konto dok se ne ostvari promet.
+    ///
+    /// Preskače se bez konta dobavljača — bez protivstavke nalog ne bi bio u ravnoteži, a
+    /// kalkulacija sa starijeg uvoza ume da nema popunjenog dobavljača.
+    /// </summary>
+    private async Task KnjiziUGlavnuKnjiguAsync(MaloprodajnaKalkulacija kalkulacija)
+    {
+        if (kalkulacija.ProdajnaVrednost == 0) return;
+        if (string.IsNullOrWhiteSpace(kalkulacija.SifraDobavljaca)) return;
+
+        string opis = $"Kalkulacija maloprodaje {kalkulacija.BrojKalkulacije}";
+        int sledeciBroj = (await _db.Nalozi.Select(n => (int?)n.BrojNaloga).MaxAsync() ?? 0) + 1;
+
+        var nalog = new Nalog
+        {
+            BrojNaloga = sledeciBroj,
+            DatumNaloga = kalkulacija.Datum,
+            Opis = opis,
+            IsKnjizen = true,
+            DatumKnjiženja = DateTime.Now,
+            VrstaNaloga = "KALKULACIJA"
+        };
+
+        int rb = 1;
+        nalog.Stavke.Add(new StavkaNaloga
+        {
+            RedniBroj = rb++,
+            BrojKonta = RobnaKonta.RobaMaloprodaja,
+            Opis = opis,
+            BrojDokumenta = kalkulacija.BrojRacuna,
+            Duguje = kalkulacija.ProdajnaVrednost,
+            Potrazuje = 0m
+        });
+
+        if (kalkulacija.Porez != 0)
+        {
+            nalog.Stavke.Add(new StavkaNaloga
+            {
+                RedniBroj = rb++,
+                BrojKonta = RobnaKonta.UkalkulisaniPdvMaloprodaja,
+                Opis = opis,
+                Duguje = 0m,
+                Potrazuje = kalkulacija.Porez
+            });
+        }
+
+        if (kalkulacija.Razlika != 0)
+        {
+            nalog.Stavke.Add(new StavkaNaloga
+            {
+                RedniBroj = rb++,
+                BrojKonta = RobnaKonta.RazlikaUCeniMaloprodaja,
+                Opis = opis,
+                Duguje = 0m,
+                Potrazuje = kalkulacija.Razlika
+            });
+        }
+
+        nalog.Stavke.Add(new StavkaNaloga
+        {
+            RedniBroj = rb,
+            BrojKonta = kalkulacija.SifraDobavljaca,
+            Opis = opis,
+            BrojDokumenta = kalkulacija.BrojRacuna,
+            Duguje = 0m,
+            Potrazuje = kalkulacija.SvegaNabavno
+        });
+
+        nalog.UkupnoDuguje = nalog.Stavke.Sum(s => s.Duguje);
+        nalog.UkupnoPotrazuje = nalog.Stavke.Sum(s => s.Potrazuje);
+
+        _db.Nalozi.Add(nalog);
+        await _db.SaveChangesAsync();
+        kalkulacija.NalogId = nalog.NalogId;
+    }
+
+    /// <summary>Uklanja nalog kojim je kalkulacija bila proknjižena, ako i dalje postoji.</summary>
+    private async Task UkloniNalogAsync(int? nalogId)
+    {
+        if (nalogId == null) return;
+
+        var nalog = await _db.Nalozi.Include(n => n.Stavke).FirstOrDefaultAsync(n => n.NalogId == nalogId);
+        if (nalog == null) return;
+
+        _db.StavkeNaloga.RemoveRange(nalog.Stavke);
+        _db.Nalozi.Remove(nalog);
     }
 
     /// <summary>
@@ -217,17 +334,26 @@ public class MaloprodajnaKalkulacijaService
 
         if (kalkulacija.Stavke.Count > 0)
         {
-            if (string.IsNullOrWhiteSpace(kalkulacija.SifraMagacinaDaje))
+            // Isti magacin koji je knjiženje zadužilo/razdužilo — mag_daje ako je bio prenos iz
+            // veleprodaje, inače mag_prima kod nabavke pravo od dobavljača.
+            string? magacin = !string.IsNullOrWhiteSpace(kalkulacija.SifraMagacinaDaje)
+                ? kalkulacija.SifraMagacinaDaje
+                : kalkulacija.SifraMagacinaPrima;
+
+            if (string.IsNullOrWhiteSpace(magacin))
             {
-                throw new InvalidOperationException($"Kalkulacija {kalkulacija.BrojKalkulacije} nema magacin (daje) — nije moguće rasknjižiti.");
+                throw new InvalidOperationException($"Kalkulacija {kalkulacija.BrojKalkulacije} nema magacin — nije moguće rasknjižiti.");
             }
 
             var kartice = new MaterijalnaKarticaService(_db);
             foreach (var s in kalkulacija.Stavke.AsEnumerable().Reverse())
             {
-                await kartice.UkloniPoslednjiRedAsync(kalkulacija.SifraMagacinaDaje, s.SifraArtikla, $"MP kalkulacija {kalkulacija.BrojKalkulacije}");
+                await kartice.UkloniPoslednjiRedAsync(magacin, s.SifraArtikla, $"MP kalkulacija {kalkulacija.BrojKalkulacije}");
             }
         }
+
+        await UkloniNalogAsync(kalkulacija.NalogId);
+        kalkulacija.NalogId = null;
 
         kalkulacija.IsKnjizen = false;
         await _db.SaveChangesAsync();

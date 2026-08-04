@@ -5,7 +5,8 @@
 
 .DESCRIPTION
   Commands (positional $Command):
-    launch              Start the exe (or dotnet-run a project) and wait for the first window.
+    launch <exe> [nologin]  Start the exe, wait for the first window, and log in as admin/admin123.
+                            Pass "nologin" as the second argument to stop at the login screen.
     tree                Dump the UI Automation tree of the current top window (name/AutomationId/ControlType).
     click <AutomationId> Click a button/control by its AutomationId (x:Name in XAML).
     type <AutomationId> <text>  Focus a TextBox/PasswordBox by AutomationId and type text.
@@ -16,15 +17,13 @@
   invocation of this script (a fresh PowerShell process) can find the same app instance.
 
 .EXAMPLE
-  powershell -File driver.ps1 launch "C:\path\ERPiFinansijeApp.exe"
+  powershell -File driver.ps1 launch "C:\path\ERPiFinansijeApp.exe"   # already logged in
   powershell -File driver.ps1 tree
-  powershell -File driver.ps1 ss shot1.png
-  powershell -File driver.ps1 type TxtUsername admin
-  powershell -File driver.ps1 type TxtPassword admin123
-  powershell -File driver.ps1 click BtnLogin
-  powershell -File driver.ps1 ss shot2.png
   powershell -File driver.ps1 click BtnNalozi
+  powershell -File driver.ps1 ss shot1.png
   powershell -File driver.ps1 close
+
+  powershell -File driver.ps1 launch "C:\path\ERPiFinansijeApp.exe" nologin   # stay on login screen
 #>
 param(
     [Parameter(Position=0, Mandatory=$true)][string]$Command,
@@ -82,16 +81,37 @@ function Find-ById([string]$id) {
 switch ($Command) {
 
     "launch" {
-        if (-not $Arg1) { throw "Usage: driver.ps1 launch <path-to-exe>" }
-        $proc = Start-Process -FilePath $Arg1 -PassThru
-        # Wait for the first top-level window owned by this process (WPF startup can take a couple seconds).
-        $deadline = (Get-Date).AddSeconds(20)
+        if (-not $Arg1) { throw "Usage: driver.ps1 launch <path-to-exe> [nologin]" }
+        # --autologin (Debug-only switch in App.xaml.cs) opens MainWindow directly as the
+        # first active administrator. Nothing is typed: sending credentials with SendKeys
+        # was unreliable here (dropped keystrokes, focus wandering off), and it could not
+        # work anyway -- LoginWindow refuses to let the seeded "admin123" password through
+        # without changing it first, so the main window would never appear.
+        $argumenti = if ($Arg2 -eq "nologin") { @() } else { @("--autologin") }
+        $proc = if ($argumenti.Count -gt 0) {
+                    Start-Process -FilePath $Arg1 -ArgumentList $argumenti -PassThru
+                } else {
+                    Start-Process -FilePath $Arg1 -PassThru
+                }
         $root = [System.Windows.Automation.AutomationElement]::RootElement
         $cond = New-Object System.Windows.Automation.PropertyCondition(
             [System.Windows.Automation.AutomationElement]::ProcessIdProperty, $proc.Id)
+
+        # Without --autologin any window will do (that is the login screen). With it, wait
+        # for the window that actually carries the sidebar (BtnDashboard), so a following
+        # 'click' cannot land on a half-built window. WPF startup takes a couple of seconds.
+        $dashCond = New-Object System.Windows.Automation.PropertyCondition(
+            [System.Windows.Automation.AutomationElement]::AutomationIdProperty, "BtnDashboard")
+        $deadline = (Get-Date).AddSeconds(30)
         $win = $null
         while ((Get-Date) -lt $deadline) {
-            $win = $root.FindFirst([System.Windows.Automation.TreeScope]::Children, $cond)
+            foreach ($w in $root.FindAll([System.Windows.Automation.TreeScope]::Children, $cond)) {
+                if ($argumenti.Count -eq 0 -or
+                    $null -ne $w.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $dashCond)) {
+                    $win = $w
+                    break
+                }
+            }
             if ($null -ne $win) { break }
             Start-Sleep -Milliseconds 300
         }

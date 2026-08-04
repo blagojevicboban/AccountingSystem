@@ -63,15 +63,9 @@ line instead of factoring it into a variable; it's more typing but keeps every
 call, and every batch, matching the rule:
 
 ```powershell
+# `launch` logs in on its own and returns only once MainWindow is up — no credentials
+# to type, and no need to sleep before the first `click`.
 powershell -ExecutionPolicy Bypass -File "C:\ERPi\ERPiFinansije\ERPiFinansijeApp\.claude\skills\run-accounting-app\driver.ps1" launch "C:\ERPi\ERPiFinansije\ERPiFinansijeApp\bin\Debug\net8.0-windows\ERPiFinansijeApp.exe"
-powershell -ExecutionPolicy Bypass -File "C:\ERPi\ERPiFinansije\ERPiFinansijeApp\.claude\skills\run-accounting-app\driver.ps1" ss login.png              # screenshot the login window
-powershell -ExecutionPolicy Bypass -File "C:\ERPi\ERPiFinansije\ERPiFinansijeApp\.claude\skills\run-accounting-app\driver.ps1" type TxtUsername "^a{DEL}admin"
-powershell -ExecutionPolicy Bypass -File "C:\ERPi\ERPiFinansije\ERPiFinansijeApp\.claude\skills\run-accounting-app\driver.ps1" type TxtPassword "^a{DEL}admin123"
-powershell -ExecutionPolicy Bypass -File "C:\ERPi\ERPiFinansije\ERPiFinansijeApp\.claude\skills\run-accounting-app\driver.ps1" click BtnLogin
-# The login -> MainWindow swap isn't instant; a `tree`/`click` fired immediately
-# after can still land on the login window and error "AutomationId not found".
-# Give it a beat (a Start-Sleep of ~1-2s, or just retry the click once) before
-# treating a post-login step as failed.
 powershell -ExecutionPolicy Bypass -File "C:\ERPi\ERPiFinansije\ERPiFinansijeApp\.claude\skills\run-accounting-app\driver.ps1" tree                      # dump AutomationId tree of current window
 powershell -ExecutionPolicy Bypass -File "C:\ERPi\ERPiFinansije\ERPiFinansijeApp\.claude\skills\run-accounting-app\driver.ps1" click BtnIzvestaji        # any AutomationId from `tree`, e.g. BtnDashboard/BtnNalozi/BtnKartice/BtnPartneri/BtnMagacin/BtnKalkulacije/BtnIzvestaji/BtnFirme/BtnUvozDOS
 powershell -ExecutionPolicy Bypass -File "C:\ERPi\ERPiFinansije\ERPiFinansijeApp\.claude\skills\run-accounting-app\driver.ps1" ss izvestaji.png
@@ -81,17 +75,32 @@ powershell -ExecutionPolicy Bypass -File "C:\ERPi\ERPiFinansije\ERPiFinansijeApp
 `Stop-Process -Name ERPiFinansijeApp*` (used to clear a file lock before rebuilding
 — see the `sqlite-efcore-schema-migration` skill) is also pre-approved.
 
-Commands: `launch <exe>`, `tree`, `click <AutomationId>`, `type <AutomationId> <text>`,
+Commands: `launch <exe> [nologin]`, `tree`, `click <AutomationId>`, `type <AutomationId> <text>`,
 `keys <SendKeys-string>`, `ss <out.png>`, `close`. `AutomationId` is the control's
 `x:Name` in XAML (WPF exposes it 1:1 to UI Automation for named elements).
 `keys` sends raw SendKeys to whatever control currently has focus (no AutomationId
 lookup) — needed for controls with none, e.g. a `DataGrid` cell's auto-generated
 editing `ComboBox`/`TextBox` (see gotcha below).
 
-Default seeded login is **`admin` / `admin123`** (PBKDF2 hash via EF Core `HasData`
-in `ERPiFinansijeData/AccountingDbContext.cs` — see the `sqlite-efcore-schema-migration`
-skill). This is true on every freshly-migrated database, including KOR01 after
-re-running `ERPiFinansijeMigration`.
+### Login: `launch` handles it, do not type credentials
+
+`launch` passes `--autologin` to the app, which opens `MainWindow` straight away as the
+first active administrator and returns only once that window exists. Nothing is typed.
+
+Do **not** go back to typing `admin` / `admin123` into `TxtUsername`/`TxtPassword`. That
+path is unreliable here (SendKeys drops characters — an observed login attempt arrived as
+`ad min` — and focus sometimes lands on another window entirely), and it cannot work in
+general anyway: `LoginWindow.DoLogin` refuses to let the seeded `admin123` password
+through without changing it first ([LoginWindow.xaml.cs:86](../../../Views/Korisnici/LoginWindow.xaml.cs#L86)),
+so `MainWindow` never appears. Databases whose admin password has already been changed
+have no fixed credentials to type at all.
+
+`--autologin` is wrapped in `#if DEBUG` in [App.xaml.cs](../../../App.xaml.cs) — the code
+is not compiled into Release builds, so the shipped application cannot be entered this
+way. It exists solely for this driver.
+
+Pass `nologin` as the second argument (`launch <exe> nologin`) when the login window
+itself is what you need to see or screenshot.
 
 ## Run (human path)
 
@@ -129,11 +138,9 @@ the only way to exercise the WPF layer.
   for both `TextBox` and `PasswordBox`.
 - **Windows may silently pre-fill `TxtUsername`/`TxtPassword` from a previous
   run** (shell-level edit-control autocomplete, keyed loosely to the app/window
-  — not something this app implements). A screenshot right after `launch` can
-  show old credentials already typed in. Don't trust it — always clear-then-type
-  explicitly: `type TxtUsername "^a{DEL}admin"` (`^a` = Ctrl+A select-all,
-  `{DEL}` = delete, then the real value). Verified: first launch showed a stale
-  5-character password already filled; explicit clear+retype fixed it.
+  — not something this app implements), so a `launch <exe> nologin` screenshot can
+  show old credentials already typed in. Only relevant when deliberately staying on
+  the login screen; the normal `launch` path never touches those fields.
 - **`SetForegroundWindow` gets silently denied on repeat calls.** Windows'
   foreground-lock heuristic blocks a background process from repeatedly
   stealing focus — symptom is a screenshot that shows your editor/terminal

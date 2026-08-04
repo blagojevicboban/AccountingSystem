@@ -38,4 +38,12 @@ public class Artikal
     public string? KlasifikacionaSifra { get; set; }
 
     public bool Selektovan { get; set; }
+
+    /// <summary>
+    /// "šifra - naziv (JM)" za padajuće liste pri unosu stavki. Šifra je prva jer se u
+    /// legacy sistemu artikal bira kucanjem šifre (MAT2.PRG: osvezi_art), pa pretraga
+    /// po otkucanom tekstu mora da pogađa šifru.
+    /// </summary>
+    [NotMapped]
+    public string Prikaz => $"{SifraArtikla} - {Naziv} ({JedinicaMere})";
 }
