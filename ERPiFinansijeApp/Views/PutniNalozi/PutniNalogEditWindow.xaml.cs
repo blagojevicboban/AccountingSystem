@@ -37,6 +37,7 @@ public partial class PutniNalogEditWindow : Window
     {
         CmbVrsta.SelectedIndex = _pn.Vrsta == VrstaSlužbenogPutovanja.Inostranstvo ? 1 : 0;
         TxtZaposleni.Text = _pn.ZaposleniIme;
+        TxtJmbg.Text = _pn.Jmbg;
         TxtRelacija.Text = _pn.Relacija;
 
         DpPolazak.SelectedDate = _pn.DatumPolaska;
@@ -133,6 +134,7 @@ public partial class PutniNalogEditWindow : Window
 
         _pn.Vrsta = CmbVrsta.SelectedIndex == 1 ? VrstaSlužbenogPutovanja.Inostranstvo : VrstaSlužbenogPutovanja.Zemlja;
         _pn.ZaposleniIme = zaposleni;
+        _pn.Jmbg = TxtJmbg.Text.Trim();
         _pn.Relacija = relacija;
         _pn.PrevoznoSredstvo = (CmbPrevoz.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Službeno vozilo";
         _pn.DatumPolaska = DpPolazak.SelectedDate ?? DateTime.Now;

@@ -162,6 +162,12 @@ public partial class PutniNaloziView : UserControl
         }
     }
 
+    private void BtnIzvozZarade_Click(object sender, RoutedEventArgs e)
+    {
+        var win = new IzvozZaZaradeWindow { Owner = Window.GetWindow(this) };
+        win.ShowDialog();
+    }
+
     private void BtnExportExcel_Click(object sender, RoutedEventArgs e)
         => ExcelExportService.ExportDataGridToExcel(DgPutniNalozi, "Evidencija putnih naloga i dnevnica", "PutniNalozi");
 

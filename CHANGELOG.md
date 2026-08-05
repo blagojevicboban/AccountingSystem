@@ -4,6 +4,31 @@ Sve značajne promene i novine u aplikaciji **ERPiFinansije** dokumentovane su u
 
 Format je zasnovan na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardu i prati Semantic Versioning.
 
+## [1.6.0] - 2026-08-05
+
+### 💸 Izvoz prekoračenja neoporezive dnevnice za ERPiZarade (Faza 3.2)
+
+- Dnevnica za službeni put u zemlji **do** zakonskog neoporezivog iznosa je čist trošak firme;
+  deo **iznad** njega je po zakonu deo zarade radnika i mora u PPP-PD kroz ERPiZarade. Do sada
+  `PutniNalog` nije razlikovao ta dva dela — cela dnevnica je knjižena kao trošak (5330/5340),
+  bez ikakve veze sa porezom.
+- Novi šifarnik **`NeoporeziviIznosDnevnice`** (datumski-efektivan, isti obrazac kao
+  `KamatneStope`) — zakonski limit se od sada vodi kao podatak, ne kao konstanta u kodu.
+  Seed red za 2026: **3.471 RSD**.
+- `PutniNalog` dobija **JMBG radnika** (knjigovođa ga prepisuje iz kartona) — ERPiFinansije nema
+  svoj registar zaposlenih, pa je JMBG jedini pouzdan ključ za uparivanje na strani zarada.
+- Novo dugme **„📤 Izvoz za zarade"** na ekranu „Putni nalozi": bira se mesec **isplate**
+  dnevnice (po datumu povratka sa puta), prikazuje se koji nalozi ulaze i koji izostaju (nema
+  JMBG-a, nema unetog limita), pa se snima JSON za uvoz u ERPiZarade. Samo dnevnice **u zemlji**
+  i samo **proknjiženi** nalozi.
+- Prekoračenje se **računa ovde**, ne prepisuje: `PutniNalogService.PrekoracenjeDnevnice`
+  (isplaćena dnevnica minus broj dnevnica × važeći limit). ERPiZarade taj broj samo uvozi.
+- **Knjiženje putnog naloga se ne menja** — i dalje knjiži ceo iznos dnevnice na 5330/5340;
+  to ostaje tačno, jer je ceo iznos i dalje stvaran trošak/obaveza firme prema radniku.
+- Pokriveno sa 9 novih testova (`PutniNaloziZaZaradeWriterTests`) — tačnost prekoračenja
+  (ispod/iznad/na granici limita, više dnevnica), izostavljanje naloga bez JMBG-a ili bez
+  unetog limita, isključivanje inostranih i neproknjiženih naloga.
+
 ## [1.5.1] - 2026-08-05
 
 ### 🧮 Iznos se sad računa uživo u stavci primopredaje (`PrimopredajaEditWindow`)

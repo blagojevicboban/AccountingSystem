@@ -46,6 +46,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="140"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="120"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="180"/>
                 </Grid.ColumnDefinitions>
@@ -59,11 +60,15 @@
                 <TextBlock Grid.Row="0" Grid.Column="1" Text="Zaposleni (Ime i prezime):" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
                 <TextBox Grid.Row="1" Grid.Column="1" x:Name="TxtZaposleni" FontSize="13" Padding="8,4" Margin="0,2,10,0"/>
 
-                <TextBlock Grid.Row="0" Grid.Column="2" Text="Relacija putovanja:" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
-                <TextBox Grid.Row="1" Grid.Column="2" x:Name="TxtRelacija" FontSize="13" Padding="8,4" Margin="0,2,10,0"/>
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="JMBG radnika:" FontSize="12" FontWeight="SemiBold" Foreground="#475569"
+                           ToolTip="Potrebno samo ako se prekoračenje dnevnice prenosi u ERPiZarade — po njemu se tamo upari radnik."/>
+                <TextBox Grid.Row="1" Grid.Column="2" x:Name="TxtJmbg" FontSize="13" Padding="8,4" Margin="0,2,10,0" MaxLength="13"/>
 
-                <TextBlock Grid.Row="0" Grid.Column="3" Text="Prevozno sredstvo:" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
-                <ComboBox Grid.Row="1" Grid.Column="3" x:Name="CmbPrevoz" Height="32">
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="Relacija putovanja:" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
+                <TextBox Grid.Row="1" Grid.Column="3" x:Name="TxtRelacija" FontSize="13" Padding="8,4" Margin="0,2,10,0"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="4" Text="Prevozno sredstvo:" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
+                <ComboBox Grid.Row="1" Grid.Column="4" x:Name="CmbPrevoz" Height="32">
                     <ComboBoxItem Content="Službeno vozilo" IsSelected="True"/>
                     <ComboBoxItem Content="Privatno vozilo"/>
                     <ComboBoxItem Content="Autobus / Voz"/>

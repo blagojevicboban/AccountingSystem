@@ -43,6 +43,31 @@ public class PutniNalogService
         return (ukupnoSati, brojDnevnica, ukupnoDnevnice);
     }
 
+    /// <summary>
+    /// Zakonski neoporeziv iznos dnevnice u zemlji koji važi na dati datum (Faza 3.2) — red sa
+    /// najvećim <see cref="NeoporeziviIznosDnevnice.DatumOd"/> koji nije posle datuma. Isti
+    /// obrazac kao datumski-efektivni parametri u ERPiZarade: propis menja vrednost, ne kod.
+    /// </summary>
+    public async Task<decimal> VaziciNeoporeziviIznosAsync(DateTime datum)
+    {
+        var vazeci = await _db.NeoporeziviIznosiDnevnice
+            .Where(n => n.DatumOd <= datum)
+            .OrderByDescending(n => n.DatumOd)
+            .FirstOrDefaultAsync();
+
+        return vazeci?.IznosZemljaRsd ?? 0m;
+    }
+
+    /// <summary>
+    /// Deo isplaćene dnevnice iznad zakonskog neoporezivog limita — ono što se po zakonu
+    /// tretira kao deo zarade radnika i prijavljuje kroz PPP-PD (Faza 3.2). Ne čuva se kao
+    /// kolona: izvodi se iz iznosa koji već postoje na nalogu, isto pravilo kao kod naloga za
+    /// knjiženje (ne pamtiti duplo ono što se može izvesti).
+    /// </summary>
+    public static decimal PrekoracenjeDnevnice(
+        decimal ukupnoDnevnice, decimal brojDnevnica, decimal neoporeziviLimitPoDnevnici)
+        => Math.Max(0m, ukupnoDnevnice - brojDnevnica * neoporeziviLimitPoDnevnici);
+
     public async Task<List<PutniNalog>> GetPutniNaloziAsync()
     {
         return await _db.PutniNalozi

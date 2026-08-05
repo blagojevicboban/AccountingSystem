@@ -56,6 +56,7 @@ public class AccountingDbContext : DbContext
 
     public DbSet<PutniNalog> PutniNalozi => Set<PutniNalog>();
     public DbSet<PutniNalogTrosakStavka> PutniNaloziTroskoviStavke => Set<PutniNalogTrosakStavka>();
+    public DbSet<NeoporeziviIznosDnevnice> NeoporeziviIznosiDnevnice => Set<NeoporeziviIznosDnevnice>();
 
     public DbSet<BlagajnickiNalog> BlagajnickiNalozi => Set<BlagajnickiNalog>();
 
@@ -232,6 +233,9 @@ public class AccountingDbContext : DbContext
 
         modelBuilder.Entity<KamatnaStopa>()
             .HasIndex(k => k.DatumOd);
+
+        modelBuilder.Entity<NeoporeziviIznosDnevnice>()
+            .HasIndex(n => n.DatumOd);
 
         modelBuilder.Entity<Promena>()
             .HasIndex(p => p.Sifra);

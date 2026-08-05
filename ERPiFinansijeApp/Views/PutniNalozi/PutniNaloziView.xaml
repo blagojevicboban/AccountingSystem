@@ -26,6 +26,7 @@
                     <Button x:Name="BtnIzmeni" Content="✏️ Izmeni" Style="{StaticResource ActionButtonStyle}" Background="#4B5563" Margin="0,2,8,2" ToolTip="Izmeni izabrani putni nalog" Click="BtnIzmeni_Click"/>
                     <Button x:Name="BtnObrisi" Content="🗑️ Obriši" Style="{StaticResource ActionButtonStyle}" Background="#EF4444" Margin="0,2,8,2" ToolTip="Obriši izabrani putni nalog" Click="BtnObrisi_Click"/>
                     <Button x:Name="BtnKnjizi" Content="✅ Proknjiži (5330/5340)" Style="{StaticResource ActionButtonStyle}" Background="#10B981" Margin="0,2,8,2" ToolTip="Proknjiži troškove službenog puta u glavnu knjigu" Click="BtnKnjizi_Click"/>
+                    <Button x:Name="BtnIzvozZarade" Content="📤 Izvoz za zarade" Style="{StaticResource ActionButtonStyle}" Background="#0D9488" Margin="0,2,8,2" ToolTip="Izvezi deo dnevnice iznad neoporezivog iznosa za uvoz u ERPiZarade" Click="BtnIzvozZarade_Click"/>
                     <Button x:Name="BtnExportExcel" Content="X" FontWeight="Bold" FontSize="20" Style="{StaticResource ActionButtonStyle}" Background="#059669" Width="36" Padding="0" ToolTip="Izvoz putnih naloga u Excel" Margin="0,2,8,2" Click="BtnExportExcel_Click"/>
                     <Button x:Name="BtnStampa" Content="🖨️" Style="{StaticResource ActionButtonStyle}" Background="#4F46E5" Width="36" Padding="0" ToolTip="Štampaj Obrazac Putnog Naloga (PDF)" Margin="0,2,0,2" Click="BtnStampa_Click"/>
                 </WrapPanel>

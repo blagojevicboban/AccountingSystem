@@ -21,6 +21,15 @@ public class PutniNalog
     public string ZaposleniIme { get; set; } = string.Empty;
     public string RadnoMesto { get; set; } = string.Empty;
 
+    /// <summary>
+    /// JMBG radnika (Faza 3.2 — prenos oporezivog dela dnevnice u ERPiZarade). Slobodan tekst,
+    /// bez stranog ključa: ovaj program nema svoj registar zaposlenih, ERPiZarade ga ima.
+    /// Knjigovođa ga prepisuje iz kartona pri unosu naloga; ERPiZarade njime pri uvozu upari
+    /// nalog sa tačnim radnikom.
+    /// </summary>
+    [MaxLength(13)]
+    public string Jmbg { get; set; } = string.Empty;
+
     public string Relacija { get; set; } = string.Empty; // Npr. Beograd — Novi Sad — Beograd
     public string SvrhaPutovanja { get; set; } = string.Empty;
     public string PrevoznoSredstvo { get; set; } = "Službeno vozilo"; // Službeno vozilo, Privatno vozilo, Autobus, Avion
